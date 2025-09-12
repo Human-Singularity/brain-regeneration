@@ -1,0 +1,24 @@
+{
+  "main": [
+    {
+      "name": "github",
+      "icon": "fab fa-github",
+      "link": "https://www.github.com/"
+    },
+    {
+      "name": "linkedin",
+      "icon": "fab fa-linkedin",
+      "link": "https://www.linkedin.com/"
+    },
+    {
+      "name": "blue sky",
+      "icon": "fab fa-bluesky",
+      "link": "https://bsky.app.com/"
+    },
+    {
+      "name": "mastodon",
+      "icon": "fab fa-mastodon",
+      "link": "https://mastodon.social/"
+    }
+  ]
+}
