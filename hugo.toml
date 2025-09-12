@@ -1,3 +1,85 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://brain-regeneration.com/'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = 'Brain Regeneration Observatory'
+theme = 'Hugo-Now-UI-Pro'
+copyright = 'Brain Regeneration Observatory 2025'
+enableRobotsTXT = true
+rssLimit = 30
+timeout = '20s'
+summaryLength = 10
+defaultContentLanguage = 'en'
+
+[markup]
+  defaultMarkdownHandler = "goldmark"
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      definitionList = true
+      footnote = true
+      linkify = false
+      strikethrough = true
+      table = true
+      taskList = true
+      typographer = true
+    [markup.goldmark.parser]
+      autoHeadingID = true
+      autoHeadingIDType = "github"
+      [markup.goldmark.parser.attribute]
+        block = true
+        title = true
+    [markup.goldmark.renderer]
+      hardWraps = false
+      unsafe = true
+      xhtml = false
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = false
+    lineNos = false
+    lineNumbersInTable = true
+    noClasses = true
+    style = "monokai"
+    tabWidth = 4
+  [markup.tableOfContents]
+    endLevel = 3
+    ordered = false
+    startLevel = 2
+
+[params]
+# Site configuration
+author = "Brain Regeneration Observatory Team"
+defaultAuthor = "authors/default-author"
+subtitle = "Accelerating research into brain regeneration and myelin repair"
+summary = "A comprehensive knowledge hub tracking therapeutic approaches for reversing damage caused by MS, Alzheimer's, Parkinson's, and other neuro-degenerative diseases."
+description = "The Brain Regeneration Observatory surfaces high-impact research within 24 hours of publication, maps therapeutic avenues including remyelination and stem-cell approaches, and provides patient-centric views of cutting-edge neurological research."
+
+[outputs]
+	home = [ "HTML", "RSS", "JSON", "Search" ]
+	section = [ "HTML", "RSS"]
+	term = [ "HTML", "RSS"]
+
+[outputFormats.Search]
+baseName = "index"
+mediaType = "application/json"
+path = "search"
+
+[permalinks]
+	post = "/research/:slug/"
+	
+[sitemap]
+	changefreq = "weekly"
+	priority = 0.5
+	filename = "sitemap.xml"
+
+[taxonomies]
+	tag = "tags"
+	category = "categories"
+	author = "authors"
+
+DefaultContentLanguage = "en"
+
+[Languages.en]
+weight = 1
+LanguageName = "English"
+[Languages.en.params]
+description = "Accelerating research into brain regeneration and myelin repair through comprehensive tracking of scientific literature and clinical trials."
+subtitle = "Real-time tracking of regenerative medicine research"

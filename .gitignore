@@ -1,0 +1,22 @@
+# Hugo build output
+/public/
+/resources/_gen/
+/hugo_stats.json
+
+# Hugo server files
+/.hugo_build.lock
+
+# Node modules (if using npm/yarn for assets)
+/node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# Log files
+*.log

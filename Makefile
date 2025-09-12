@@ -1,4 +1,11 @@
-# Brain Regeneration Project Makefile
+# Braihelp: ## Show this help message
+	@echo "Brain Regeneration Observatory - Available commands:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🚀 Quick start: make init && make dev"
+	@echo "📖 View site: http://localhost:1313"
+	@echo ""eneration Project Makefile
 # Manages GregoryAi submodule and Docker operations
 
 .PHONY: help init update-gregory start-gregory stop-gregory logs-gregory clean-gregory status
@@ -50,16 +57,18 @@ clean-gregory: ## Stop and remove GregoryAi containers and volumes
 	@echo "GregoryAi services cleaned up successfully!"
 
 # Hugo development server
-hugo-dev: ## Start Hugo development server
+h: ## Start Hugo development server (alias for hugo-dev)
 	@echo "Starting Hugo development server..."
 	hugo server -F -O -N -D
+
+hugo-dev: h ## Alias for h command
 
 hugo-build: ## Build the Hugo site
 	@echo "Building Hugo site..."
 	hugo --minify
 
 # Combined operations
-dev: start-gregory hugo-dev ## Start both GregoryAi and Hugo development server
+dev: start-gregory h ## Start both GregoryAi and Hugo development server
 
 setup: init ## Alias for init command
 	@echo "Setup complete!"
