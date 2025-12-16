@@ -3,9 +3,15 @@ title: "Brain Regeneration Observatory"
 subtitle: "Accelerating research into brain regeneration and myelin repair"
 date: 2025-09-12
 draft: false
+resources:
+  - src: getty-images-G1FpRJcLoCw-unsplash.jpg
+    name: "header"
+
 options:
   header: "large"
   showTitle: true
+  navbar: navbar navbar-expand-lg bg-white fixed-top font-weight-bold
+
 cta:
   - label: "Learn More <i class='now-ui-icons arrows-1_minimal-right'></i>"
     url: "#mission"
