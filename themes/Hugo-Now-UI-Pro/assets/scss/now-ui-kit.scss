@@ -17,6 +17,7 @@
  
 // CUSTOM VALUES
 @import 'now-ui-kit/variables';
+@import 'custom/custom.scss';  // Custom overrides - MUST come after variables but before they're used
 @import 'now-ui-kit/mixins';
 
 // Plugins CSS
@@ -84,12 +85,4 @@
 @import 'now-ui-kit/sections-extend';
 
 @import 'now-ui-kit/responsive';
-
-/*!
-
- =========================================================
- * Custom CSS
- =========================================================
-*/
-@import 'custom/custom.scss';
 
