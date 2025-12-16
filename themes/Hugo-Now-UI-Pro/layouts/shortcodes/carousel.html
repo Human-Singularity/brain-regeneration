@@ -5,14 +5,14 @@
 		{{ end }}
 		<div class="row justify-content-center">
 			<div class="col">
-				<div id="carouselIndicators" class="carousel slide" data-ride="false" data-interval="false" data-touch="true" data-pause="hover" >
+				<div id="carouselIndicators" class="carousel slide" data-bs-ride="false" data-bs-interval="false" data-bs-touch="true" data-bs-pause="hover" >
 					<ol class="carousel-indicators">
 						{{ range $key, $value := $slides }}
 							{{ $active := "" }}
 							{{ if eq $key 0 }}
 								{{ $active = "active" }}
 							{{ end }}
-							<li data-target="#carouselIndicators" data-slide-to="{{ $key }}" class="{{ $active }}"></li>
+							<li data-bs-target="#carouselIndicators" data-bs-slide-to="{{ $key }}" class="{{ $active }}"></li>
 						{{ end }}
 					</ol>
 					<div class="carousel-inner" role="listbox">
@@ -29,10 +29,10 @@
 							</div>
 						{{ end }}
 					</div>
-					<a class="carousel-control-prev" href="#carouselIndicators" role="button" data-slide="prev">
+					<a class="carousel-control-prev" href="#carouselIndicators" role="button" data-bs-slide="prev">
 						<i class="now-ui-icons arrows-1_minimal-left"></i>
 					</a>
-					<a class="carousel-control-next" href="#carouselIndicators" role="button" data-slide="next">
+					<a class="carousel-control-next" href="#carouselIndicators" role="button" data-bs-slide="next">
 						<i class="now-ui-icons arrows-1_minimal-right"></i>
 					</a>
 				</div>

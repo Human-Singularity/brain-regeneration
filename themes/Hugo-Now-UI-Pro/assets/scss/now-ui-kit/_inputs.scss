@@ -162,7 +162,6 @@
 .input-group-text {
     background-color: $white-bg;
     border: 1px solid $light-gray;
-    border-radius: $btn-round-radius;
     color: $dark-background;
 
     @include transition-input-focus-color();
@@ -207,6 +206,17 @@
 
 .input-group,
 .form-group{
+  // Bootstrap 5: Direct child input-group-text (no wrapper divs)
+  > .input-group-text:first-child {
+    margin-right: 0;
+    border-left: 1px solid #E3E3E3;
+  }
+  > .input-group-text:last-child {
+    border-right: 1px solid #E3E3E3;
+    padding: 10px 18px 10px 0;
+  }
+
+  // Bootstrap 4 legacy support: .input-group-prepend/.input-group-append wrappers
   .input-group-prepend{
     margin-right: 0;
 
@@ -220,6 +230,15 @@
   }
 
   &.input-group-focus {
+    // Bootstrap 5: Direct child support
+    > .input-group-text:first-child {
+      border-left: 1px solid #f96332;
+    }
+    > .input-group-text:last-child {
+      border-right: 1px solid #f96332;
+    }
+
+    // Bootstrap 4 legacy support
     .input-group-prepend .input-group-text {
       border-left: 1px solid #f96332;
     }
@@ -227,6 +246,7 @@
       border-right: 1px solid #f96332;
     }
     &.no-border{
+      > .input-group-text:first-child,
       .input-group-prepend .input-group-text{
         border-left: transparent;
       }

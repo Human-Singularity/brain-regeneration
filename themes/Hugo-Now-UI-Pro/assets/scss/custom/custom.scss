@@ -4,6 +4,19 @@
 @import '_responsive_type.scss';
 @import '../now-ui-kit/_variables.scss';
 
+// Custom overrides
+$primary-color:              #3B71CA !default;
+$danger-color:               #DC4C64 !default;
+$dark-gray:                  #737373;
+
+$padding-label-vertical:        2px;
+$padding-label-horizontal:     12px;
+
+$padding-xs-vertical:           1px;
+$padding-xs-horizontal:         5px;
+
+$font-weight-light: 400;
+
 // smooth scrolling
 html {
   scroll-behavior: smooth;

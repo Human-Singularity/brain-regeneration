@@ -16,22 +16,6 @@
  */
  
 // CUSTOM VALUES
-$dark-gray:                  #737373;
-
-$primary-navbar:                rgba(124, 202, 231, .98);
-$primary-color:              #7CCAE7;
-$primary-states-color:       lighten($primary-color, 6%);
-$primary-color-opacity:      rgba(124, 202, 231, .3);
-$primary-color-alert:        rgba(124, 202, 231, .8);
-$brand-color: $primary-color
-
-$padding-label-vertical:        2px;
-$padding-label-horizontal:     12px;
-
-$padding-xs-vertical:           1px;
-$padding-xs-horizontal:         5px;
-
-$font-weight-light: 400;
 @import 'now-ui-kit/variables';
 @import 'now-ui-kit/mixins';
 
@@ -102,6 +86,7 @@ $font-weight-light: 400;
 @import 'now-ui-kit/responsive';
 
 /*!
+
  =========================================================
  * Custom CSS
  =========================================================

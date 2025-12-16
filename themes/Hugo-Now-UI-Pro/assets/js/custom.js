@@ -110,5 +110,4 @@ document.addEventListener('DOMContentLoaded', function(event) {
         document.querySelector('nav.bg-dynamic').classList.remove('navbar-transparent')
         document.querySelector('nav.bg-dynamic').classList.remove('bg-dynamic')
     }
-});
-
+})

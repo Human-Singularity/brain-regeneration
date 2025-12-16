@@ -70,6 +70,14 @@ body{
     display: block;
 }
 
+.float-start{
+  float: left;
+}
+.float-end{
+  float: right;
+}
+// Legacy support - keep for existing Now UI Kit compatibility
+
 .pull-left{
   float: left;
 }

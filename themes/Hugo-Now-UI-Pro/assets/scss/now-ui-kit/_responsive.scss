@@ -334,8 +334,10 @@
     }
 
     .footer{
+      .float-start,
       .pull-left,
       .footer-brand,
+      .float-end,
       .pull-right{
         float: unset;
       }

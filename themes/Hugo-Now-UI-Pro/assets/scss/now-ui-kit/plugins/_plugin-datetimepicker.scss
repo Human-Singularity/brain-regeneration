@@ -1,3 +1,4 @@
+.visually-hidden,
 .sr-only,
 .bootstrap-datetimepicker-widget .btn[data-action="incrementHours"]::after,
 .bootstrap-datetimepicker-widget .btn[data-action="incrementMinutes"]::after,
@@ -88,10 +89,12 @@
     border-right: .4em solid transparent;
     border-left: .4em solid transparent;
 }
+.bootstrap-datetimepicker-widget.dropdown-menu.float-end,
 .bootstrap-datetimepicker-widget.dropdown-menu.pull-right:before {
   left: auto;
   right: 6px;
 }
+.bootstrap-datetimepicker-widget.dropdown-menu.float-end,
 .bootstrap-datetimepicker-widget.dropdown-menu.pull-right:after {
   left: auto;
   right: 7px;

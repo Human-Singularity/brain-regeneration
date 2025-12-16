@@ -19,11 +19,11 @@
 										{{ end }}
 										{{ end }}
 									<h4 class="card-title">
-										<a href="{{ .Permalink }}" data-umami-event="click--summary-readmore">{{ .Title }}</a>
+										<a href="{{ .Permalink }}">{{ .Title }}</a>
 									</h4>
 									<p class="card-description">
 										{{ .Summary | truncate 155 }}
-										<a href="{{ .Permalink }}" data-umami-event="click--summary-readmore">{{ i18n "read_more" }}</a> <a href="{{ .Permalink }}#commento" data-custom-comments-text="window.displayCommentsCount" data-umami-event="click--summary-comments"></a>
+										<a href="{{ .Permalink }}">{{ i18n "read_more" }}</a> <a href="{{ .Permalink }}#commento" data-custom-comments-text="window.displayCommentsCount"></a>
 									</p>
 										{{ range .Params.authors }}
 										{{ $author := ($.GetPage (printf "/authors/%s/" .) ) }}
@@ -31,7 +31,7 @@
 										<div class="author">
 											{{- with .Resources.GetMatch "avatar" -}}
 											{{- $avatar := .Fill "200x200" -}}
-											<a href="{{ $author.Permalink }}" class="" title="{{ $author.Params.name }}" data-umami-event="click--author-avatar"><img src="{{$avatar.Permalink}}" alt="{{ $author.Params.name }}" class="avatar img-raised"></a>
+											<a href="{{ $author.Permalink }}" class="" title="{{ $author.Params.name }}"><img src="{{$avatar.Permalink}}" alt="{{ $author.Params.name }}" class="avatar img-raised"></a>
 											{{ end }}
 											<span><a href="{{ $author.Permalink }}">{{ $author.Params.name }}</a></span>
 										</div>

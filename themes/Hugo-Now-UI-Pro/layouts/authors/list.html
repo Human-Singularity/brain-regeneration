@@ -49,7 +49,7 @@
 					{{ with .Params.profiles }}
 					{{ $map := (index . ) }}
 					{{ range $key, $val := . }}
-						<a href="{{ $val }}" class="btn btn-default btn-round btn-lg btn-icon" rel="tooltip" title="" data-original-title="Follow me on {{ $key }}">
+						<a href="{{ $val }}" class="btn btn-default btn-round btn-lg btn-icon" rel="tooltip" title="" data-original-title="{{ i18n "follow_on" }} {{ $key }}">
 							<i class="fab fa-{{ $key }}"></i>
 						</a>
 					{{ end }}

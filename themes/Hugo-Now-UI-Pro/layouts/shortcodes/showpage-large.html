@@ -26,7 +26,7 @@
 						{{ end }}
 						{{ end }}
 					</p>
-					<a href="{{ .Permalink }}" class="btn btn-danger btn-round" data-umami-event="click--showpage-cta" data-umami-event-title="{{ .Title | plainify }}">
+					<a href="{{ .Permalink }}" class="btn btn-danger btn-round">
 						<i class="now-ui-icons ui-1_send"></i> {{ with $cta }} {{ . }} {{else}}{{ i18n "read_story" }}{{ end }}
 					</a>
 				</div>

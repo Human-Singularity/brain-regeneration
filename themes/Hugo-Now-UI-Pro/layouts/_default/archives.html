@@ -18,7 +18,7 @@
 					<section id="archive-by-date">
 					<div id="collapse">
 						<p>
-							<a data-toggle="collapse" data-target=".collapse" class="btn btn-info">{{ i18n "toggle-all-years" }}</a>
+							<a data-bs-toggle="collapse" data-bs-target=".collapse" class="btn btn-info">{{ i18n "toggle-all-years" }}</a>
 						</p>
 						<div class="row">
 							<div class="col-md-12">
@@ -31,7 +31,7 @@
 										<div class="card card-plain">
 											<div class="card-header" role="tab" id="{{ .Key }}">
 												<h2 class="archive-year title" id="{{.Key | urlize}}">
-													<a data-toggle="collapse" data-parent="#accordion" href="#collapse{{.Key}}" aria-expanded="true" aria-controls="collapse{{.Key}}">
+													<a data-bs-toggle="collapse" data-bs-parent="#accordion" href="#collapse{{.Key}}" aria-expanded="true" aria-controls="collapse{{.Key}}">
 												</h2>
 												{{ .Key }}
 												<i class="now-ui-icons arrows-1_minimal-down"></i>

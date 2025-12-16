@@ -1,9 +1,10 @@
-<div class="plyr__video-embed player">
+<div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;">
     <iframe
-        src="https://www.youtube.com/embed/{{ .Get 0 }}?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+        src="https://www.youtube.com/embed/{{ .Get 0 }}?iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
         allowfullscreen="true"
         allowtransparency="true"
         allow="autoplay"
         loading="lazy"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
     ></iframe>
 </div>

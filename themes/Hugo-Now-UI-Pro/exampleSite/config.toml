@@ -1,14 +1,13 @@
-baseurl = "https://now-ui.lisboncollective.com/"
+baseurl = "https://lisboncollective.com/"
 copyright = "Bruno Amaral 2021"
 disqusShortname = "brunoamaral-eu"
 enableGitInfo = true
 enableRobotsTXT = true
 googleAnalytics = ""
 languageCode = "en-us"
-publishdir = "/var/www/now-ui.lisboncollective.com"
+publishdir = "public"
 pygmentsCodefences=true
 pygmentsOptions=""
-# pygmentsStyle="monokai"
 pygmentsUseClasses=true
 rssLimit = 30
 theme = ["NowUI-Pro"]
@@ -115,7 +114,7 @@ googlemaps = ""
     simple = true
   [privacy.speakerDeck]
     disable = false
-  [privacy.twitter]
+  [privacy.x]
     disable = false
     enableDNT = true
   [privacy.vimeo]
@@ -158,8 +157,6 @@ path = "search"
   author = "authors"
 
 [social]
-	facebook_admin = "620982784"
-	facebook_app_id = "275213602982"
 
 DefaultContentLanguage = "en"
 
@@ -206,3 +203,50 @@ quality = 85
 # Smart Cropping is content aware and tries to find the best crop for each image.
 # Valid values are Smart, Center, TopLeft, Top, TopRight, Left, Right, BottomLeft, Bottom, BottomRight
 anchor = "smart"
+
+# Main navigation menu
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 10
+
+  [[menu.main]]
+    name = "Blog"
+    url = "/post/"
+    weight = 15
+
+  [[menu.main]]
+    name = "Shortcodes Demo"
+    url = "/shortcodes-demo/"
+    weight = 20
+
+  [[menu.main]]
+    name = "Bootstrap Components"
+    url = "/bootstrap-components/"
+    weight = 30
+
+  [[menu.main]]
+    name = "Gallery Demo"
+    url = "/gallery-demo/"
+    weight = 40
+
+  [[menu.main]]
+    name = "Color Palette"
+    url = "/color-palette/"
+    weight = 45
+
+  [[menu.main]]
+    name = "Archives"
+    url = "/archives/"
+    weight = 50
+
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 60
+
+  [[menu.main]]
+    name = "Contact"
+    url = "/contact/"
+    weight = 70

@@ -10,6 +10,7 @@ $border-thick:               2px !default;
 
 $white-color:                #FFFFFF !default;
 $white-bg:                   #FFFFFF !default;
+$light-bg:                   #FBFBFB !default; // New Light color
 $orange-bg:                  #e95e38 !default;
 
 $smoke-bg:                   #F5F5F5 !default;
@@ -17,12 +18,14 @@ $light-black:                #444    !default;
 
 $black-bg:                   rgba(30,30,30,.97) !default;
 
-$black-color:                #2c2c2c !default;
+$black-color:                #332D2D !default; // Updated Dark color
+$dark-color:                 #332D2D !default; // New Dark color variable
 $black-hr:                   #444444 !default;
 
 $light-gray:                 #E3E3E3 !default;
 $medium-gray:                #DDDDDD !default;
 $dark-gray:                  #9A9A9A !default;
+$secondary-gray:             #9FA6B2 !default; // New Secondary color
 
 $opacity-gray-3:             rgba(222,222,222, .3) !default;
 $opacity-gray-5:             rgba(222,222,222, .5) !default;
@@ -46,38 +49,46 @@ $default-color:              #888888 !default;
 $default-states-color:       lighten($default-color, 6%) !default;
 $default-color-opacity:      rgba(182, 182, 182, .6) !default;
 
-$primary-color:              #f96332 !default;
+$secondary-color:            #9FA6B2 !default; // NEW: Secondary color
+$secondary-states-color:     lighten($secondary-color, 6%) !default;
+$secondary-color-opacity:    rgba(159, 166, 178, .3) !default;
+$secondary-color-alert:      rgba(159, 166, 178, .8) !default;
+
+$primary-color:              #3B71CA !default; // UPDATED: Primary color
 $primary-states-color:       lighten($primary-color, 6%) !default;
-$primary-color-opacity:      rgba(249, 99, 50, .3) !default;
-$primary-color-alert:        rgba(249, 99, 50, .8) !default;
+$primary-color-opacity:      rgba(59, 113, 202, .3) !default;
+$primary-color-alert:        rgba(59, 113, 202, .8) !default;
 
-$success-color:              #18ce0f !default;
+$success-color:              #14A44D !default; // UPDATED: Success color
 $success-states-color:       lighten($success-color, 6%) !default;
-$success-color-opacity:      rgba(24, 206, 15, .3) !default;
-$success-color-alert:        rgba(24, 206, 15, .8) !default;
+$success-color-opacity:      rgba(20, 164, 77, .3) !default;
+$success-color-alert:        rgba(20, 164, 77, .8) !default;
 
-$info-color:                 #2CA8FF !default;
+$info-color:                 #54B4D3 !default; // UPDATED: Info color
 $info-states-color:          lighten($info-color, 6%) !default;
-$info-color-opacity:         rgba(44, 168, 255, .3) !default;
-$info-color-alert:           rgba(44, 168, 255, .8) !default;
+$info-color-opacity:         rgba(84, 180, 211, .3) !default;
+$info-color-alert:           rgba(84, 180, 211, .8) !default;
 
-$warning-color:              #FFB236 !default;
+$warning-color:              #E4A11B !default; // UPDATED: Warning color
 $warning-states-color:       lighten($warning-color, 6%) !default;
-$warning-color-opacity:      rgba(255, 178, 54, .3) !default;
-$warning-color-alert:        rgba(255, 178, 54, .8) !default;
+$warning-color-opacity:      rgba(228, 161, 27, .3) !default;
+$warning-color-alert:        rgba(228, 161, 27, .8) !default;
 
-$danger-color:               #FF3636 !default;
+$danger-color:               #DC4C64 !default; // UPDATED: Danger color
 $danger-states-color:        lighten($danger-color, 6%) !default;
-$danger-color-opacity:       rgba(255, 54, 54, .3) !default;
-$danger-color-alert:         rgba(255, 54, 54, .8) !default;
+$danger-color-opacity:       rgba(220, 76, 100, .3) !default;
+$danger-color-alert:         rgba(220, 76, 100, .8) !default;
 
 /*     brand Colors              */
 $brand-primary:              $primary-color !default;
+$brand-secondary:            $secondary-color !default; // NEW: Secondary brand color
 $brand-info:                 $info-color !default;
 $brand-success:              $success-color !default;
 $brand-warning:              $warning-color !default;
 $brand-danger:               $danger-color !default;
 $brand-inverse:              $black-color !default;
+$brand-light:                $light-bg !default; // NEW: Light brand color
+$brand-dark:                 $dark-color !default; // NEW: Dark brand color
 
 $link-disabled-color:        #666666 !default;
 
