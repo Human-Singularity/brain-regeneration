@@ -20,4 +20,6 @@ Thumbs.db
 
 # Log files
 *.log
-themes/Hugo-Now-UI-Pro/.DS_Store
+
+# Environment files
+.env
