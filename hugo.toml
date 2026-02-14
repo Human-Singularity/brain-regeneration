@@ -74,6 +74,7 @@ path = "search"
 	tag = "tags"
 	category = "categories"
 	author = "authors"
+	curator = "curators"
 
 DefaultContentLanguage = "en"
 
