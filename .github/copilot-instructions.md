@@ -4,9 +4,7 @@ applyTo: "*"
 
 # Project Overview
 
-This is a django frontend for GregoryAi, it is designed to help doctors, researchers, and patients find relevant scientific articles and clinical trials related to multiple sclerosis (MS) and other neurological diseases. The project aims to provide a comprehensive platform for accessing and organizing scientific literature and clinical trial data.
-
-It needs to be easy to use and understand by anyone, regardless of their background.
+This is a django frontend for GregoryAi, it is designed to help doctors, researchers, and patients find relevant scientific articles and clinical trials. It needs to be easy to use and understand by anyone, regardless of their background.
 
 Main features:
 - Allow users to search for scientific articles and clinical trials.
@@ -15,11 +13,9 @@ Main features:
 
 Project details are available in the `communication` folder.
 
-## Comunication guidelines for the project
+## Comunication guidelines
 
 Branding, messaging, and tone of voice should be consistent across all platforms and materials. Use clear, concise language that is accessible to a broad audience.
-
-
 
 ## Folder Structure
 
@@ -78,7 +74,6 @@ We can test the frontend using the `h` command which is a function for `hugo ser
 * **Grid Discipline**: Maintain a consistent underlying grid system that forms a sense of order while allowing for meaningful exceptions when appropriate.
 * **Breathing Room**: Use generous negative space to focus attention and design a sense of calm. Avoid cluttered interfaces where elements compete for attention.
 * **Spatial Relationships**: Related elements should be visually grouped through proximity, alignment, and shared attributes. The space between elements should communicate their relationship.
-
 
 ## Human Interface Elements
 
