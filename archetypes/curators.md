@@ -12,7 +12,7 @@ website: ""
 logo: "" # relative path to logo image in page bundle
 bio: ""
 
-# Research areas this curator curates (slugs from content/research-areas/)
+# Research areas this curator guides (slugs from content/research-areas/)
 research_areas: []
 
 # Commitment level (from the project brief)
