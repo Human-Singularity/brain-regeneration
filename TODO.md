@@ -2,7 +2,7 @@
 - [ ] setup cloudflare pages manually
 - [ ] add analytics link to footer `https://analytics.gregory-ms.com/share/qjnBgXm7LP1w3Jii`
 - [ ] add sections for research areas
-- [ ] add section listing the champions of each research area as found on the `Project Brief — Brain-Regeneration.com "Myelin Repair & CNS Regeneration Observatory" v2025-01-06.md` file.
+- [ ] add section listing the curators of each research area as found on the `Project Brief — Brain-Regeneration.com "Myelin Repair & CNS Regeneration Observatory" v2025-01-06.md` file.
 - [ ] add an about us section
 
 
@@ -14,9 +14,9 @@ Our mission is to build a comprehensive knowledge hub that tracks research and c
 
 As part of our mission, we apply AI models to filter the most promissing research.
 
-Our work is possible thanks to research groups and individuals who champion each research area with their guidance and expertise.
+Our work is possible thanks to research groups and individuals who curate each research area with their guidance and expertise.
 
-## Current Champions
+## Current Curators
 
 ### REGENERAR
 https://regenerar.eu/
