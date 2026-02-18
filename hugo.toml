@@ -75,6 +75,10 @@ path = "search"
 	category = "categories"
 	author = "authors"
 	curator = "curators"
+	condition = "conditions"
+
+[params.clinicalTrials]
+	apiBase = "https://api.gregory-ms.com/trials/"
 
 DefaultContentLanguage = "en"
 
