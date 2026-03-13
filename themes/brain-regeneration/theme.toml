@@ -1,0 +1,10 @@
+name = "Brain Regeneration"
+license = "MIT"
+licenselink = "https://github.com/brunoamaral/gregory-ai/blob/main/LICENSE"
+description = "Custom theme for the Brain Regeneration Observatory"
+homepage = "https://brain-regeneration.com"
+min_version = "0.120.0"
+
+[author]
+  name = "Bruno Amaral"
+  homepage = "https://brunoamaral.eu"

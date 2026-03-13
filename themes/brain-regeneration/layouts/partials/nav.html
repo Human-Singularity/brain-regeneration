@@ -1,0 +1,17 @@
+<nav class="site-nav navbar navbar-expand-lg">
+	<div class="container">
+		<a class="navbar-brand" href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="mainNav">
+			<ul class="navbar-nav ms-auto align-items-lg-center">
+				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/research-areas" }} active{{ end }}" href="{{ "/research-areas/" | relURL }}">Research Areas</a></li>
+				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/clinical-trials" }} active{{ end }}" href="{{ "/clinical-trials/" | relURL }}">Clinical Trials</a></li>
+				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/curators" }} active{{ end }}" href="{{ "/curators/" | relURL }}">Scientific Curators</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ "/subscribe/" | relURL }}">Subscribe</a></li>
+				<li class="nav-item ms-lg-2"><a class="nav-link-donate" href="{{ "/donate/" | relURL }}">Support the project</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>

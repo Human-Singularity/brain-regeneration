@@ -1,0 +1,111 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Params.curators }}
+			{{ range . }}
+			{{ $curatorSlug := . }}
+			{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
+			<p class="curator-attribution">Curated by <a href="{{ .RelPermalink }}">{{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }} &rarr;</a></p>
+			{{ end }}
+			{{ end }}
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+<!-- ── BODY TEXT ── -->
+{{ if .Content }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col body-text">
+			{{ .Content }}
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── CONDITION TAGS ── -->
+{{ with .Params.conditions }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			<div class="condition-tags">
+				<span class="condition-tags-label">Related conditions:</span>
+				{{ range . }}
+				{{ $condSlug := . }}
+				{{ with $.Site.GetPage (printf "/clinical-trials/%s" $condSlug) }}
+				<a href="{{ .RelPermalink }}" class="condition-tag">{{ .Title }}</a>
+				{{ end }}
+				{{ end }}
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── KEY CONCEPTS ── -->
+{{ with .Params.concepts }}
+{{ $hasDefs := false }}
+{{ range . }}{{ if .definition }}{{ $hasDefs = true }}{{ end }}{{ end }}
+{{ if $hasDefs }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			<div class="concepts-container">
+				<h3>Key concepts</h3>
+				<ul class="concept-list">
+					{{ range . }}
+					{{ if .definition }}
+					<li>
+						<span class="concept-term">{{ .term }}</span>
+						<span class="concept-definition">{{ .definition }}</span>
+					</li>
+					{{ end }}
+					{{ end }}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+{{ end }}
+
+<!-- ── CURATOR CARD ── -->
+{{ with .Params.curators }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			{{ range . }}
+			{{ $curatorSlug := . }}
+			{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
+			<div class="curator-card">
+				<div class="curator-card-logo">
+					{{ if .Params.logo }}
+					<img src="{{ .Params.logo }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+					{{ else }}
+					<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+						<circle cx="14" cy="10" r="6"/>
+						<path d="M4 26c0-6 4-10 10-10s10 4 10 10"/>
+					</svg>
+					{{ end }}
+				</div>
+				<div class="curator-card-body">
+					<h4>{{ .Title }}</h4>
+					{{ with .Params.institution }}<div class="curator-card-institution">{{ . }}</div>{{ end }}
+					{{ with .Params.lead_researcher }}<div class="curator-card-lead">Lead researcher: {{ . }}</div>{{ end }}
+					{{ with .Params.bio }}<p class="curator-card-bio">{{ . }}</p>{{ end }}
+					<a href="{{ .RelPermalink }}" class="curator-card-link">View full profile &rarr;</a>
+				</div>
+			</div>
+			{{ end }}
+			{{ end }}
+		</div>
+	</div>
+</section>
+{{ end }}
+
+{{ end }}

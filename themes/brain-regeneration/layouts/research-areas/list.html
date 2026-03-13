@@ -1,0 +1,38 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			<div class="body-text">{{ .Content }}</div>
+		</div>
+	</div>
+</section>
+
+<!-- ── RESEARCH AREA CARDS ── -->
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="row g-4">
+			{{ range .Pages }}
+			<div class="col-12 col-md-4">
+				<div class="card-brand d-flex flex-column">
+					<h3 style="font-size: 22px; margin-bottom: 8px;">{{ .Title }}</h3>
+					{{ with .Params.curators }}
+					{{ range . }}
+					{{ $curatorSlug := . }}
+					{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
+					<p class="meta" style="margin-bottom: 16px;">Curated by {{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }}</p>
+					{{ end }}
+					{{ end }}
+					{{ end }}
+					<p style="flex: 1;">{{ .Description }}</p>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Explore this area &rarr;</a>
+				</div>
+			</div>
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+{{ end }}

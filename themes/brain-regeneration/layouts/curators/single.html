@@ -1,0 +1,120 @@
+{{ define "main" }}
+
+<!-- ── BREADCRUMB ── -->
+<div class="bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<nav class="breadcrumb-nav">
+				<a href="{{ "/curators/" | relURL }}">Scientific Curators</a>
+				<span class="separator">/</span>
+				<span class="current">{{ .Title }}</span>
+			</nav>
+		</div>
+	</div>
+</div>
+
+<!-- ── PROFILE HEADER ── -->
+<section class="profile-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<div class="profile-header-inner">
+				<div class="profile-logo">
+					{{ if .Params.logo }}
+					<img src="{{ .Params.logo }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
+					{{ else }}
+					<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+						<circle cx="22" cy="16" r="9"/>
+						<path d="M6 40c0-9 7-16 16-16s16 7 16 16"/>
+					</svg>
+					{{ end }}
+				</div>
+				<div class="profile-header-text">
+					<h1>{{ .Title }}</h1>
+					{{ with .Params.institution }}<div class="profile-institution">{{ . }}</div>{{ end }}
+					{{ with .Params.lead_researcher }}<div class="profile-lead">Lead researcher: {{ . }}</div>{{ end }}
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ── ABOUT ── -->
+{{ if .Content }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col body-text">
+			{{ .Content }}
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── RESEARCH AREA(S) CURATED ── -->
+{{ with .Params.research_areas }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			<h2 style="font-size: 20px; margin-bottom: 16px;">{{ if gt (len .) 1 }}Research areas curated{{ else }}Research area curated{{ end }}</h2>
+			<div class="d-flex flex-column gap-3">
+				{{ range . }}
+				{{ $areaSlug := . }}
+				{{ with $.Site.GetPage (printf "/research-areas/%s" $areaSlug) }}
+				<div class="research-area-card">
+					<h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+					<p>{{ .Description }}</p>
+					<a href="{{ .RelPermalink }}" class="research-area-link">Explore this research area &rarr;</a>
+				</div>
+				{{ end }}
+				{{ end }}
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── EXTERNAL LINKS ── -->
+{{ if or .Params.website .Params.institution_url }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			<h2 style="font-size: 20px; margin-bottom: 16px;">Links</h2>
+			<div class="external-links">
+				{{ with .Params.website }}
+				<a href="{{ . }}" class="external-link" target="_blank" rel="noopener">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+						<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+					</svg>
+					Lab website
+				</a>
+				{{ end }}
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── OTHER CURATORS ── -->
+{{ $others := where (where .Site.RegularPages "Section" "curators") "RelPermalink" "ne" .RelPermalink }}
+{{ if $others }}
+<section class="section bg-tint">
+	<div class="container">
+		<div class="narrow-col">
+			<h2 style="font-size: 20px; margin-bottom: 16px;">Other scientific curators</h2>
+			<div class="d-flex flex-wrap gap-3">
+				{{ range $others }}
+				<a href="{{ .RelPermalink }}" class="other-curator-chip">
+					<strong>{{ .Title }}</strong>
+					{{ with .Params.institution }}<span class="chip-institution">{{ . }}</span>{{ end }}
+				</a>
+				{{ end }}
+			</div>
+			<div class="mt-3">
+				<a href="{{ "/curators/" | relURL }}" style="font-family: var(--font-heading); font-size: 14px; font-weight: 500;">View all curators &rarr;</a>
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+{{ end }}

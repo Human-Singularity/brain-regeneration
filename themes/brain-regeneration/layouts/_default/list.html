@@ -1,0 +1,25 @@
+{{ define "main" }}
+
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Content }}<div class="body-text">{{ . }}</div>{{ end }}
+		</div>
+	</div>
+</section>
+
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col d-flex flex-column gap-3">
+			{{ range .Pages }}
+			<div style="background-color: var(--color-text-light); border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px;">
+				<h3 style="font-size: 18px; margin-bottom: 6px;"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+				{{ with .Description }}<p class="meta" style="margin-bottom: 0;">{{ . }}</p>{{ end }}
+			</div>
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+{{ end }}
