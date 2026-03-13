@@ -2,6 +2,7 @@
 title: "Multiple Sclerosis"
 date: 2025-01-06
 draft: false
+subscribe: true
 
 description: "Multiple Sclerosis (MS) is a chronic disease of the central nervous system in which the immune system attacks the myelin sheath that protects nerve fibres. Trials in this area focus on slowing progression, repairing damage, and improving quality of life."
 
