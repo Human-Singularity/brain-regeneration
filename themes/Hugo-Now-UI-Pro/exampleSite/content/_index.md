@@ -1,4 +1,0 @@
-+++
-author = "lee.so"
-+++
-hello.
