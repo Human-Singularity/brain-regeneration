@@ -17,9 +17,6 @@ research_areas:
 commitment:
   - "searches"
   - "legitimacy"
-
-options:
-  header: "small"
 ---
 
 The [Research Institute for Central Nervous System, Blood and Peripheral Inflammation](https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/), led by Prof. Adelaide Fernandes, focuses on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.

@@ -56,9 +56,6 @@ concepts:
     definition: ""
   - term: "Glial cells"
     definition: ""
-
-options:
-  header: "small"
 ---
 
 When the brain is damaged — by disease, injury, or the slow accumulation of neurodegeneration — it loses neurons it cannot replace on its own. The standard approach to treating this loss has been to supply new cells from outside, or to slow the damage. Cell reprogramming takes a different path: it works with what is already there.

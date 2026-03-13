@@ -18,9 +18,6 @@ commitment:
   - "searches"
   - "categories"
   - "legitimacy"
-
-options:
-  header: "small"
 ---
 
 [LPJ Lab](https://www.lpjlab.org/), led by Prof. Luca Peruzzotti-Jametti, is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for Multiple Sclerosis and other Central Nervous System disorders.

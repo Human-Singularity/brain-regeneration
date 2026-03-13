@@ -18,9 +18,6 @@ commitment:
   - "searches"
   - "categories"
   - "legitimacy"
-
-options:
-  header: "small"
 ---
 
 The [REGENERAR](https://REGENERAR.eu) research project "Improving the Effectiveness and Safety of Epigenetic Editing in Brain Regeneration" is led by researcher Lino Ferreira from the Faculty of Medicine of the University of Coimbra, the Center for Neuroscience and Cell Biology of the University of Coimbra (CNC-UC), and the associated laboratory Center for Innovative Biomedicine and Biotechnology (CIBB).

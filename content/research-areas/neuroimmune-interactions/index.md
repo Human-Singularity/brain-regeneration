@@ -50,9 +50,6 @@ concepts:
     definition: ""
   - term: "Neuroimmune regulation"
     definition: ""
-
-options:
-  header: "small"
 ---
 
 The immune system and the nervous system were once studied as largely separate domains. Research over the past two decades has established that they are deeply interconnected — and that the nature of that connection shapes whether the brain recovers from damage or continues to deteriorate.

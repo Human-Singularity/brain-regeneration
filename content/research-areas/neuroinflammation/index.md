@@ -52,9 +52,6 @@ concepts:
     definition: ""
   - term: "Systemic inflammation"
     definition: ""
-
-options:
-  header: "small"
 ---
 
 Inflammation is the body's first response to threat — a tightly coordinated mobilisation of immune cells to contain damage and initiate repair. In the brain, this response is managed by a specialised set of resident immune cells and governed by the blood-brain barrier, a selective boundary that normally limits what passes between the bloodstream and neural tissue. When these systems work well, inflammation is brief, targeted, and followed by recovery. When they do not, it can become chronic, self-sustaining, and destructive.

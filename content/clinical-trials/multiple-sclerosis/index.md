@@ -18,9 +18,6 @@ filters:
   default_status: "Recruiting"
   default_phase: ""
   default_study_type: ""
-
-options:
-  header: "small"
 ---
 
 Multiple Sclerosis affects over 2.8 million people worldwide. The immune system mistakenly targets myelin — the protective coating on nerve fibres — disrupting the signals between the brain and the body.

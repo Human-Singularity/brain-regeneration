@@ -18,9 +18,6 @@ filters:
   default_status: "Recruiting"
   default_phase: ""
   default_study_type: ""
-
-options:
-  header: "small"
 ---
 
 Alzheimer's Disease is estimated to affect over 55 million people worldwide, a number expected to grow as populations age. The disease causes progressive loss of memory and cognitive function, driven by the accumulation of amyloid plaques and tau tangles in the brain.
