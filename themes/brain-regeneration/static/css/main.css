@@ -241,9 +241,40 @@ a:hover {
 	max-width: 560px;
 }
 
+.hero-key-figures {
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	align-items: center;
+}
+
+.hero-stat-number {
+	font-family: var(--font-heading);
+	font-weight: 700;
+	font-size: 2rem;
+	color: #fff;
+	line-height: 1.1;
+	margin-bottom: 3px;
+}
+
+.hero-stat-label {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.7);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.hero-key-figures-divider {
+	width: 1px;
+	height: 40px;
+	background: rgba(255, 255, 255, 0.2);
+	align-self: center;
+}
+
 @media (max-width: 767px) {
 	.hero { padding: 48px 0 56px; }
 	.hero h1 { font-size: 1.8rem; }
+	.hero-key-figures-divider { display: none; }
+	.hero-stat-number { font-size: 1.6rem; }
 }
 
 /* ── Page Header ── */

@@ -9,6 +9,27 @@
 			<a href="{{ "/research-areas/" | relURL }}" class="btn-amber">Explore Research</a>
 			<a href="{{ "/clinical-trials/" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
 		</div>
+		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
+			<div>
+				<div class="hero-stat-number">34,000+</div>
+				<div class="hero-stat-label">Articles indexed</div>
+			</div>
+			<div class="hero-key-figures-divider"></div>
+			<div>
+				<div class="hero-stat-number">174,000+</div>
+				<div class="hero-stat-label">Authors tracked</div>
+			</div>
+			<div class="hero-key-figures-divider"></div>
+			<div>
+				<div class="hero-stat-number" id="hero-trials-count">—</div>
+				<div class="hero-stat-label">Clinical trials tracked</div>
+			</div>
+			<div class="hero-key-figures-divider"></div>
+			<div>
+				<div class="hero-stat-number">&lt;&nbsp;24h</div>
+				<div class="hero-stat-label">Paper to alert</div>
+			</div>
+		</div>
 	</div>
 </section>
 
@@ -69,7 +90,8 @@
 				<div class="card-trial d-flex flex-column">
 					<div class="d-flex justify-content-between align-items-start mb-3">
 						<h3 style="font-size: 22px; margin-bottom: 0;">{{ .Title }}</h3>
-						{{ with .Params.recruiting_count }}<span class="badge-recruiting">{{ . }} recruiting</span>{{ end }}
+						{{/* recruiting count is set by JS after fetching from the API */}}
+						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
 					</div>
 					<p style="flex: 1;">{{ .Description }}</p>
 					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
@@ -142,31 +164,9 @@
 </section>
 
 <!-- ── TRUST SIGNALS ── -->
-<section class="section bg-sand" style="padding-top: 40px;">
+<section class="section bg-sand" style="padding-top: 40px; padding-bottom: 40px;">
 	<div class="container">
-		<div class="row g-4 text-center mb-5">
-			<div class="col-6 col-md-3">
-				<div class="stat-number">34,000+</div>
-				<div class="stat-label">Articles indexed</div>
-				<div class="stat-why">Five years of continuous tracking since 2021</div>
-			</div>
-			<div class="col-6 col-md-3">
-				<div class="stat-number">174,000+</div>
-				<div class="stat-label">Authors tracked</div>
-				<div class="stat-why">A comprehensive map of who is working on what</div>
-			</div>
-			<div class="col-6 col-md-3">
-				<div class="stat-number">48</div>
-				<div class="stat-label">Therapies monitored</div>
-				<div class="stat-why">Every major therapeutic avenue under active surveillance</div>
-			</div>
-			<div class="col-6 col-md-3">
-				<div class="stat-number">&lt;&nbsp;24h</div>
-				<div class="stat-label">Paper to alert</div>
-				<div class="stat-why">New research surfaces within hours, not weeks</div>
-			</div>
-		</div>
-		<div class="text-center mt-4">
+		<div class="text-center">
 			<p class="meta" style="margin-bottom: 4px;">Built on Gregory-MS, tracking MS research since 2021</p>
 			<p class="meta" style="margin-bottom: 4px;">In partnership with the Portuguese MS Society</p>
 			<p class="meta"><a href="https://github.com/brunoamaral/gregory-ai" style="color: var(--color-primary);">Open source — view the code on GitHub</a></p>
@@ -271,5 +271,36 @@
 		</div>
 	</div>
 </section>
+
+<script>
+(function () {
+	var conditions = [
+		{{ range where .Site.RegularPages "Section" "clinical-trials" -}}
+		{{ with .Params.api -}}
+		{ endpoint: {{ .endpoint | jsonify }}, team: {{ .team_id | jsonify }}, subject: {{ .subject_id | jsonify }} },
+		{{ end -}}
+		{{ end -}}
+	];
+	if (!conditions.length) return;
+	var total = 0;
+	var pending = conditions.length;
+	conditions.forEach(function (c) {
+		var url = c.endpoint + '?format=json&team=' + encodeURIComponent(c.team) + '&subject=' + encodeURIComponent(c.subject);
+		fetch(url)
+			.then(function (r) { return r.json(); })
+			.then(function (data) {
+				if (data && typeof data.count === 'number') total += data.count;
+			})
+			.catch(function () {})
+			.finally(function () {
+				pending--;
+				if (pending === 0) {
+					var el = document.getElementById('hero-trials-count');
+					if (el && total > 0) el.textContent = total.toLocaleString('en');
+				}
+			});
+	});
+})();
+</script>
 
 {{ end }}
