@@ -8,7 +8,7 @@ type_of: "organisation"
 lead_researcher: "Luca Peruzzotti-Jametti"
 institution: "University of Cambridge"
 website: "https://www.lpjlab.org/"
-logo: ""
+logo: "LPJLAB_ICON_LOGO.svg"
 bio: "LPJ Lab is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for MS and other Central Nervous System disorders."
 
 research_areas:
