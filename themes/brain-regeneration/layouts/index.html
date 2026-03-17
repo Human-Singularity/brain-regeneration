@@ -11,12 +11,12 @@
 		</div>
 		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
 			<div>
-				<div class="hero-stat-number">34,000+</div>
+				<div class="hero-stat-number" id="hero-articles-count">—</div>
 				<div class="hero-stat-label">Articles indexed</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
 			<div>
-				<div class="hero-stat-number">174,000+</div>
+				<div class="hero-stat-number" id="hero-authors-count">—</div>
 				<div class="hero-stat-label">Authors tracked</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
@@ -274,32 +274,44 @@
 
 <script>
 (function () {
-	var conditions = [
-		{{ range where .Site.RegularPages "Section" "clinical-trials" -}}
-		{{ with .Params.api -}}
-		{ endpoint: {{ .endpoint | jsonify }}, team: {{ .team_id | jsonify }}, subject: {{ .subject_id | jsonify }} },
-		{{ end -}}
-		{{ end -}}
-	];
-	if (!conditions.length) return;
-	var total = 0;
-	var pending = conditions.length;
-	conditions.forEach(function (c) {
-		var url = c.endpoint + '?format=json&team=' + encodeURIComponent(c.team) + '&subject=' + encodeURIComponent(c.subject);
-		fetch(url)
-			.then(function (r) { return r.json(); })
-			.then(function (data) {
-				if (data && typeof data.count === 'number') total += data.count;
-			})
-			.catch(function () {})
-			.finally(function () {
-				pending--;
-				if (pending === 0) {
-					var el = document.getElementById('hero-trials-count');
-					if (el && total > 0) el.textContent = total.toLocaleString('en');
-				}
-			});
-	});
+	var STATS_URL  = 'https://api.gregory-ms.com/stats/?format=json&team=1%2C4%2C5%2C6';
+	var CACHE_KEY  = 'brObsStats';
+	var CACHE_TTL  = 12 * 60 * 60 * 1000; // 12 hours in ms
+
+	function fmt(n) {
+		return typeof n === 'number' ? n.toLocaleString('en') : '—';
+	}
+
+	function set(id, value) {
+		var el = document.getElementById(id);
+		if (el) el.textContent = value;
+	}
+
+	function render(data) {
+		set('hero-articles-count', fmt(data.articles));
+		set('hero-authors-count',  fmt(data.authors));
+		set('hero-trials-count',   fmt(data.trials));
+	}
+
+	// Try reading a valid cached value first
+	try {
+		var cached = JSON.parse(localStorage.getItem(CACHE_KEY));
+		if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+			render(cached.data);
+			return;
+		}
+	} catch (e) {}
+
+	// Cache missing or stale — fetch fresh data
+	fetch(STATS_URL)
+		.then(function (r) { return r.json(); })
+		.then(function (data) {
+			render(data);
+			try {
+				localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+			} catch (e) {}
+		})
+		.catch(function () {});
 })();
 </script>
 
