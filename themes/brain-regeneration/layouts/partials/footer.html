@@ -1,3 +1,23 @@
+{{ $supporters := where .Site.RegularPages "Section" "supporters" }}
+{{ if $supporters }}
+<section class="footer-supporters">
+	<div class="container">
+		<p class="footer-supporters-label">Supporters</p>
+		<div class="footer-supporters-logos">
+			{{ range $supporters }}
+			<a href="{{ .RelPermalink }}" class="footer-supporter-logo" title="{{ .Title }}">
+				{{ $logo := .Resources.GetMatch .Params.logo }}
+				{{ if $logo }}
+				<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}">
+				{{ else }}
+				<span>{{ .Title }}</span>
+				{{ end }}
+			</a>
+			{{ end }}
+		</div>
+	</div>
+</section>
+{{ end }}
 <footer style="background-color: var(--color-primary); color: rgba(255,255,255,0.7); padding: 32px 0; font-family: var(--font-heading); font-size: 14px;">
 	<div class="container text-center">
 		<p style="margin-bottom: 4px;">&copy; {{ now.Year }} {{ .Site.Title }}. Open source under MIT licence.</p>

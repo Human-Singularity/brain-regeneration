@@ -1,0 +1,62 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Content }}<div style="max-width: 600px;">{{ . }}</div>{{ end }}
+		</div>
+	</div>
+</section>
+
+<!-- ── SUPPORTER LISTING ── -->
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col d-flex flex-column gap-4">
+			{{ range .Pages.ByTitle }}
+			<div class="supporter-listing-card">
+				<div class="supporter-listing-logo">
+					{{ $logo := .Resources.GetMatch .Params.logo }}
+					{{ if $logo }}
+					<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}">
+					{{ else }}
+					<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+						<circle cx="16" cy="12" r="7"/>
+						<path d="M5 30c0-7 5-12 11-12s11 5 11 12"/>
+					</svg>
+					{{ end }}
+				</div>
+				<div class="supporter-listing-body">
+					<h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+					{{ with .Params.institution }}<div class="supporter-listing-institution">{{ . }}</div>{{ end }}
+					{{ with .Params.representative }}<div class="supporter-listing-lead">Representative: {{ . }}</div>{{ end }}
+					{{ with .Params.bio }}<p class="supporter-listing-bio">{{ . }}</p>{{ end }}
+					<div class="d-flex flex-wrap align-items-center gap-3">
+						{{ range .Params.research_areas }}
+						{{ $areaSlug := . }}
+						{{ with $.Site.GetPage (printf "/research-areas/%s" $areaSlug) }}
+						<a href="{{ .RelPermalink }}" class="supporter-listing-area">{{ .Title }}</a>
+						{{ end }}
+						{{ end }}
+						<a href="{{ .RelPermalink }}" class="supporter-listing-link">View profile &rarr;</a>
+					</div>
+				</div>
+			</div>
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+<!-- ── BECOME A SUPPORTER ── -->
+<section class="section bg-tint">
+	<div class="container">
+		<div class="narrow-col text-center">
+			<h2 style="margin-bottom: 12px;">Become a supporter</h2>
+			<p style="max-width: 540px; margin: 0 auto 28px;">If your organisation or research group would like to support the Brain Regeneration Observatory, we'd love to hear from you.</p>
+			<a href="{{ "/contact/" | relURL }}" class="btn-outline-teal">Get in touch</a>
+		</div>
+	</div>
+</section>
+
+{{ end }}
