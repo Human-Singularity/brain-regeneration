@@ -1,0 +1,183 @@
+{{ define "main" }}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<strong>Clinical Trials</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 64px 0 72px;">
+	<div class="container">
+		<h1>{{ .Title }}</h1>
+		<p>{{ .Description }}</p>
+	</div>
+</section>
+
+<!-- ── CONDITIONS GRID ── -->
+{{ $trials := where .Site.RegularPages "Section" "clinical-trials" }}
+{{ if $trials }}
+<section class="section bg-tint">
+	<div class="container">
+		<div class="row g-4" id="conditions-grid">
+			{{ range $trials }}
+			<div class="col-12 col-md-4 condition-card"
+				data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+				data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
+				data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}">
+				<div class="card-trial d-flex flex-column" style="height: 100%;">
+					{{ with .Params.condition_type }}<span class="condition-tag-ct mb-3">{{ . }}</span>{{ end }}
+					<h3 style="font-size: 22px; margin-bottom: 12px;">{{ .Title }}</h3>
+					<p style="flex: 1; font-size: 16px;">{{ .Description }}</p>
+					<div class="trial-stat-block d-flex gap-5">
+						<div>
+							<div class="trial-stat-num recruiting">—</div>
+							<div class="trial-stat-desc">Recruiting</div>
+						</div>
+						<div>
+							<div class="trial-stat-num total">—</div>
+							<div class="trial-stat-desc">Total trials</div>
+						</div>
+					</div>
+					{{ with .Params.related_research_areas }}
+					<div class="related-areas">
+						<span class="label">Related research: </span>
+						{{ range $i, $slug := . }}
+						{{ if gt $i 0 }}<span class="label"> · </span>{{ end }}
+						{{ with $.Site.GetPage (printf "/research-areas/%s" $slug) }}<a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ end }}
+						{{ end }}
+					</div>
+					{{ end }}
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
+				</div>
+			</div>
+			{{ end }}
+		</div>
+
+		<div id="no-results" style="display: none; text-align: center; padding: 40px 0;">
+			<p style="font-family: var(--font-heading); color: var(--color-muted);">No conditions match the current filter.</p>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── SUGGEST A CONDITION ── -->
+<section class="section bg-sand" style="padding-top: 0; padding-bottom: 64px;">
+	<div class="container">
+		<div class="suggest-box">
+			<h3 style="font-size: 20px; margin-bottom: 8px;">Missing a condition?</h3>
+			<p style="max-width: 520px; margin: 0 auto 20px; font-size: 16px; color: var(--color-muted); font-family: var(--font-heading);">More conditions can be added when there is sufficient interest and a scientific curator willing to define the search scope. If you work in a field that should be covered here, we want to hear from you.</p>
+			<a href="{{ "/contact/" | relURL }}" class="btn-outline-teal">Get in touch &rarr;</a>
+		</div>
+	</div>
+</section>
+
+<!-- ── NEWSLETTER — TRIAL ALERTS ── -->
+{{ $subscribable := where (where .Site.RegularPages "Section" "clinical-trials") ".Params.subscribe" true }}
+{{ if $subscribable }}
+<section class="section bg-sand" style="padding-top: 0;">
+	<div class="container">
+		<div class="newsletter-card">
+			<div class="text-center mb-4">
+				<h2 style="margin-bottom: 8px;">Get alerts when new trials open</h2>
+				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">Choose the conditions you want to follow. We notify you when a new recruiting trial is added.</p>
+			</div>
+			<form action="{{ "/subscribe" | relURL }}" method="POST">
+				<div class="mb-4">
+					<div class="checkbox-group-label">Clinical Trial Alerts</div>
+					{{ range $subscribable }}
+					<div class="form-check mb-2">
+						<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
+						<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }}</label>
+					</div>
+					{{ end }}
+				</div>
+				<div class="row g-3 align-items-end">
+					<div class="col-12 col-md-5">
+						<label for="email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+						<input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-4">
+						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
+							<option value="">Select (optional)</option>
+							<option value="researcher">Researcher</option>
+							<option value="clinician">Clinician</option>
+							<option value="patient">Patient or caregiver</option>
+							<option value="other">Other</option>
+						</select>
+					</div>
+					<div class="col-12 col-md-3">
+						<button type="submit" class="btn-amber w-100">Subscribe</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<script>
+(function () {
+	'use strict';
+
+	var CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+	function getCached(key) {
+		try {
+			var raw = localStorage.getItem(key);
+			if (!raw) return null;
+			var entry = JSON.parse(raw);
+			if (Date.now() - entry.ts > CACHE_TTL) return null;
+			return entry.data;
+		} catch (e) { return null; }
+	}
+
+	function setCached(key, data) {
+		try {
+			localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
+		} catch (e) { /* quota / private mode — ignore */ }
+	}
+
+	function updateCard(card, stats) {
+		var recruitingEl = card.querySelector('.trial-stat-num.recruiting');
+		var totalEl      = card.querySelector('.trial-stat-num.total');
+		if (recruitingEl) recruitingEl.textContent = (stats.recruiting || 0).toLocaleString();
+		if (totalEl)      totalEl.textContent      = (stats.total     || 0).toLocaleString();
+	}
+
+	function fetchCardStats(card) {
+		var endpoint  = card.dataset.endpoint;
+		var teamId    = card.dataset.teamId;
+		var subjectId = card.dataset.subjectId;
+		if (!endpoint || !teamId || !subjectId) return;
+
+		var url = new URL(endpoint);
+		url.searchParams.set('format', 'json');
+		url.searchParams.set('team_id', teamId);
+		url.searchParams.set('subject_id', subjectId);
+		url.searchParams.set('page_size', '1'); // minimal payload — we only need stats
+		var urlStr = url.toString();
+
+		var cacheKey = 'brTrialStats:' + teamId + ':' + subjectId;
+		var cached = getCached(cacheKey);
+		if (cached) { updateCard(card, cached); return; }
+
+		fetch(urlStr)
+			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+			.then(function (data) {
+				if (!data.stats) return;
+				setCached(cacheKey, data.stats);
+				updateCard(card, data.stats);
+			})
+			.catch(function () { /* silently skip on error */ });
+	}
+
+	document.querySelectorAll('.condition-card[data-endpoint]').forEach(fetchCardStats);
+})();
+</script>
+
+{{ end }}

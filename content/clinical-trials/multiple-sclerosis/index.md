@@ -10,6 +10,12 @@ patient_note: "This project grew out of Gregory-MS, an observatory dedicated to 
 
 curator: ""
 
+condition_type: "Autoimmune · Demyelinating"
+hero_description: "A chronic autoimmune disease targeting the myelin sheath of the central nervous system. Trials below cover remyelination, immunomodulation, neuroprotection, and cell-based therapies."
+related_research_areas:
+  - "neuroimmune-interactions"
+  - "neuroinflammation"
+
 api:
   endpoint: "https://api.gregory-ms.com/trials/"
   team_id: 1

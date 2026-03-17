@@ -1,0 +1,154 @@
+{{ define "main" }}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/clinical-trials/" | relURL }}">Clinical Trials</a>
+		<span>/</span>
+		<strong>{{ .Title }}</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }} — Clinical Trials</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── STATS BAR (populated by JS) ── -->
+<div class="stats-bar"
+	id="trials-stats"
+	data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+	data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
+	data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}">
+	<div class="container">
+		<div class="d-flex justify-content-center flex-wrap">
+			<div class="stat-item">
+				<div class="stat-number" id="stat-recruiting" style="color: var(--color-accent);">—</div>
+				<div class="stat-label">Recruiting</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-active">—</div>
+				<div class="stat-label">Active, not recruiting</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-completed">—</div>
+				<div class="stat-label">Completed</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-total">—</div>
+				<div class="stat-label">Total</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ── FILTER BAR (sticky) ── -->
+<div class="filter-bar" id="trials-filters">
+	<div class="container">
+		<div class="row g-2 align-items-end">
+			<div class="col-12 col-md-5">
+				<label for="search-input">Search trials</label>
+				<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
+			</div>
+			<div class="col-6 col-md-3">
+				<label for="filter-phase">Phase</label>
+				<select class="form-select" id="filter-phase">
+					<option value="">All phases</option>
+					<option value="PHASE1">Phase 1</option>
+					<option value="PHASE2">Phase 2</option>
+					<option value="PHASE3">Phase 3</option>
+					<option value="PHASE4">Phase 4</option>
+				</select>
+			</div>
+			<div class="col-6 col-md-3">
+				<label for="filter-status">Status</label>
+				<select class="form-select" id="filter-status">
+					<option value="">All statuses</option>
+					<option value="RECRUITING">Recruiting</option>
+					<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
+					<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
+					<option value="COMPLETED">Completed</option>
+				</select>
+			</div>
+			<div class="col-12 col-md-1 d-flex align-items-end">
+				<button class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+			</div>
+		</div>
+		<div class="mt-2">
+			<span class="results-count" id="results-count"></span>
+		</div>
+	</div>
+</div>
+
+<!-- ── TRIAL LISTING ── -->
+<section class="section bg-sand">
+	<div class="container">
+		{{/* React mount point — populated at runtime */}}
+		<div id="trials-list"
+			data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
+			data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
+			data-default-status="{{ with .Params.filters }}{{ .default_status }}{{ end }}"
+			data-default-phase="{{ with .Params.filters }}{{ .default_phase }}{{ end }}">
+		</div>
+
+		<div class="no-results" id="no-results" style="display: none;">
+			<p>No trials match your current filters.</p>
+			<button class="btn-outline-teal" id="clear-filters">Clear filters</button>
+		</div>
+
+		<div class="pagination-controls" id="pagination">
+			<button class="pagination-btn" id="prev-btn" disabled title="Previous page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
+			</button>
+			<button class="pagination-btn" id="next-btn" title="Next page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
+			</button>
+		</div>
+	</div>
+</section>
+
+<!-- ── NEWSLETTER ── -->
+{{ if .Params.subscribe }}
+<section class="section bg-sand" style="padding-top: 0;">
+	<div class="container">
+		<div class="newsletter-card">
+			<div class="text-center mb-4">
+				<h2 style="margin-bottom: 8px;">Get alerts when new {{ .Title }} trials open</h2>
+				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">We notify you when a new recruiting trial is added to this page.</p>
+			</div>
+			<form action="{{ "/subscribe" | relURL }}" method="POST">
+				<input type="hidden" name="feeds" value="trials-{{ .Slug }}">
+				<div class="row g-3 align-items-end">
+					<div class="col-12 col-md-5">
+						<label for="email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+						<input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-4">
+						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
+							<option value="">Select (optional)</option>
+							<option value="researcher">Researcher</option>
+							<option value="clinician">Clinician</option>
+							<option value="patient">Patient or caregiver</option>
+							<option value="other">Other</option>
+						</select>
+					</div>
+					<div class="col-12 col-md-3">
+						<button type="submit" class="btn-amber w-100">Subscribe</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<script src="{{ "js/trials-feed.js" | relURL }}" defer></script>
+
+{{ end }}

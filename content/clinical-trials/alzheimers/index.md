@@ -10,6 +10,12 @@ patient_note: ""
 
 curator: ""
 
+condition_type: "Neurodegenerative"
+hero_description: "The most common cause of dementia, caused by progressive accumulation of amyloid plaques and tau tangles. Trials cover clearance therapies, tau-targeting agents, and neuroprotective strategies."
+related_research_areas:
+  - "neuroinflammation"
+  - "cell-reprogramming"
+
 api:
   endpoint: "https://api.gregory-ms.com/trials/"
   team_id: 1
