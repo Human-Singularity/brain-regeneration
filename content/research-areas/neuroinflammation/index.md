@@ -2,11 +2,17 @@
 title: "Neuroinflammation"
 date: 2025-01-06
 draft: false
+subscribe: true
 
 description: "The role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders."
 
 curators:
   - "institute-cns-inflammation"
+
+api:
+  endpoint: "https://api.gregory-ms.com/articles/"
+  team_id: 6
+  subject_id: 12
 
 queries:
   - string: "(neuroinflammation[Title/Abstract]) AND (neurodegeneration[Title/Abstract] OR neurodevelopment[Title/Abstract])"

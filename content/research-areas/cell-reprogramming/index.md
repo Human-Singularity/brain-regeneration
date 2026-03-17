@@ -2,11 +2,17 @@
 title: "Cell Reprogramming"
 date: 2025-01-06
 draft: false
+subscribe: true
 
 description: "Transforming the body's own cells into functioning neurons through epigenetic editing techniques that unlock the brain's capacity for self-repair."
 
 curators:
   - "regenerar"
+
+api:
+  endpoint: "https://api.gregory-ms.com/articles/"
+  team_id: 4
+  subject_id: 10
 
 queries:
   - string: "(cell reprogramming[Title/Abstract]) AND (brain[Title/Abstract] OR neural[Title/Abstract] OR neuron[Title/Abstract])"

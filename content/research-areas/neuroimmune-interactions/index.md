@@ -2,11 +2,17 @@
 title: "Neuroimmune Interactions"
 date: 2025-01-06
 draft: false
+subscribe: true
 
 description: "How cell metabolism shapes brain-immune interactions, with a focus on new therapeutic approaches for MS and other CNS disorders."
 
 curators:
   - "lpj-lab"
+
+api:
+  endpoint: "https://api.gregory-ms.com/articles/"
+  team_id: 5
+  subject_id: 11
 
 queries:
   - string: "(neuroimmune interaction[Title/Abstract]) AND (multiple sclerosis[Title/Abstract] OR CNS[Title/Abstract])"

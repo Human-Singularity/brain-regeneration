@@ -726,6 +726,63 @@ a:hover {
 	stroke-linejoin: round;
 }
 
+.btn-download .chevron {
+	width: 14px;
+	height: 14px;
+	margin-left: 2px;
+	transition: transform 200ms ease;
+}
+
+.btn-download[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+/* ── Download dropdown ── */
+.download-dropdown {
+	position: relative;
+	display: inline-flex;
+}
+
+.download-menu {
+	display: none;
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	min-width: 160px;
+	background-color: var(--color-text-light);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: 0 4px 16px rgba(45, 45, 45, 0.12);
+	list-style: none;
+	margin: 0;
+	padding: 4px 0;
+	z-index: 100;
+}
+
+.download-menu.is-open { display: block; }
+
+.download-menu li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.download-option {
+	display: block;
+	width: 100%;
+	background: none;
+	border: none;
+	outline: none;
+	box-shadow: none;
+	padding: 10px 16px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--color-text);
+	cursor: pointer;
+	text-align: left;
+}
+
+.download-option:hover { background-color: var(--color-tint); color: var(--color-primary); }
+
 /* ── Paper card ── */
 #paper-list { min-height: 540px; }
 
@@ -773,6 +830,80 @@ a:hover {
 
 .relevance-badge .dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--color-primary); }
 .relevance-badge.medium .dot { background-color: var(--color-accent); }
+
+/* ── Paper card: takeaway & access badge ── */
+.paper-card-takeaway {
+	font-family: var(--font-body);
+	font-size: 15px;
+	color: var(--color-text);
+	margin: 10px 0;
+	line-height: 1.5;
+}
+
+.paper-card-doi {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	text-decoration: none;
+}
+
+.paper-card-doi:hover { color: var(--color-accent); text-decoration: underline; }
+
+.paper-card-date { color: var(--color-muted); }
+
+.access-badge {
+	display: inline-block;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 2px 8px;
+	border-radius: 100px;
+	line-height: 1.6;
+}
+
+.access-badge.open {
+	background-color: #E6F4EC;
+	color: #1A6B39;
+}
+
+.access-badge.restricted {
+	background-color: var(--color-tint);
+	color: var(--color-muted);
+}
+
+/* ── Feed loading & empty states ── */
+.paper-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 64px 0;
+	color: var(--color-muted);
+	font-family: var(--font-heading);
+	font-size: 15px;
+	gap: 16px;
+}
+
+.paper-loading-spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid var(--color-border);
+	border-top-color: var(--color-primary);
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.paper-empty {
+	padding: 48px 0;
+	text-align: center;
+	color: var(--color-muted);
+	font-family: var(--font-heading);
+	font-size: 15px;
+}
 
 /* ── Pagination ── */
 .pagination-controls {
