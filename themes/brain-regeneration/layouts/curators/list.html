@@ -17,8 +17,9 @@
 			{{ range .Pages.ByTitle }}
 			<div class="curator-listing-card">
 				<div class="curator-listing-logo">
-					{{ if .Params.logo }}
-					<img src="{{ .Params.logo }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
+					{{ $logo := .Resources.GetMatch .Params.logo }}
+					{{ if $logo }}
+					<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}">
 					{{ else }}
 					<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
 						<circle cx="16" cy="12" r="7"/>
