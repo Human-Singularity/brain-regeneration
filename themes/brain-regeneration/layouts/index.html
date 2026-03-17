@@ -26,6 +26,11 @@
 			</div>
 			<div class="hero-key-figures-divider"></div>
 			<div>
+				<div class="hero-stat-number" id="hero-sources-count">—</div>
+				<div class="hero-stat-label">Sources monitored</div>
+			</div>
+			<div class="hero-key-figures-divider"></div>
+			<div>
 				<div class="hero-stat-number">&lt;&nbsp;24h</div>
 				<div class="hero-stat-label">Paper to alert</div>
 			</div>
@@ -291,6 +296,7 @@
 		set('hero-articles-count', fmt(data.articles));
 		set('hero-authors-count',  fmt(data.authors));
 		set('hero-trials-count',   fmt(data.trials));
+		set('hero-sources-count',  fmt(data.sources && data.sources.total));
 	}
 
 	// Try reading a valid cached value first
