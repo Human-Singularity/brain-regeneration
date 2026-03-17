@@ -1,5 +1,5 @@
 baseURL = 'https://brain-regeneration.com/'
-languageCode = 'en-us'
+locale = 'en-us'
 title = 'Brain Regeneration Observatory'
 theme = 'brain-regeneration'
 copyright = 'Brain Regeneration Observatory 2025'
@@ -74,7 +74,6 @@ path = "search"
 	tag = "tags"
 	category = "categories"
 	author = "authors"
-	curator = "curators"
 	condition = "conditions"
 
 [params.clinicalTrials]
@@ -84,7 +83,7 @@ DefaultContentLanguage = "en"
 
 [Languages.en]
 weight = 1
-LanguageName = "English"
+label = "English"
 [Languages.en.params]
 description = "Accelerating research into brain regeneration and myelin repair through comprehensive tracking of scientific literature and clinical trials."
 subtitle = "Real-time tracking of regenerative medicine research"
