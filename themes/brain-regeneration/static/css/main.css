@@ -627,6 +627,237 @@ a:hover {
 .step-icon { width: 56px; height: 56px; margin-bottom: 20px; }
 .step-icon svg { width: 56px; height: 56px; stroke: var(--color-primary); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
+/* ── Newsletter prompt (contextual, on research area pages) ── */
+.newsletter-prompt {
+	background-color: var(--color-tint);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 28px;
+}
+
+.newsletter-prompt h3 { font-size: 18px; margin-bottom: 6px; }
+.newsletter-prompt > p { font-size: 15px; color: var(--color-muted); margin-bottom: 16px; }
+
+.newsletter-prompt .form-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: flex-end;
+}
+
+.newsletter-prompt .form-inline .form-control { flex: 1; min-width: 200px; }
+
+@media (max-width: 575px) {
+	.newsletter-prompt .form-inline { flex-direction: column; }
+	.newsletter-prompt .form-inline .form-control,
+	.newsletter-prompt .form-inline .btn-amber { width: 100%; }
+}
+
+/* ── Feed header ── */
+.feed-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 24px;
+	gap: 16px;
+}
+
+.feed-header h2 { margin-bottom: 0; }
+
+/* ── Feed filter controls ── */
+.feed-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 24px;
+	align-items: flex-end;
+}
+
+.feed-controls .form-group { display: flex; flex-direction: column; gap: 4px; }
+
+.feed-controls label { font-family: var(--font-heading); font-size: 13px; color: var(--color-muted); }
+
+.feed-controls .form-control,
+.feed-controls .form-select { border-color: var(--color-border); font-family: var(--font-body); font-size: 15px; }
+
+.feed-search { flex: 1; min-width: 200px; }
+
+@media (max-width: 575px) {
+	.feed-controls { flex-direction: column; }
+	.feed-controls .form-group, .feed-search { width: 100%; }
+}
+
+/* ── Download button ── */
+.btn-download {
+	background-color: transparent;
+	color: var(--color-primary);
+	border: 1px solid var(--color-border);
+	padding: 8px 18px;
+	border-radius: var(--radius);
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 200ms ease, border-color 200ms ease, transform 150ms ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	text-decoration: none;
+	line-height: 1.4;
+}
+
+.btn-download:hover {
+	background-color: var(--color-tint);
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+	text-decoration: none;
+	transform: translateY(-1px);
+}
+
+.btn-download:active { transform: translateY(0); }
+
+.btn-download svg {
+	width: 16px;
+	height: 16px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* ── Paper card ── */
+#paper-list { min-height: 540px; }
+
+.paper-card {
+	background-color: var(--color-text-light);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 24px;
+	margin-bottom: 16px;
+	transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.paper-card:hover { box-shadow: 0 4px 16px rgba(45, 45, 45, 0.1); transform: translateY(-1px); }
+
+.paper-card-title { font-family: var(--font-heading); font-weight: 600; font-size: 17px; color: var(--color-primary); margin-bottom: 8px; line-height: 1.35; }
+.paper-card-title a { color: var(--color-primary); text-decoration: none; }
+.paper-card-title a:hover { color: var(--color-accent); text-decoration: underline; }
+
+.paper-card-authors { font-family: var(--font-heading); font-size: 14px; color: var(--color-muted); margin-bottom: 6px; line-height: 1.4; }
+
+.paper-card-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+}
+
+.paper-card-journal { font-style: italic; font-family: var(--font-body); }
+
+.relevance-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	background-color: var(--color-tint);
+	color: var(--color-primary);
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 12px;
+	padding: 3px 10px;
+	border-radius: 100px;
+}
+
+.relevance-badge .dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--color-primary); }
+.relevance-badge.medium .dot { background-color: var(--color-accent); }
+
+/* ── Pagination ── */
+.pagination-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	margin-top: 28px;
+	padding-top: 20px;
+	border-top: 1px solid var(--color-border);
+}
+
+.pagination-btn {
+	background-color: transparent;
+	color: var(--color-primary);
+	border: 1px solid var(--color-border);
+	width: 40px;
+	height: 40px;
+	border-radius: var(--radius);
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pagination-btn:hover { background-color: var(--color-tint); border-color: var(--color-primary); }
+.pagination-btn.active { background-color: var(--color-primary); color: var(--color-text-light); border-color: var(--color-primary); cursor: default; }
+.pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination-btn:disabled:hover { background-color: transparent; border-color: var(--color-border); }
+
+.pagination-btn svg {
+	width: 16px;
+	height: 16px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.pagination-info { font-family: var(--font-heading); font-size: 13px; color: var(--color-muted); margin-left: 12px; }
+
+/* ── Search methodology ── */
+.methodology-container {
+	background-color: var(--color-tint);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 24px;
+}
+
+.query-block {
+	background-color: var(--color-secondary);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 16px;
+	margin-bottom: 12px;
+}
+
+.query-block:last-child { margin-bottom: 0; }
+
+.query-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.query-name { font-family: var(--font-heading); font-size: 14px; font-weight: 500; color: var(--color-text); }
+
+.query-source-badge {
+	display: inline-block;
+	background-color: var(--color-primary);
+	color: var(--color-text-light);
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 100px;
+}
+
+.query-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.query-status-dot.active { background-color: var(--color-primary); }
+.query-status-dot.low { background-color: var(--color-accent); }
+.query-status-dot.zero { background-color: var(--color-muted); }
+
+.query-string { font-family: var(--font-mono); font-size: 14px; color: var(--color-text); line-height: 1.5; word-break: break-all; }
+
 /* ── Research area card (used on curator profile) ── */
 .research-area-card {
 	background-color: var(--color-text-light);
@@ -645,3 +876,247 @@ a:hover {
 .research-area-card h3 a:hover { color: var(--color-accent); text-decoration: underline; }
 .research-area-card p { font-size: 16px; color: var(--color-text); margin-bottom: 12px; flex: 1; }
 .research-area-link { font-family: var(--font-heading); font-size: 14px; font-weight: 500; }
+
+/* ── Breadcrumb (dark, on primary background) ── */
+.breadcrumb-nav-dark {
+	background-color: var(--color-primary);
+	border-bottom: 1px solid rgba(255,255,255,0.1);
+	padding: 10px 0;
+}
+
+.breadcrumb-nav-dark a {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: rgba(255,255,255,0.65);
+	text-decoration: none;
+}
+
+.breadcrumb-nav-dark a:hover { color: rgba(255,255,255,0.9); text-decoration: none; }
+.breadcrumb-nav-dark span { font-family: var(--font-heading); font-size: 13px; color: rgba(255,255,255,0.4); margin: 0 6px; }
+.breadcrumb-nav-dark strong { font-family: var(--font-heading); font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9); }
+
+/* ── Stats bar (clinical trials) ── */
+.stats-bar {
+	background-color: var(--color-secondary);
+	border-bottom: 1px solid var(--color-border);
+	padding: 20px 0;
+}
+
+.stat-item {
+	text-align: center;
+	padding: 0 24px;
+	border-right: 1px solid var(--color-border);
+}
+
+.stat-item:last-child { border-right: none; }
+
+.stats-bar .stat-number {
+	font-size: 1.8rem;
+}
+
+/* ── Sticky filter bar (clinical trial listing) ── */
+.filter-bar {
+	background-color: var(--color-secondary);
+	border-bottom: 1px solid var(--color-border);
+	padding: 16px 0;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+
+.filter-bar .form-control,
+.filter-bar .form-select {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	border-color: var(--color-border);
+	background-color: var(--color-text-light);
+}
+
+.filter-bar .form-control:focus,
+.filter-bar .form-select:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px rgba(26, 107, 106, 0.15);
+}
+
+.filter-bar label {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	color: var(--color-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+	margin-bottom: 4px;
+}
+
+.results-count { font-family: var(--font-heading); font-size: 14px; color: var(--color-muted); }
+.results-count strong { color: var(--color-text); font-weight: 600; }
+
+/* ── Filter buttons (conditions index) ── */
+.filter-btn {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 500;
+	padding: 7px 18px;
+	border-radius: 100px;
+	border: 1px solid var(--color-border);
+	background: transparent;
+	color: var(--color-muted);
+	cursor: pointer;
+	transition: all 150ms ease;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+	background-color: var(--color-primary);
+	border-color: var(--color-primary);
+	color: var(--color-text-light);
+}
+
+/* ── Trial card (individual trial in listing) ── */
+.trial-card {
+	background-color: var(--color-text-light);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	padding: 28px;
+	margin-bottom: 16px;
+	transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.trial-card:hover {
+	box-shadow: 0 4px 16px rgba(45, 45, 45, 0.1);
+	border-color: rgba(26, 107, 106, 0.25);
+}
+
+.trial-title { font-family: var(--font-heading); font-weight: 600; font-size: 17px; color: var(--color-primary); line-height: 1.35; margin-bottom: 4px; }
+.trial-title a { color: var(--color-primary); text-decoration: none; }
+.trial-title a:hover { color: var(--color-accent); text-decoration: underline; }
+.trial-nct { font-family: var(--font-mono); font-size: 12px; color: var(--color-muted); margin-bottom: 12px; }
+.trial-description { font-size: 15px; color: var(--color-text); margin-bottom: 16px; line-height: 1.55; }
+
+.trial-meta-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	padding-top: 16px;
+	border-top: 1px solid var(--color-border);
+	margin-bottom: 16px;
+}
+
+.trial-meta-item .meta-label {
+	display: block;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--color-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+	margin-bottom: 2px;
+}
+
+.trial-meta-item .meta-value { font-family: var(--font-heading); font-size: 13px; font-weight: 500; color: var(--color-text); }
+
+/* ── Condition tag (clinical trials index cards) ── */
+.condition-tag-ct {
+	display: inline-block;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--color-primary);
+	background-color: var(--color-tint);
+	border: 1px solid rgba(26, 107, 106, 0.2);
+	padding: 3px 10px;
+	border-radius: 100px;
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+}
+
+/* ── Trial stat block (in condition cards) ── */
+.trial-stat-block {
+	border-top: 1px solid var(--color-border);
+	padding-top: 16px;
+	margin-top: auto;
+	margin-bottom: 20px;
+}
+
+.trial-stat-num { font-family: var(--font-heading); font-weight: 700; font-size: 2rem; line-height: 1; margin-bottom: 2px; }
+.trial-stat-num.recruiting { color: var(--color-accent); }
+.trial-stat-num.total { color: var(--color-primary); }
+.trial-stat-desc { font-family: var(--font-heading); font-size: 11px; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Related areas (in condition cards) ── */
+.related-areas { margin-bottom: 20px; }
+.related-areas .label { font-family: var(--font-heading); font-size: 12px; color: var(--color-muted); }
+.related-areas a { font-family: var(--font-heading); font-size: 12px; color: var(--color-primary); }
+.related-areas a:hover { color: var(--color-accent); }
+
+/* ── Additional badge variants ── */
+.badge-active {
+	display: inline-block;
+	background-color: transparent;
+	color: var(--color-primary);
+	border: 1px solid var(--color-primary);
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 12px;
+	padding: 3px 10px;
+	border-radius: 100px;
+}
+
+.badge-completed {
+	display: inline-block;
+	background-color: transparent;
+	color: var(--color-muted);
+	border: 1px solid var(--color-border);
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 12px;
+	padding: 3px 10px;
+	border-radius: 100px;
+}
+
+.badge-phase {
+	display: inline-block;
+	background-color: var(--color-tint);
+	color: var(--color-primary);
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 12px;
+	padding: 3px 10px;
+	border-radius: 100px;
+}
+
+/* ── Suggest box ── */
+.suggest-box {
+	border: 2px dashed var(--color-border);
+	border-radius: var(--radius);
+	padding: 32px;
+	text-align: center;
+}
+
+/* ── Pagination bar (trial listing) ── */
+.pagination-bar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 32px 0 0;
+}
+
+.page-btn {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 500;
+	padding: 7px 14px;
+	border-radius: var(--radius);
+	border: 1px solid var(--color-border);
+	background: var(--color-text-light);
+	color: var(--color-text);
+	cursor: pointer;
+	transition: all 150ms ease;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.page-btn:hover { border-color: var(--color-primary); color: var(--color-primary); text-decoration: none; }
+.page-btn.active { background-color: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-light); }
