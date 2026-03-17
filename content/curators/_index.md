@@ -7,6 +7,4 @@ options:
   header: "small"
 ---
 
-A Scientific Curator is a person or organisation working in scientific or academic research who has the expertise to guide the creation of an area of the website dedicated to their field.
-
-Curators can involve themselves at different levels of commitment, from providing search queries that populate their area with relevant papers, to helping train the machine learning models that rank research relevance.
+Real institutions and researchers define the scope of each research area. They decide what to track, how to categorise findings, and which search queries to use. The science is curated by people, not just algorithms.

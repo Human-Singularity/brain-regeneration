@@ -5,7 +5,7 @@
 	<div class="container">
 		<div class="narrow-col">
 			<h1>{{ .Title }}</h1>
-			<div class="body-text">{{ .Content }}</div>
+			{{ with .Content }}<div style="max-width: 600px;">{{ . }}</div>{{ end }}
 		</div>
 	</div>
 </section>
