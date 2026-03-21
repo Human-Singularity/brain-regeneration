@@ -5,6 +5,8 @@
 (function () {
 	'use strict';
 
+	var PROFILE_KEY = 'br_subscriber_profile';
+
 	var form = document.getElementById('subscribe-form');
 	if (!form) return;
 
@@ -80,6 +82,13 @@
 
 	// ── Real-time field feedback ──────────────────────────────────────────────
 
+	// Restore saved profile on page load
+	var savedProfile = localStorage.getItem(PROFILE_KEY);
+	if (savedProfile) {
+		var profileField = form.querySelector('select[name="profile"]');
+		if (profileField) profileField.value = savedProfile;
+	}
+
 	form.querySelectorAll('[required]').forEach(function (field) {
 		field.addEventListener('blur', function () {
 			if (!field.value.trim()) {
@@ -112,6 +121,12 @@
 		hideAlert();
 
 		if (!validateForm()) return;
+
+		// Persist profile choice for future forms
+		var profileEl = form.querySelector('select[name="profile"]');
+		if (profileEl && profileEl.value) {
+			localStorage.setItem(PROFILE_KEY, profileEl.value);
+		}
 
 		setLoading(true);
 

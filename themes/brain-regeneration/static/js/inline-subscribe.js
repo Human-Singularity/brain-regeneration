@@ -5,6 +5,16 @@
 (function () {
 	'use strict';
 
+	var PROFILE_KEY = 'br_subscriber_profile';
+
+	// ── Restore saved profile on page load ────────────────────────────────────
+	var savedProfile = localStorage.getItem(PROFILE_KEY);
+	if (savedProfile) {
+		document.querySelectorAll('select[name="profile"]').forEach(function (sel) {
+			sel.value = savedProfile;
+		});
+	}
+
 	document.querySelectorAll('form[data-inline-subscribe]').forEach(function (form) {
 		var apiEndpoint = form.dataset.api;
 		var thankYouUrl = form.dataset.thankYou;
@@ -22,9 +32,14 @@
 				return;
 			}
 
+			// Persist profile choice for future forms
+			var profileField = form.querySelector('select[name="profile"]');
+			if (profileField && profileField.value) {
+				localStorage.setItem(PROFILE_KEY, profileField.value);
+			}
+
 			// Loading state
 			submitBtn.disabled = true;
-			var originalLabel = submitBtn.textContent;
 			submitBtn.textContent = 'Subscribing…';
 
 			fetch(apiEndpoint, {
