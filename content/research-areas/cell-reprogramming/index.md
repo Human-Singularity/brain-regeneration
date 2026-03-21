@@ -3,7 +3,7 @@ title: "Cell Reprogramming"
 date: 2025-01-06
 draft: false
 subscribe: true
-# list_id: TODO — add the list ID from the Gregory AI admin panel
+list_id: 7
 subscribe_description: "Weekly digest of new research on cell reprogramming and neural self-repair."
 
 description: "Transforming the body's own cells into functioning neurons through epigenetic editing techniques that unlock the brain's capacity for self-repair."

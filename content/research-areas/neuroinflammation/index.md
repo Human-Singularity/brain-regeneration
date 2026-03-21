@@ -3,7 +3,7 @@ title: "Neuroinflammation"
 date: 2025-01-06
 draft: false
 subscribe: true
-# list_id: TODO — add the list ID from the Gregory AI admin panel
+list_id: 9
 subscribe_description: "Weekly digest of new research on neuroinflammation and neuro­degenerative disorders."
 
 description: "The role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders."

@@ -3,7 +3,7 @@ title: "Neuroimmune Interactions"
 date: 2025-01-06
 draft: false
 subscribe: true
-# list_id: TODO — add the list ID from the Gregory AI admin panel
+list_id: 8
 subscribe_description: "Weekly digest of new research on brain-immune interactions and CNS disorders."
 
 description: "How cell metabolism shapes brain-immune interactions, with a focus on new therapeutic approaches for MS and other CNS disorders."
