@@ -150,7 +150,10 @@
 			<div class="curator-card">
 				<div class="curator-card-logo">
 					{{ if .Params.logo }}
-					<img src="{{ .Params.logo }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+					{{ $logo := .Resources.GetMatch .Params.logo }}
+					{{ if $logo }}
+					<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+					{{ end }}
 					{{ else }}
 					<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
 						<circle cx="14" cy="10" r="6"/>
@@ -174,7 +177,7 @@
 {{ end }}
 
 <!-- ── NEWSLETTER PROMPT ── -->
-{{ if .Params.subscribe }}
+{{ if and .Params.subscribe .Params.list_id }}
 <section class="bg-sand" style="padding-bottom: 48px;">
 	<div class="container">
 		<div class="narrow-col">
@@ -182,12 +185,20 @@
 				<h3>Follow this research area</h3>
 				<p>We send a weekly digest of the latest findings.</p>
 				<div class="form-check mb-3">
-					<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" checked>
+					<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" checked disabled>
 					<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }} — weekly research digest</label>
 				</div>
-				<form class="form-inline" action="{{ "/subscribe" | relURL }}" method="POST">
-					<input type="hidden" name="feeds" value="{{ .Slug }}">
-					<input type="email" class="form-control" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
+				<form
+					class="form-inline"
+					data-inline-subscribe
+					data-api="{{ .Site.Params.subscriptions.api_endpoint }}"
+					data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
+					data-error="{{ .Site.Params.subscriptions.error_url }}"
+					novalidate
+				>
+					<input type="hidden" name="list" value="{{ .Params.list_id }}">
+					<input type="text" class="form-control" name="first_name" placeholder="First name" required maxlength="150" style="border-color: var(--color-border);">
+					<input type="email" class="form-control" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
 					<button type="submit" class="btn-amber">Subscribe</button>
 				</form>
 			</div>
@@ -221,5 +232,6 @@
 {{ end }}
 
 <script src="{{ "js/research-feed.js" | relURL }}" defer></script>
+<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
 
 {{ end }}

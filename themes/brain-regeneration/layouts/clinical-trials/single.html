@@ -114,7 +114,7 @@
 </section>
 
 <!-- ── NEWSLETTER ── -->
-{{ if .Params.subscribe }}
+{{ if and .Params.subscribe .Params.list_id }}
 <section class="section bg-sand" style="padding-top: 0;">
 	<div class="container">
 		<div class="newsletter-card">
@@ -122,24 +122,34 @@
 				<h2 style="margin-bottom: 8px;">Get alerts when new {{ .Title }} trials open</h2>
 				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">We notify you when a new recruiting trial is added to this page.</p>
 			</div>
-			<form action="{{ "/subscribe" | relURL }}" method="POST">
-				<input type="hidden" name="feeds" value="trials-{{ .Slug }}">
+			<form
+				data-inline-subscribe
+				data-api="{{ .Site.Params.subscriptions.api_endpoint }}"
+				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
+				data-error="{{ .Site.Params.subscriptions.error_url }}"
+				novalidate
+			>
+				<input type="hidden" name="list" value="{{ .Params.list_id }}">
 				<div class="row g-3 align-items-end">
-					<div class="col-12 col-md-5">
-						<label for="email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
-						<input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
+					<div class="col-12 col-md-3">
+						<label for="ct-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
+						<input type="text" class="form-control" id="ct-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
 					</div>
 					<div class="col-12 col-md-4">
-						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
-						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
-							<option value="">Select (optional)</option>
-							<option value="researcher">Researcher</option>
-							<option value="clinician">Clinician</option>
-							<option value="patient">Patient or caregiver</option>
-							<option value="other">Other</option>
-						</select>
+						<label for="ct-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+						<input type="email" class="form-control" id="ct-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
 					</div>
 					<div class="col-12 col-md-3">
+						<label for="ct-profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="ct-profile" name="profile" style="border-color: var(--color-border);">
+							<option value="">Select (optional)</option>
+							<option value="patient">Patient</option>
+							<option value="doctor">Doctor</option>
+							<option value="clinical centre">Clinical Centre</option>
+							<option value="researcher">Researcher</option>
+						</select>
+					</div>
+					<div class="col-12 col-md-2">
 						<button type="submit" class="btn-amber w-100">Subscribe</button>
 					</div>
 				</div>
@@ -150,5 +160,6 @@
 {{ end }}
 
 <script src="{{ "js/trials-feed.js" | relURL }}" defer></script>
+<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
 
 {{ end }}
