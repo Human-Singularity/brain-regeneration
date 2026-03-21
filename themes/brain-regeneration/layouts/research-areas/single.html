@@ -199,6 +199,14 @@
 					<input type="hidden" name="list" value="{{ .Params.list_id }}">
 					<input type="text" class="form-control" name="first_name" placeholder="First name" required maxlength="150" style="border-color: var(--color-border);">
 					<input type="email" class="form-control" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
+					<select class="form-control" name="profile" required style="border-color: var(--color-border);">
+						<option value="" disabled selected>I am a…</option>
+						<option value="patient">Patient</option>
+						<option value="caregiver">Caregiver</option>
+						<option value="doctor">Doctor</option>
+						<option value="clinical centre">Clinical Centre</option>
+						<option value="researcher">Researcher</option>
+					</select>
 					<button type="submit" class="btn-amber">Subscribe</button>
 				</form>
 			</div>
