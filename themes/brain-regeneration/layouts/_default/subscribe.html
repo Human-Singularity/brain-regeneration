@@ -1,0 +1,178 @@
+{{ define "main" }}
+{{ $sub := site.Params.subscriptions }}
+
+{{/* Collect pages that have subscribe: true AND a list_id set */}}
+{{ $conditionPages  := where (where site.RegularPages "Section" "clinical-trials") ".Params.list_id" "ne" nil }}
+{{ $conditionPages  = where $conditionPages ".Params.subscribe" true }}
+{{ $researchPages   := where (where site.RegularPages "Section" "research-areas") ".Params.list_id" "ne" nil }}
+{{ $researchPages   = where $researchPages ".Params.subscribe" true }}
+
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Description }}<p style="font-size: 18px; color: var(--color-text); margin-bottom: 0;">{{ . }}</p>{{ end }}
+		</div>
+	</div>
+</section>
+
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col">
+
+			{{ with .Content }}<div class="body-text" style="margin-bottom: 32px;">{{ . }}</div>{{ end }}
+
+			<div class="subscribe-card">
+				<form
+					id="subscribe-form"
+					data-api="{{ $sub.api_endpoint }}"
+					data-thank-you="{{ $sub.thank_you_url }}"
+					data-error="{{ $sub.error_url }}"
+					novalidate
+				>
+
+					<!-- Name row -->
+					<div class="row g-3 mb-3">
+						<div class="col-sm-6">
+							<label class="subscribe-label" for="first_name">
+								First name <span class="subscribe-required">*</span>
+							</label>
+							<input
+								type="text"
+								class="subscribe-input"
+								id="first_name"
+								name="first_name"
+								maxlength="150"
+								autocomplete="given-name"
+								required
+							>
+							<div class="subscribe-field-error">Please enter your first name.</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="subscribe-label" for="last_name">Last name</label>
+							<input
+								type="text"
+								class="subscribe-input"
+								id="last_name"
+								name="last_name"
+								maxlength="150"
+								autocomplete="family-name"
+							>
+						</div>
+					</div>
+
+					<!-- Email -->
+					<div class="mb-3">
+						<label class="subscribe-label" for="email">
+							Email address <span class="subscribe-required">*</span>
+						</label>
+						<input
+							type="email"
+							class="subscribe-input"
+							id="email"
+							name="email"
+							maxlength="254"
+							autocomplete="email"
+							required
+						>
+						<div class="subscribe-field-error">Please enter a valid email address.</div>
+					</div>
+
+					<!-- Profile -->
+					<div class="mb-4">
+						<label class="subscribe-label" for="profile">
+							I am a <span class="subscribe-required">*</span>
+						</label>
+						<select class="subscribe-input subscribe-select" id="profile" name="profile" required>
+							<option value="" disabled selected>Select your profile…</option>
+							<option value="patient">Patient</option>
+							<option value="doctor">Doctor</option>
+							<option value="clinical centre">Clinical Centre</option>
+							<option value="researcher">Researcher</option>
+						</select>
+						<div class="subscribe-field-error">Please select your profile.</div>
+					</div>
+
+					<!-- Subscription lists -->
+					<div class="mb-4">
+						<p class="subscribe-label mb-1">
+							Topics to follow <span class="subscribe-required">*</span>
+						</p>
+						<p class="subscribe-hint">Select at least one digest to receive updates about.</p>
+
+						{{ if $conditionPages }}
+						<p class="subscribe-group-label">Conditions</p>
+						<div class="subscribe-list-group mb-3">
+							{{ range $conditionPages.ByTitle }}
+							<label class="subscribe-list-item" for="list-{{ .Params.list_id }}">
+								<input
+									type="checkbox"
+									id="list-{{ .Params.list_id }}"
+									name="list"
+									value="{{ .Params.list_id }}"
+									class="subscribe-checkbox"
+								>
+								<span class="subscribe-checkmark" aria-hidden="true"></span>
+								<span class="subscribe-list-body">
+									<span class="subscribe-list-title">{{ .Title }}</span>
+									{{ with .Params.subscribe_description }}<span class="subscribe-list-desc">{{ . }}</span>{{ end }}
+								</span>
+							</label>
+							{{ end }}
+						</div>
+						{{ end }}
+
+						{{ if $researchPages }}
+						<p class="subscribe-group-label">Research Areas</p>
+						<div class="subscribe-list-group mb-3">
+							{{ range $researchPages.ByTitle }}
+							<label class="subscribe-list-item" for="list-{{ .Params.list_id }}">
+								<input
+									type="checkbox"
+									id="list-{{ .Params.list_id }}"
+									name="list"
+									value="{{ .Params.list_id }}"
+									class="subscribe-checkbox"
+								>
+								<span class="subscribe-checkmark" aria-hidden="true"></span>
+								<span class="subscribe-list-body">
+									<span class="subscribe-list-title">{{ .Title }}</span>
+									{{ with .Params.subscribe_description }}<span class="subscribe-list-desc">{{ . }}</span>{{ end }}
+								</span>
+							</label>
+							{{ end }}
+						</div>
+						{{ end }}
+
+						<div class="subscribe-field-error" id="list-error" style="display:none;">
+							Please select at least one topic.
+						</div>
+					</div>
+
+					<!-- Server-side error fallback -->
+					<div
+						id="form-alert"
+						class="subscribe-alert"
+						role="alert"
+						style="display:none;"
+					></div>
+
+					<!-- Submit -->
+					<button type="submit" class="subscribe-submit" id="subscribe-btn">
+						<span id="subscribe-btn-label">Subscribe</span>
+						<span class="subscribe-spinner" id="subscribe-spinner" aria-hidden="true" style="display:none;"></span>
+					</button>
+
+					<p class="subscribe-privacy">
+						We respect your privacy. You can unsubscribe at any time.
+					</p>
+
+				</form>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+<script src="{{ "js/subscribe-form.js" | relURL }}"></script>
+{{ end }}

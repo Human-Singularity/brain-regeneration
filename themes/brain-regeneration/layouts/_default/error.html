@@ -1,0 +1,27 @@
+{{ define "main" }}
+<section class="section bg-sand">
+	<div class="container">
+		<div class="narrow-col text-center" style="padding-top: 40px; padding-bottom: 40px;">
+
+			<div class="thankyou-icon thankyou-icon--error" aria-hidden="true">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="12" cy="12" r="10"/>
+					<path d="M12 8v4m0 4h.01"/>
+				</svg>
+			</div>
+
+			<h1 style="color: var(--color-text); margin-bottom: 16px;">Something Went Wrong</h1>
+
+			<p style="font-size: 18px; color: var(--color-text); max-width: 480px; margin: 0 auto 32px;">
+				We couldn't process your subscription. Please try again — if the problem persists, contact us.
+			</p>
+
+			<div class="d-flex flex-wrap gap-3 justify-content-center">
+				<a href="{{ "/subscribe/" | relURL }}" class="btn-amber">Try Again</a>
+				<a href="{{ "/" | relURL }}" class="btn-outline-teal">Back to Home</a>
+			</div>
+
+		</div>
+	</div>
+</section>
+{{ end }}

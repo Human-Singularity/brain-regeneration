@@ -79,6 +79,11 @@ path = "search"
 [params.clinicalTrials]
 	apiBase = "https://api.gregory-ms.com/trials/"
 
+[params.subscriptions]
+	api_endpoint = "https://api.gregory-ms.com/subscriptions/new/"
+	thank_you_url = "/thank-you/"
+	error_url = "/error/"
+
 DefaultContentLanguage = "en"
 
 [Languages.en]

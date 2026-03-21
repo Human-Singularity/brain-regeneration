@@ -3,6 +3,8 @@ title: "Alzheimer's Disease"
 date: 2025-01-06
 draft: false
 subscribe: true
+list_id: 6
+subscribe_description: "Weekly digest of new Alzheimer's research and recruiting clinical trials."
 
 description: "Alzheimer's Disease is the most common cause of dementia, gradually impairing memory, thinking, and behaviour. Trials in this area investigate ways to slow or stop disease progression, clear amyloid and tau deposits, and protect or restore cognitive function."
 

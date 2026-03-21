@@ -1,0 +1,27 @@
+{{ define "main" }}
+<section class="section bg-sand">
+	<div class="container">
+		<div class="narrow-col text-center" style="padding-top: 40px; padding-bottom: 40px;">
+
+			<div class="thankyou-icon" aria-hidden="true">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="12" cy="12" r="10"/>
+					<path d="M8 12l3 3 5-5"/>
+				</svg>
+			</div>
+
+			<h1 style="color: var(--color-primary); margin-bottom: 16px;">You're Subscribed</h1>
+
+			<p style="font-size: 18px; color: var(--color-text); max-width: 480px; margin: 0 auto 32px;">
+				Thank you for joining the Brain Regeneration Observatory. Your first email notifications will arrive soon.
+			</p>
+
+			<div class="d-flex flex-wrap gap-3 justify-content-center">
+				<a href="{{ "/" | relURL }}" class="btn-amber">Back to the Observatory</a>
+				<a href="{{ "/research-areas/" | relURL }}" class="btn-outline-teal">Explore Research Areas</a>
+			</div>
+
+		</div>
+	</div>
+</section>
+{{ end }}
