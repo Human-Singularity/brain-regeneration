@@ -1,0 +1,37 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<p class="meta"><a href="{{ "/news/" | relURL }}">&larr; All news</a></p>
+			<h1>{{ .Title }}</h1>
+			<p class="meta">{{ .Date.Format "2 January 2006" }}{{ with .Params.author }} · {{ . }}{{ end }}</p>
+		</div>
+	</div>
+</section>
+
+<!-- ── FEATURED IMAGE ── -->
+{{ with .Params.image }}
+{{ $img := $.Resources.GetMatch . }}
+{{ with $img }}
+<section class="bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<img src="{{ .RelPermalink }}" alt="" class="news-featured-image">
+		</div>
+	</div>
+</section>
+{{ end }}
+{{ end }}
+
+<!-- ── ARTICLE BODY ── -->
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col body-text">
+			{{ .Content }}
+		</div>
+	</div>
+</section>
+
+{{ end }}

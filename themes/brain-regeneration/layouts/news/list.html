@@ -1,0 +1,39 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			<div class="body-text">{{ .Content }}</div>
+		</div>
+	</div>
+</section>
+
+<!-- ── NEWS LIST ── -->
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col">
+			{{ $pages := .Pages.ByDate.Reverse }}
+			{{ if $pages }}
+			<div class="news-list">
+				{{ range $pages }}
+				<article class="news-card card-brand">
+					{{ with .Resources.GetMatch (.Params.image | default "") }}
+					<img src="{{ .RelPermalink }}" alt="" class="news-card-image">
+					{{ end }}
+					<p class="meta">{{ .Date.Format "2 January 2006" }}{{ with .Params.author }} · {{ . }}{{ end }}</p>
+					<h3 style="margin-bottom: 8px;"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+					{{ with .Description }}<p style="margin-bottom: 16px;">{{ . }}</p>{{ end }}
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Read more &rarr;</a>
+				</article>
+				{{ end }}
+			</div>
+			{{ else }}
+			<p class="meta" style="text-align: center; padding: 48px 0;">No news posts yet. Check back soon.</p>
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+{{ end }}
