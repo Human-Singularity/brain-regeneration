@@ -13,3 +13,7 @@
 
 <!-- Brand styles -->
 <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+
+{{ if ne (getenv "HUGO_ENV") "staging" }}
+<script defer src="https://analytics.gregory-ms.com/script.js" data-website-id="0535e4a0-8c80-49e8-ba68-325478a631cb"></script>
+{{ end }}
