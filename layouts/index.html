@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ .Site.Title }} — Coming Soon</title>
+	<meta name="description" content="{{ .Site.Params.subtitle }}">
+	<meta name="robots" content="noindex, nofollow">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--color-primary: #1A6B6A;
+			--color-secondary: #F5F0E8;
+			--color-accent: #E8913A;
+			--color-text: #2D2D2D;
+			--color-text-light: #FFFFFF;
+			--font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			--font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+
+		body {
+			font-family: var(--font-body);
+			color: var(--color-text);
+			background: var(--color-secondary);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 100vh;
+			padding: 2rem;
+		}
+
+		.coming-soon {
+			text-align: center;
+			max-width: 600px;
+		}
+
+		.coming-soon h1 {
+			font-family: var(--font-heading);
+			color: var(--color-primary);
+			font-size: clamp(2rem, 5vw, 3rem);
+			font-weight: 700;
+			margin-bottom: 1rem;
+		}
+
+		.coming-soon p {
+			font-size: 1.2rem;
+			line-height: 1.6;
+			margin-bottom: 1.5rem;
+		}
+
+		.coming-soon .subtitle {
+			font-family: var(--font-heading);
+			font-size: 0.95rem;
+			color: #8C8C8C;
+		}
+
+		.divider {
+			width: 60px;
+			height: 3px;
+			background: var(--color-accent);
+			margin: 2rem auto;
+			border-radius: 2px;
+		}
+	</style>
+</head>
+<body>
+	<div class="coming-soon">
+		<h1>{{ .Site.Title }}</h1>
+		<div class="divider"></div>
+		<p>{{ .Site.Params.subtitle }}</p>
+		<p class="subtitle">We're preparing something new. Check back soon.</p>
+	</div>
+</body>
+</html>
