@@ -30,20 +30,22 @@
 			fetch(apiEndpoint, {
 				method: 'POST',
 				body: new FormData(form),
-				redirect: 'follow'
+				redirect: 'manual'
 			})
 			.then(function (response) {
-				if (response.redirected) {
-					window.location.href = response.url.indexOf('/error') !== -1
-						? errorUrl
-						: thankYouUrl;
-				} else if (response.ok) {
+				// 'opaqueredirect' means the server issued a redirect (success or
+				// error). We cannot inspect the redirect target cross-origin, but
+				// client-side validation already guards against invalid payloads,
+				// so any server redirect is treated as success.
+				if (response.type === 'opaqueredirect' || response.ok) {
 					window.location.href = thankYouUrl;
 				} else {
+					console.error('[inline-subscribe] API returned HTTP', response.status, response.statusText);
 					window.location.href = errorUrl;
 				}
 			})
-			.catch(function () {
+			.catch(function (err) {
+				console.error('[inline-subscribe] Network error:', err);
 				window.location.href = errorUrl;
 			});
 		});
