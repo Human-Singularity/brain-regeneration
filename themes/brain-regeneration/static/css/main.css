@@ -1428,3 +1428,266 @@ a:hover {
 
 .page-btn:hover { border-color: var(--color-primary); color: var(--color-primary); text-decoration: none; }
 .page-btn.active { background-color: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-light); }
+/* ── Subscribe form ── */
+.subscribe-card {
+	background-color: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	padding: 40px;
+}
+
+@media (max-width: 575px) {
+	.subscribe-card { padding: 24px; }
+}
+
+.subscribe-label {
+	display: block;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text);
+	margin-bottom: 6px;
+}
+
+.subscribe-required {
+	color: var(--color-accent);
+}
+
+.subscribe-hint {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	color: var(--color-muted);
+	margin-bottom: 16px;
+}
+
+.subscribe-input {
+	display: block;
+	width: 100%;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	color: var(--color-text);
+	background-color: var(--color-secondary);
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 10px 14px;
+	transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.subscribe-input:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px rgba(26, 107, 106, 0.12);
+	outline: none;
+	background-color: #fff;
+}
+
+.subscribe-input.is-invalid {
+	border-color: #dc3545;
+}
+
+.subscribe-input.is-invalid:focus {
+	box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
+.subscribe-select {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%238C8C8C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 16px;
+	padding-right: 36px;
+	cursor: pointer;
+}
+
+.subscribe-field-error {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: #dc3545;
+	margin-top: 6px;
+	display: none;
+}
+
+.subscribe-input.is-invalid ~ .subscribe-field-error {
+	display: block;
+}
+
+/* Subscription list checkboxes */
+.subscribe-group-label {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--color-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 10px;
+}
+
+.subscribe-list-group {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.subscribe-list-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 16px 18px;
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	cursor: pointer;
+	background-color: var(--color-secondary);
+	transition: border-color 200ms ease, background-color 200ms ease;
+	user-select: none;
+}
+
+.subscribe-list-item:hover,
+.subscribe-list-item:has(.subscribe-checkbox:checked),
+.subscribe-list-item.is-selected {
+	border-color: var(--color-primary);
+	background-color: var(--color-tint);
+}
+
+.subscribe-checkbox {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+.subscribe-checkmark {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--color-border);
+	border-radius: 4px;
+	background-color: #fff;
+	margin-top: 2px;
+	transition: border-color 200ms ease, background-color 200ms ease;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 12px;
+}
+
+.subscribe-list-item:has(.subscribe-checkbox:checked) .subscribe-checkmark,
+.subscribe-list-item.is-selected .subscribe-checkmark {
+	border-color: var(--color-primary);
+	background-color: var(--color-primary);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 4L11 1' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.subscribe-list-body {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.subscribe-list-title {
+	font-family: var(--font-heading);
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.subscribe-list-desc {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	line-height: 1.5;
+}
+
+/* Alerts */
+.subscribe-alert {
+	padding: 14px 16px;
+	border-radius: var(--radius);
+	font-family: var(--font-heading);
+	font-size: 14px;
+	margin-bottom: 20px;
+	background-color: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #b91c1c;
+}
+
+/* Submit button */
+.subscribe-submit {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	background-color: var(--color-accent);
+	color: var(--color-text-light);
+	border: none;
+	padding: 14px 28px;
+	border-radius: var(--radius);
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 16px;
+	cursor: pointer;
+	transition: background-color 200ms ease, transform 150ms ease, box-shadow 200ms ease;
+}
+
+.subscribe-submit:hover:not(:disabled) {
+	background-color: #D17E2F;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(232, 145, 58, 0.3);
+}
+
+.subscribe-submit:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+
+.subscribe-submit:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+/* Spinner */
+.subscribe-spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.4);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: subscribe-spin 600ms linear infinite;
+	flex-shrink: 0;
+}
+
+@keyframes subscribe-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Privacy note */
+.subscribe-privacy {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	text-align: center;
+	margin-top: 16px;
+	margin-bottom: 0;
+}
+
+/* ── Thank-you / error confirmation pages ── */
+.thankyou-icon {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	background-color: var(--color-tint);
+	border: 2px solid var(--color-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 28px;
+	color: var(--color-primary);
+}
+
+.thankyou-icon svg {
+	width: 36px;
+	height: 36px;
+}
+
+.thankyou-icon--error {
+	background-color: #fef2f2;
+	border-color: #dc3545;
+	color: #dc3545;
+}
