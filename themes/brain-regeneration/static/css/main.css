@@ -802,6 +802,16 @@ a:hover {
 	margin: 0 0 4px;
 }
 
+.footer-bottom a {
+	color: rgba(255, 255, 255, 0.9);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.footer-bottom a:hover {
+	color: rgba(255, 255, 255, 1);
+}
+
 @media (max-width: 767px) {
 	.footer-grid {
 		grid-template-columns: repeat(2, 1fr);
