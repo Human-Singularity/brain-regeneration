@@ -227,7 +227,21 @@ a:hover {
 	background-color: var(--color-primary);
 	color: var(--color-text-light);
 	padding: 72px 0 80px;
+	overflow: hidden;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	position: relative;
 }
+
+.hero[style*="background-image"]::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, rgba(25, 78, 76, 0.88) 0%, rgba(25, 78, 76, 0.7) 100%);
+}
+
+.hero .container { position: relative; z-index: 1; }
 
 .hero h1 {
 	color: var(--color-text-light);
