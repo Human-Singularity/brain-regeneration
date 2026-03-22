@@ -312,6 +312,8 @@ a:hover {
 /* ── Body text ── */
 .body-text { font-size: 17px; line-height: 1.6; max-width: 720px; }
 .body-text p { margin-bottom: 1.5em; }
+.body-text a { text-decoration: underline; text-underline-offset: 3px; }
+.body-text a:hover { text-decoration-thickness: 2px; }
 
 /* ── Condition tags ── */
 .condition-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 0; }
