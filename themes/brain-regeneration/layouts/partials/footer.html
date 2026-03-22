@@ -18,10 +18,46 @@
 	</div>
 </section>
 {{ end }}
-<footer style="background-color: var(--color-primary); color: rgba(255,255,255,0.7); padding: 32px 0; font-family: var(--font-heading); font-size: 14px;">
-	<div class="container text-center">
-		<p style="margin-bottom: 4px;">&copy; {{ now.Year }} {{ .Site.Title }}. Open source under MIT licence.</p>
-		<p style="margin: 0;">Built with <a href="https://github.com/Human-Singularity/brain-regeneration" style="color: rgba(255,255,255,0.9);">GregoryAI</a></p>
+<footer class="site-footer">
+	<div class="container">
+		<div class="footer-grid">
+			<div class="footer-col">
+				<p class="footer-heading">Observatory</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/about/" | relURL }}">About</a></li>
+					<li><a href="{{ "/news/" | relURL }}">News</a></li>
+					<li><a href="{{ "/supporters/" | relURL }}">Supporters</a></li>
+					<li><a href="{{ "/contact/" | relURL }}">Contact</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Research</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/research-areas/" | relURL }}">Research Areas</a></li>
+					<li><a href="{{ "/clinical-trials/" | relURL }}">Clinical Trials</a></li>
+					<li><a href="{{ "/curators/" | relURL }}">Scientific Curators</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Get Involved</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/subscribe/" | relURL }}">Subscribe</a></li>
+					<li><a href="{{ "/donate/" | relURL }}">Support the Project</a></li>
+					<li><a href="mailto:team@gregory-ms.com">team@gregory-ms.com</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Open Source</p>
+				<ul class="footer-links">
+					<li><a href="https://github.com/brunoamaral/gregory-ai" target="_blank" rel="noopener">GregoryAI on GitHub</a></li>
+					<li><a href="https://github.com/Human-Singularity/brain-regeneration" target="_blank" rel="noopener">This website on GitHub</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>&copy; {{ now.Year }} {{ .Site.Title }}.</p>
+			<p>A project by the Human-Singularity Network, a non-profit registered in Portugal (PT517563363). Open source under MIT licence.</p>
+		</div>
 	</div>
 </footer>
 
