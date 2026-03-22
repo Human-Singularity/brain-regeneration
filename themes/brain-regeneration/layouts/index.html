@@ -1,7 +1,7 @@
 {{ define "main" }}
 
 <!-- ── HERO ── -->
-<section class="hero" style="background-image: url('{{ "images/getty-images-xMig9xXKKTU-unsplash.jpg" | relURL }}');">
+<section class="hero"{{ with .Params.hero_image }} style="background-image: url('{{ . | relURL }}');"{{ end }}>
 	<div class="container">
 		<h1>Mapping the Science of Brain Regeneration</h1>
 		<p>An AI-powered observatory, guided by scientific curators, tracking research and clinical trials so you don't have to.</p>
