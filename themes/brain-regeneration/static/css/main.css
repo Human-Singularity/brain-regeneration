@@ -1009,6 +1009,49 @@ a:hover {
 
 .btn-download[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 
+/* ── Download loading state ── */
+.btn-download.is-downloading {
+	pointer-events: none;
+	position: relative;
+	overflow: hidden;
+	color: #fff;
+	border-color: var(--color-accent, #2a9d6e);
+	background: linear-gradient(
+		90deg,
+		var(--color-accent, #2a9d6e) 0%,
+		var(--color-accent, #2a9d6e) 40%,
+		transparent 60%,
+		transparent 100%
+	);
+	background-size: 250% 100%;
+	animation: download-sweep 1.5s ease-in-out infinite;
+}
+
+.btn-download.is-downloading svg {
+	stroke: #fff;
+}
+
+@keyframes download-sweep {
+	0%   { background-position: 100% 0; }
+	100% { background-position: -50% 0; }
+}
+
+/* Smooth fill when download completes */
+.btn-download.is-download-done {
+	pointer-events: none;
+	position: relative;
+	overflow: hidden;
+	color: #fff;
+	border-color: var(--color-accent, #2a9d6e);
+	background: var(--color-accent, #2a9d6e);
+	animation: none;
+	transition: background 0.4s ease-out;
+}
+
+.btn-download.is-download-done svg {
+	stroke: #fff;
+}
+
 /* ── Download dropdown ── */
 .download-dropdown {
 	position: relative;
