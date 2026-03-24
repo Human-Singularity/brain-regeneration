@@ -7,7 +7,7 @@
 		<p>An AI-powered observatory, guided by scientific curators, tracking research and clinical trials so you don't have to.</p>
 		<div class="d-flex flex-wrap gap-3 mt-4">
 			<a href="{{ "/research-areas/" | relURL }}" class="btn-amber">Explore Research</a>
-			<a href="{{ "/clinical-trials/" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
+			<a href="{{ "/conditions/" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
 		</div>
 		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
 			<div>
@@ -81,7 +81,7 @@
 {{ end }}
 
 <!-- ── CLINICAL TRIALS ── -->
-{{ $trials := where .Site.RegularPages "Section" "clinical-trials" }}
+{{ $trials := where .Site.RegularPages "Section" "conditions" }}
 {{ if $trials }}
 <section class="section bg-tint">
 	<div class="container">
@@ -205,7 +205,7 @@
 
 <!-- ── NEWSLETTER SUBSCRIPTION ── -->
 {{ $researchAreas := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
-{{ $trials := where (where .Site.RegularPages "Section" "clinical-trials") ".Params.subscribe" true }}
+{{ $trials := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
 <section class="section bg-sand">
 	<div class="container">
 		<div class="newsletter-card">

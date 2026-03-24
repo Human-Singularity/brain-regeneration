@@ -74,7 +74,6 @@ path = "search"
 	tag = "tags"
 	category = "categories"
 	author = "authors"
-	condition = "conditions"
 
 [params.clinicalTrials]
 	apiBase = "https://api.gregory-ms.com/trials/"

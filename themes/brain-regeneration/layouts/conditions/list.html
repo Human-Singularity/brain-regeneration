@@ -5,7 +5,7 @@
 	<div class="container">
 		<a href="{{ "/" | relURL }}">Home</a>
 		<span>/</span>
-		<strong>Clinical Trials</strong>
+		<strong>Conditions</strong>
 	</div>
 </div>
 
@@ -18,7 +18,7 @@
 </section>
 
 <!-- ── CONDITIONS GRID ── -->
-{{ $trials := where .Site.RegularPages "Section" "clinical-trials" }}
+{{ $trials := where .Site.RegularPages "Section" "conditions" }}
 {{ if $trials }}
 <section class="section bg-tint">
 	<div class="container">
@@ -76,7 +76,7 @@
 </section>
 
 <!-- ── NEWSLETTER — TRIAL ALERTS ── -->
-{{ $subscribable := where (where .Site.RegularPages "Section" "clinical-trials") ".Params.subscribe" true }}
+{{ $subscribable := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
 {{ if $subscribable }}
 <section class="section bg-sand" style="padding-top: 0;">
 	<div class="container">

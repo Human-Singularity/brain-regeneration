@@ -1,12 +1,13 @@
 ---
 title: "Multiple Sclerosis"
+url: /conditions/multiple-sclerosis/clinical-trials/
 date: 2025-01-06
 draft: false
 subscribe: true
 list_id: 1
 subscribe_description: "Weekly digest of new MS research and recruiting clinical trials."
 
-description: "Multiple Sclerosis (MS) is a chronic disease of the central nervous system in which the immune system attacks the myelin sheath that protects nerve fibres. Trials in this area focus on slowing progression, repairing damage, and improving quality of life."
+description: "Multiple Sclerosis (MS) is a chronic disease of the central nervous system in which the immune system attacks the myelin sheath that protects nerve fibres."
 
 patient_note: "This project grew out of Gregory-MS, an observatory dedicated to MS research since 2021. For the full MS research feed including papers and therapies, visit [gregory-ms.com](https://gregory-ms.com)."
 

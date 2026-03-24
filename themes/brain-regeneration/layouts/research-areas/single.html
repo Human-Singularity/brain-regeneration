@@ -58,7 +58,7 @@
 				<span class="condition-tags-label">Related conditions:</span>
 				{{ range . }}
 				{{ $condSlug := . }}
-				{{ with $.Site.GetPage (printf "/clinical-trials/%s" $condSlug) }}
+				{{ with $.Site.GetPage (printf "/conditions/%s" $condSlug) }}
 				<a href="{{ .RelPermalink }}" class="condition-tag">{{ .Title }}</a>
 				{{ end }}
 				{{ end }}

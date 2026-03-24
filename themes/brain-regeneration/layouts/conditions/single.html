@@ -5,7 +5,7 @@
 	<div class="container">
 		<a href="{{ "/" | relURL }}">Home</a>
 		<span>/</span>
-		<a href="{{ "/clinical-trials/" | relURL }}">Clinical Trials</a>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
 		<span>/</span>
 		<strong>{{ .Title }}</strong>
 	</div>
@@ -14,7 +14,7 @@
 <!-- ── HERO ── -->
 <section class="hero" style="padding: 56px 0 64px;">
 	<div class="container">
-		<h1>{{ .Title }} — Clinical Trials</h1>
+		<h1>{{ .Title }}</h1>
 		<p>{{ .Params.hero_description | default .Description }}</p>
 	</div>
 </section>
@@ -44,6 +44,16 @@
 				<div class="stat-label">Total</div>
 			</div>
 		</div>
+	</div>
+</div>
+
+<!-- ── SECTION TABS ── -->
+<div class="section-tabs">
+	<div class="container">
+		<nav class="section-tabs-nav">
+			<a href="#" class="section-tab active" aria-current="page">Clinical Trials</a>
+			<span class="section-tab disabled" aria-disabled="true" title="Coming soon">Research Papers <span class="coming-soon-badge">Coming soon</span></span>
+		</nav>
 	</div>
 </div>
 
