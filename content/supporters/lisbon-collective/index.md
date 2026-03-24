@@ -6,7 +6,7 @@ draft: false
 name: "Lisbon Collective"
 type_of: "organisation"
 representative: "Bruno Amaral"
-institution: "Lisbon Collective"
+institution: "Digital Consulting Studio"
 website: "https://lisboncollective.com/"
 logo: "lisbon-collective.svg"
 bio: "Lisbon Collective is a digital consultancy founded by Bruno Amaral, specialising in digital communication strategy, UX research, and AI implementation. As the originating organisation behind the Gregory-MS project, Lisbon Collective provides the Brain Regeneration Observatory with technical expertise, infrastructure, and financial backing when project donations fall short."
