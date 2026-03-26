@@ -4,7 +4,7 @@
 	<div class="container">
 		<p class="footer-supporters-label">Supporters</p>
 		<div class="footer-supporters-logos">
-			{{ range $supporters }}
+			{{ range $supporters.ByTitle }}
 			<a href="{{ .RelPermalink }}" class="footer-supporter-logo" title="{{ .Title }}">
 				{{ $logo := .Resources.GetMatch .Params.logo }}
 				{{ if $logo }}
