@@ -4,6 +4,7 @@ title = 'Brain Regeneration Observatory'
 theme = 'brain-regeneration'
 copyright = 'Brain Regeneration Observatory 2025'
 enableRobotsTXT = true
+enableGitInfo = true
 rssLimit = 30
 timeout = '20s'
 summaryLength = 10
