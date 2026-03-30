@@ -9,6 +9,13 @@
 	</div>
 </section>
 
-{{ .Content }}
+<section class="bg-sand" style="padding-bottom: 80px;">
+	<div class="container">
+		<div class="narrow-col body-text">
+			{{ .Content }}
+			<p style="margin-top: 2rem; font-size: 0.875rem; color: #6b7280;">Last Updated: {{ .Lastmod.Format "2006-01-02" }}</p>
+		</div>
+	</div>
+</section>
 
 {{ end }}
