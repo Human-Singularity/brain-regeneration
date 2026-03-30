@@ -223,6 +223,14 @@
 					<div class="col-12 col-md-2">
 						<button type="submit" class="btn-amber w-100">Subscribe</button>
 					</div>
+					{{ range .Site.Params.subscriptions.global_lists }}
+					<div class="col-12">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-ct-{{ .list_id }}">
+							<label class="form-check-label" for="global-list-ct-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
+						</div>
+					</div>
+					{{ end }}
 				</div>
 			</form>
 		</div>

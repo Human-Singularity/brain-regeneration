@@ -83,6 +83,12 @@ path = "search"
 	thank_you_url = "/thank-you/"
 	error_url = "/error/"
 
+[[params.subscriptions.global_lists]]
+	title = "Project News"
+	description = "Updates on new developments from the Brain-Regeneration.com project."
+	list_id = 10
+	team_id = 1
+
 DefaultContentLanguage = "en"
 
 [Languages.en]

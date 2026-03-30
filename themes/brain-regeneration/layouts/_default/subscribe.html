@@ -145,6 +145,28 @@
 						</div>
 						{{ end }}
 
+						{{ with $sub.global_lists }}
+						<p class="subscribe-group-label">Project Updates</p>
+						<div class="subscribe-list-group mb-3">
+							{{ range . }}
+							<label class="subscribe-list-item" for="list-{{ .list_id }}">
+								<input
+									type="checkbox"
+									id="list-{{ .list_id }}"
+									name="list"
+									value="{{ .list_id }}"
+									class="subscribe-checkbox"
+								>
+								<span class="subscribe-checkmark" aria-hidden="true"></span>
+								<span class="subscribe-list-body">
+									<span class="subscribe-list-title">{{ .title }}</span>
+									{{ with .description }}<span class="subscribe-list-desc">{{ . }}</span>{{ end }}
+								</span>
+							</label>
+							{{ end }}
+						</div>
+						{{ end }}
+
 						<div class="subscribe-field-error" id="list-error" style="display:none;">
 							Please select at least one topic.
 						</div>
