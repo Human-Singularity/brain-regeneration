@@ -208,7 +208,7 @@
 						<label for="ct-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
 						<input type="text" class="form-control" id="ct-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
 					</div>
-					<div class="col-12 col-md-4">
+					<div class="col-12 col-md-3">
 						<label for="ct-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
 						<input type="email" class="form-control" id="ct-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
 					</div>
@@ -223,7 +223,7 @@
 							<option value="researcher">Researcher</option>
 						</select>
 					</div>
-					<div class="col-12 col-md-2">
+					<div class="col-12 col-md-3 d-flex align-items-end">
 						<button type="submit" class="btn-amber w-100">Subscribe</button>
 					</div>
 					{{ range .Site.Params.subscriptions.global_lists }}
