@@ -16,6 +16,9 @@
 	<div class="container">
 		<h1>{{ .Title }}</h1>
 		<p>{{ .Params.hero_description | default .Description }}</p>
+		{{ if and .Params.subscribe .Params.list_id }}
+		<a href="#ct-alerts" class="btn-amber" style="display: inline-block; margin-top: 16px;">Get trial alerts</a>
+		{{ end }}
 	</div>
 </section>
 
@@ -185,7 +188,7 @@
 
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}
-<section class="section bg-sand" style="padding-top: 0;">
+<section id="ct-alerts" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
 	<div class="container">
 		<div class="newsletter-card">
 			<div class="text-center mb-4">
