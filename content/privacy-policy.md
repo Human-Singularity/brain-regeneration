@@ -1,7 +1,7 @@
 ---
 title: "Privacy Policy"
 description: ""
-layout: static-page
+layout: prose-page
 ---
 
 If you're a visitor, we don't save any of your data. We also don't use cookies. 
