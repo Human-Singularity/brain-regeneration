@@ -3,12 +3,12 @@ title: "Support the Project"
 description: "Help us keep brain regeneration research accessible to everyone — free, open, and independent."
 date: 2025-01-01
 draft: false
-layout: prose-page
+layout: sectioned-page
 options:
   header: "small"
 ---
 
-<section class="section bg-sand">
+<section class="section bg-tint">
 	<div class="container">
 		<div class="narrow-col body-text">
 			<h2>Why your support matters</h2>
@@ -18,7 +18,7 @@ options:
 	</div>
 </section>
 
-<section class="section bg-tint">
+<section class="section bg-sand">
 	<div class="container">
 		<div class="narrow-col body-text">
 			<h2>What your donation supports</h2>
@@ -32,15 +32,97 @@ options:
 	</div>
 </section>
 
-<section class="section bg-sand">
+<section class="section bg-tint">
 	<div class="container">
 		<div class="narrow-col body-text text-center">
 			<h2>Make a donation</h2>
-			<p style="max-width: 540px; margin: 0 auto 28px;">All donations are processed securely through Stripe. The Brain Regeneration Observatory is managed by the Human-Singularity Network, a non-profit registered in Portugal (Tax ID PT517563363).</p>
+			<p style="max-width: 540px; margin: 0 auto 32px;">All donations are processed securely through Stripe. Choose a recurring monthly donation to provide steady support, or make a custom one-time contribution.</p>
 			<div class="d-flex flex-wrap justify-content-center gap-3">
-				<a href="#" class="btn-amber" id="donate-btn">Donate via Stripe</a>
+				<a href="https://donate.stripe.com/28E6oGeri2zm9Rw2FA7N603" class="btn-amber" target="_blank" rel="noopener">Donate monthly</a>
+				<a href="https://donate.stripe.com/00wcN496Yfm87Jobc67N604" class="btn-outline-teal" target="_blank" rel="noopener">One-time donation</a>
 			</div>
-			<p style="margin-top: 24px; font-size: 15px; color: var(--color-muted);">Have questions or want to discuss a partnership? <a href="mailto:team@brain-regeneration.com" style="color: var(--color-primary);">Get in touch</a>.</p>
 		</div>
 	</div>
 </section>
+
+<section class="section bg-sand">
+	<div class="container">
+		<div class="narrow-col body-text">
+			<h2>Receipts &amp; tax information</h2>
+			<p>Stripe sends an automatic receipt to your email for every donation. The Brain Regeneration Observatory is managed by the Human-Singularity Network, a non-profit registered in Portugal (Tax ID PT517563363).</p>
+			<p style="font-size: 15px; color: var(--color-muted);">Whether your donation qualifies as a tax deduction depends on your local laws. Please consult your tax advisor for guidance.</p>
+			<p style="margin-top: 24px;">Have questions or want to discuss a partnership? <a href="mailto:team@brain-regeneration.com">Get in touch</a>.</p>
+		</div>
+	</div>
+</section>
+
+<section class="section bg-tint" id="transparency">
+	<div class="container">
+		<div class="narrow-col">
+			<h2 style="font-family: var(--font-heading); font-size: 1.6rem; margin-bottom: 8px;">Transparency</h2>
+			<p style="font-size: 15px; color: var(--color-muted); margin-bottom: 32px; font-family: var(--font-heading);">Donor names are partially anonymised. We publish this list to show that real people believe in this work.</p>
+
+			<!-- Year stats banner -->
+			<div id="donor-stats" class="donor-stats-banner" style="display:none;">
+				<div class="donor-stat-item">
+					<span class="stat-number" id="stat-total-amount">—</span>
+					<span class="stat-label">raised in <span id="stat-year"></span></span>
+				</div>
+				<div class="donor-stat-item">
+					<span class="stat-number" id="stat-total-count">—</span>
+					<span class="stat-label">donations</span>
+				</div>
+			</div>
+
+			<!-- Goal progress -->
+			<div id="donor-goal" class="donor-goal" style="display:none;">
+				<div class="donor-goal-header">
+					<span class="donor-goal-label">Annual goal</span>
+					<span class="donor-goal-value"><span id="goal-pct">0</span>% of €500</span>
+				</div>
+				<div class="donor-goal-track">
+					<div class="donor-goal-fill" id="goal-fill" style="width: 0%;"></div>
+				</div>
+				<p class="donor-goal-note">€500 / year covers our server costs.</p>
+			</div>
+
+			<!-- Recent donors -->
+			<div id="donor-list-wrap" style="display:none; margin-top: 32px;">
+				<h3 class="donor-table-heading">Recent donors</h3>
+				<table class="donor-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th class="text-end">Amount</th>
+							<th class="text-end">Date</th>
+						</tr>
+					</thead>
+					<tbody id="donor-recent-body"></tbody>
+				</table>
+			</div>
+
+			<!-- All donations this year (expandable) -->
+			<div id="donor-all-wrap" style="display:none; margin-top: 24px;">
+				<details class="donor-details">
+					<summary>Show all donations this year</summary>
+					<table class="donor-table" style="margin-top: 16px;">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th class="text-end">Amount</th>
+								<th class="text-end">Date</th>
+							</tr>
+						</thead>
+						<tbody id="donor-all-body"></tbody>
+					</table>
+				</details>
+			</div>
+
+			<!-- Loading / error states -->
+			<p id="donor-loading" style="font-family: var(--font-heading); font-size: 15px; color: var(--color-muted);">Loading donor information…</p>
+			<p id="donor-error" style="display:none; font-family: var(--font-heading); font-size: 15px; color: var(--color-muted);">Unable to load donor information at this time.</p>
+		</div>
+	</div>
+</section>
+
+<script src="/js/donor-transparency.js" defer></script>
