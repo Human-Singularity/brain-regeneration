@@ -206,6 +206,7 @@
 <!-- ── NEWSLETTER SUBSCRIPTION ── -->
 {{ $researchAreas := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
 {{ $trials := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
+{{ $globalLists := .Site.Params.subscriptions.global_lists }}
 <section class="section bg-sand">
 	<div class="container">
 		<div class="newsletter-card">
@@ -233,6 +234,19 @@
 						<div class="form-check mb-2">
 							<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
 							<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }}</label>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+
+				<!-- Project updates -->
+				<div class="row g-3 mt-2">
+					<div class="col-12">
+						<div class="checkbox-group-label">Project Updates</div>
+						{{ range $globalLists }}
+						<div class="form-check mb-2">
+							<input class="form-check-input" type="checkbox" id="feed-list-{{ .list_id }}" name="feeds" value="list-{{ .list_id }}">
+							<label class="form-check-label" for="feed-list-{{ .list_id }}">{{ .title }}</label>
 						</div>
 						{{ end }}
 					</div>
