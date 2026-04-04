@@ -1,0 +1,82 @@
+{{ define "main" }}
+
+<!-- ── PAGE HEADER ── -->
+<section class="page-header bg-sand">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Description }}<p class="lead" style="font-size: 1.4rem; font-weight: 300; line-height: 1.6; margin-top: 16px; font-style: italic; letter-spacing: 0.01em;">{{ . }}</p>{{ end }}
+		</div>
+		<div class="narrow-col mt-3">
+			<p style="font-family: var(--font-heading); font-size: 15px;">
+				<a href="#research-areas" style="color: var(--color-primary); font-weight: 500;">Research Areas</a>
+				<span style="color: var(--color-muted); margin: 0 10px;">&middot;</span>
+				<a href="#conditions" style="color: var(--color-primary); font-weight: 500;">Conditions</a>
+			</p>
+		</div>
+	</div>
+</section>
+
+<!-- ── RESEARCH AREAS ── -->
+{{ $researchAreas := where .Site.RegularPages "Section" "research-areas" }}
+{{ if $researchAreas }}
+<section id="research-areas" class="section bg-sand" style="scroll-margin-top: 80px;">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2>Research Areas</h2>
+			<p class="meta" style="font-size: 16px; max-width: 600px; margin: 0 auto;">{{ len $researchAreas }} active research fronts, each led by a scientific curator who defines what to track and how to categorise findings.</p>
+		</div>
+		<div class="row g-4">
+			{{ range $researchAreas }}
+			<div class="col-12 col-md-4">
+				<div class="card-brand d-flex flex-column">
+					<h3 style="font-size: 22px; margin-bottom: 8px;">{{ .Title }}</h3>
+					{{ with .Params.curators }}
+					{{ range . }}
+					{{ $curatorSlug := . }}
+					{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
+					<p class="meta" style="margin-bottom: 16px;">Curated by {{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }}</p>
+					{{ end }}
+					{{ end }}
+					{{ end }}
+					<p style="flex: 1;">{{ .Description }}</p>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Explore this area &rarr;</a>
+				</div>
+			</div>
+			{{ end }}
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<!-- ── CONDITIONS ── -->
+{{ $conditions := where .Site.RegularPages "Section" "conditions" }}
+{{ if $conditions }}
+<section id="conditions" class="section bg-tint" style="scroll-margin-top: 80px;">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2>Conditions</h2>
+			<p style="font-size: 17px; max-width: 600px; margin: 0 auto;">Find recruiting studies across conditions linked to brain regeneration.</p>
+		</div>
+		<div class="row g-4 justify-content-center">
+			{{ range $conditions }}
+			<div class="col-12 col-md-6" style="max-width: 520px;">
+				<div class="card-trial d-flex flex-column">
+					<div class="d-flex justify-content-between align-items-start mb-3">
+						<h3 style="font-size: 22px; margin-bottom: 0;">{{ .Title }}</h3>
+						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
+					</div>
+					<p style="flex: 1;">{{ .Description }}</p>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
+				</div>
+			</div>
+			{{ end }}
+		</div>
+		<div class="text-center mt-4">
+			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 560px; margin: 0 auto;">More conditions can be added if there is sufficient interest. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to find out how you can help.</a></p>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+{{ end }}

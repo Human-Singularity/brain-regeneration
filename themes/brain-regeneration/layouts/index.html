@@ -4,20 +4,15 @@
 <section class="hero"{{ with .Params.hero_image }} style="background-image: url('{{ . | relURL }}');"{{ end }}>
 	<div class="container">
 		<h1>Mapping the Science of Brain Regeneration</h1>
-		<p>An AI-powered observatory, guided by scientific curators, tracking research and clinical trials so you don't have to.</p>
+		<p>An AI-powered research observatory, curated by teams at the University of Coimbra, University of Cambridge, and iMed.ULisboa.</p>
 		<div class="d-flex flex-wrap gap-3 mt-4">
-			<a href="{{ "/research-areas/" | relURL }}" class="btn-amber">Explore Research</a>
-			<a href="{{ "/conditions/" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
+			<a href="{{ "/observatory/#research-areas" | relURL }}" class="btn-amber">Explore Research</a>
+			<a href="{{ "/observatory/#conditions" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
 		</div>
 		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
 			<div>
 				<div class="hero-stat-number" id="hero-articles-count">—</div>
 				<div class="hero-stat-label">Articles indexed</div>
-			</div>
-			<div class="hero-key-figures-divider"></div>
-			<div>
-				<div class="hero-stat-number" id="hero-authors-count">—</div>
-				<div class="hero-stat-label">Authors tracked</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
 			<div>
@@ -38,27 +33,18 @@
 	</div>
 </section>
 
-<!-- ── THE PROBLEM WE SOLVE ── -->
-<section class="section bg-sand">
-	<div class="container">
-		<div class="narrow-col text-center">
-			{{ with .Params.problem_heading }}<h2 style="margin-bottom: 24px;">{{ . }}</h2>{{ end }}
-			{{ .Content }}
-		</div>
-	</div>
-</section>
-
-<!-- ── RESEARCH AREAS ── -->
+<!-- ── RESEARCH FRONTS ── -->
 {{ $researchAreas := where .Site.RegularPages "Section" "research-areas" }}
 {{ if $researchAreas }}
 <section class="section bg-sand">
 	<div class="container">
 		<div class="text-center mb-5">
-			<h2>Research Areas</h2>
-			<p class="meta" style="font-size: 16px; max-width: 600px; margin: 0 auto;">{{ len $researchAreas }} active research fronts, each led by a scientific curator who defines what to track and how to categorise findings.</p>
+			<h2>Research areas</h2>
+			<p class="meta" style="font-size: 16px; max-width: 620px; margin: 0 auto;">Each research area is defined and curated by a scientific team. Papers are collected within hours of publication and ranked by relevance.</p>
 		</div>
 		<div class="row g-4">
 			{{ range $researchAreas }}
+			{{ $teamID := "" }}{{ with .Params.api }}{{ $teamID = printf "%d" .team_id }}{{ end }}
 			<div class="col-12 col-md-4">
 				<div class="card-brand d-flex flex-column">
 					<h3 style="font-size: 22px; margin-bottom: 8px;">{{ .Title }}</h3>
@@ -66,12 +52,26 @@
 					{{ range . }}
 					{{ $curatorSlug := . }}
 					{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
-					<p class="meta" style="margin-bottom: 16px;">Curated by {{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }}</p>
+					{{ $logo := .Params.logo }}
+					<div class="d-flex align-items-center gap-3 mb-3">
+						<p class="meta" style="margin-bottom: 0; flex: 1;">Curated by {{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }}</p>
+						{{ if $logo }}
+						{{ $logoRes := .Resources.GetMatch $logo }}
+						{{ if $logoRes }}
+						<div class="card-curator-logo" style="flex-shrink: 0;">
+							<img src="{{ $logoRes.RelPermalink }}" alt="{{ .Title }} logo" loading="lazy">
+						</div>
+						{{ end }}
+						{{ end }}
+					</div>
 					{{ end }}
 					{{ end }}
 					{{ end }}
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Explore this area &rarr;</a>
+					{{ if $teamID }}
+					<p class="meta" style="margin-bottom: 16px;"><span id="team-count-{{ $teamID }}">—</span> papers indexed</p>
+					{{ end }}
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View latest papers &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
@@ -80,22 +80,22 @@
 </section>
 {{ end }}
 
-<!-- ── CLINICAL TRIALS ── -->
-{{ $trials := where .Site.RegularPages "Section" "conditions" }}
-{{ if $trials }}
+<!-- ── CONDITIONS ── -->
 <section class="section bg-tint">
 	<div class="container">
 		<div class="text-center mb-5">
-			<h2>Clinical Trials</h2>
-			<p style="font-size: 17px; max-width: 600px; margin: 0 auto;">Find trials you may be able to join. We track recruiting studies across conditions linked to brain regeneration.</p>
+			<h2>Clinical trials by condition</h2>
+			<p style="font-size: 17px; max-width: 600px; margin: 0 auto;">Find recruiting studies across conditions linked to brain regeneration.</p>
 		</div>
 		<div class="row g-4 justify-content-center">
-			{{ range $trials }}
+			{{ $alzheimers := .Site.GetPage "/conditions/alzheimers" }}
+			{{ $ms := .Site.GetPage "/conditions/multiple-sclerosis" }}
+			{{ range slice $alzheimers $ms }}
+			{{ if . }}
 			<div class="col-12 col-md-6" style="max-width: 520px;">
 				<div class="card-trial d-flex flex-column">
 					<div class="d-flex justify-content-between align-items-start mb-3">
 						<h3 style="font-size: 22px; margin-bottom: 0;">{{ .Title }}</h3>
-						{{/* recruiting count is set by JS after fetching from the API */}}
 						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
 					</div>
 					<p style="flex: 1;">{{ .Description }}</p>
@@ -103,163 +103,17 @@
 				</div>
 			</div>
 			{{ end }}
-		</div>
-		<div class="text-center mt-4">
-			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 560px; margin: 0 auto;">More conditions can be added if there is sufficient interest. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to find out how you can help.</a></p>
-		</div>
-	</div>
-</section>
-{{ end }}
-
-<!-- ── HOW IT WORKS ── -->
-<section class="section bg-sand">
-	<div class="container">
-		<div class="text-center mb-5">
-			<h2>How It Works</h2>
-		</div>
-		<div class="row g-4">
-			<div class="col-12 col-md-3 text-center">
-				<div class="step-icon mx-auto">
-					<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-						<circle cx="28" cy="20" r="10"/>
-						<path d="M10 48c0-10 8-18 18-18s18 8 18 18"/>
-						<path d="M36 20l6-6"/>
-						<circle cx="44" cy="12" r="4"/>
-					</svg>
-				</div>
-				<h3 style="font-size: 20px; margin-bottom: 12px;">Curators define what to track</h3>
-				<p>Scientific curators from leading research institutions provide the search queries and categories that scope each research area. They decide what matters.</p>
-			</div>
-			<div class="col-12 col-md-3 text-center">
-				<div class="step-icon mx-auto">
-					<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-						<rect x="8" y="12" width="40" height="32" rx="4"/>
-						<path d="M20 28h16M20 34h10"/>
-						<circle cx="14" cy="18" r="2"/>
-						<circle cx="20" cy="18" r="2"/>
-						<circle cx="26" cy="18" r="2"/>
-					</svg>
-				</div>
-				<h3 style="font-size: 20px; margin-bottom: 12px;">AI harvests and ranks</h3>
-				<p>GregoryAI collects papers from PubMed, MedRxiv, and other databases within hours of publication. Machine learning models rank each paper for relevance.</p>
-			</div>
-			<div class="col-12 col-md-3 text-center">
-				<div class="step-icon mx-auto">
-					<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-						<path d="M12 28h6l5-10 6 20 5-14 4 8 6-4"/>
-					</svg>
-				</div>
-				<h3 style="font-size: 20px; margin-bottom: 12px;">Curators validate the results</h3>
-				<p>Scientific curators review the ranked output, flag errors, and confirm relevance. Human expertise keeps the signal clean and the noise out.</p>
-			</div>
-			<div class="col-12 col-md-3 text-center">
-				<div class="step-icon mx-auto">
-					<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-						<path d="M28 8v8"/>
-						<path d="M28 16c-8 0-16 4-16 12v8c0 2 2 4 4 4h24c2 0 4-2 4-4v-8c0-8-8-12-16-12z"/>
-						<circle cx="28" cy="32" r="4"/>
-						<path d="M28 36v4"/>
-					</svg>
-				</div>
-				<h3 style="font-size: 20px; margin-bottom: 12px;">You stay informed</h3>
-				<p>Receive weekly digests tailored to the research areas and conditions you follow. New findings delivered to your inbox, not buried in a database.</p>
-			</div>
-		</div>
-	</div>
-</section>
-
-<!-- ── TRUST SIGNALS ── -->
-<section class="section bg-sand" style="padding-top: 40px; padding-bottom: 40px;">
-	<div class="container">
-		<div class="text-center">
-			<p class="meta" style="margin-bottom: 4px;">Built on Gregory-MS, tracking MS research since 2021</p>
-			<p class="meta" style="margin-bottom: 4px;">In partnership with the Portuguese MS Society</p>
-			<p class="meta"><a href="https://github.com/Human-Singularity/brain-regeneration" style="color: var(--color-primary);">Open source — view the code on GitHub</a></p>
-		</div>
-	</div>
-</section>
-
-<!-- ── SCIENTIFIC CURATORS ── -->
-{{ $curators := where .Site.RegularPages "Section" "curators" }}
-{{ if $curators }}
-<section class="section bg-tint">
-	<div class="container">
-		<div class="text-center mb-4">
-			<h2>Guided by Scientific Curators</h2>
-			<p style="max-width: 600px; margin: 0 auto;">Real institutions and researchers define the scope of each research area. The science is curated by people, not just algorithms.</p>
-		</div>
-		<div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
-			{{ range $curators }}
-			<a href="{{ .RelPermalink }}" class="curator-chip">
-				<strong>{{ .Title }}</strong>
-				{{ with .Params.institution }}<span class="chip-institution">{{ . }}</span>{{ end }}
-			</a>
 			{{ end }}
 		</div>
 		<div class="text-center mt-4">
-			<a href="{{ "/curators/" | relURL }}" style="font-family: var(--font-heading); font-size: 15px; font-weight: 500;">Meet all curators &rarr;</a>
-		</div>
-	</div>
-</section>
-{{ end }}
-
-<!-- ── PROJECT NEWS + SUBSCRIBE ── -->
-{{ $globalLists := .Site.Params.subscriptions.global_lists }}
-{{ $newsPosts := first 3 (where (where .Site.RegularPages "Section" "news") ".Draft" false) }}
-<section class="section bg-tint">
-	<div class="container">
-		<div class="text-center mb-4">
-			<h2>Project News</h2>
-			<p style="max-width: 520px; margin: 0 auto;">Updates, milestones, and announcements from the Brain Regeneration Observatory.</p>
-		</div>
-
-		{{ if $newsPosts }}
-		<div class="row g-4 mb-4" style="max-width: 960px; margin-left: auto; margin-right: auto;">
-			{{ range $newsPosts }}
-			<div class="col-12 col-md-4">
-				<a href="{{ .RelPermalink }}" class="news-card d-flex flex-column">
-					<time class="news-card-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2 January 2006" }}</time>
-					<h3 class="news-card-title">{{ .Title }}</h3>
-					{{ with .Description }}<p class="news-card-excerpt">{{ . }}</p>{{ end }}
-				</a>
-			</div>
-			{{ end }}
-		</div>
-		<div class="text-center mb-5">
-			<a href="{{ "/news/" | relURL }}" style="font-family: var(--font-heading); font-size: 15px; font-weight: 500; color: var(--color-primary);">View all news &rarr;</a>
-		</div>
-		{{ end }}
-
-		<div class="newsletter-card" style="max-width: 560px;">
-			<div class="text-center mb-3">
-				<h3 style="font-size: 1.25rem; margin-bottom: 6px;">Stay in the loop</h3>
-				<p style="font-size: 15px; color: var(--color-muted); margin: 0;">Get project updates straight to your inbox.</p>
-			</div>
-			<form action="{{ "/subscribe" | relURL }}" method="POST">
-				{{ range $globalLists }}
-				<input type="hidden" name="feeds" value="list-{{ .list_id }}">
-				{{ end }}
-				<div class="row g-3 align-items-end">
-					<div class="col-6 col-md-3">
-						<label for="news_first_name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name <span style="color: var(--color-accent);">*</span></label>
-						<input type="text" class="form-control" id="news_first_name" name="first_name" autocomplete="given-name" required style="border-color: var(--color-border);">
-					</div>
-					<div class="col-6 col-md-4">
-						<label for="news_email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email <span style="color: var(--color-accent);">*</span></label>
-						<input type="email" class="form-control" id="news_email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
-					</div>
-					<div class="col-12 col-md-5">
-						<button type="submit" class="btn-amber w-100">Subscribe to updates</button>
-					</div>
-				</div>
-			</form>
+			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">Parkinson's Disease, ALS, and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to suggest a condition.</a></p>
 		</div>
 	</div>
 </section>
 
-<!-- ── NEWSLETTER SUBSCRIPTION ── -->
-{{ $researchAreas := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
-{{ $trials := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
+<!-- ── SUBSCRIBE ── -->
+{{ $researchSubscribe := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
+{{ $trialsSubscribe := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
 {{ $globalLists := .Site.Params.subscriptions.global_lists }}
 <section class="section bg-sand">
 	<div class="container">
@@ -274,20 +128,20 @@
 					<!-- Research digests -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Research Digests</div>
-						{{ range $researchAreas }}
+						{{ range $researchSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="feeds" value="{{ .Slug }}">
-							<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }} — weekly digest</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-{{ .Slug }}" name="feeds" value="{{ .Slug }}">
+							<label class="form-check-label" for="sub-feed-{{ .Slug }}">{{ .Title }} — weekly digest</label>
 						</div>
 						{{ end }}
 					</div>
 					<!-- Clinical trial alerts -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Clinical Trial Alerts</div>
-						{{ range $trials }}
+						{{ range $trialsSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
-							<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }}</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
+							<label class="form-check-label" for="sub-feed-trials-{{ .Slug }}">{{ .Title }}</label>
 						</div>
 						{{ end }}
 					</div>
@@ -299,8 +153,8 @@
 						<div class="checkbox-group-label">Project Updates</div>
 						{{ range $globalLists }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="feed-list-{{ .list_id }}" name="feeds" value="list-{{ .list_id }}">
-							<label class="form-check-label" for="feed-list-{{ .list_id }}">{{ .title }}</label>
+							<input class="form-check-input" type="checkbox" id="sub-list-{{ .list_id }}" name="feeds" value="list-{{ .list_id }}">
+							<label class="form-check-label" for="sub-list-{{ .list_id }}">{{ .title }}</label>
 						</div>
 						{{ end }}
 					</div>
@@ -346,75 +200,43 @@
 	</div>
 </section>
 
-<!-- ── SUPPORT ── -->
-<section class="section bg-sand" style="padding-top: 40px;">
+<!-- ── PROJECT NEWS (conditional — only if published posts exist) ── -->
+{{ $newsPosts := first 3 (where (where .Site.RegularPages "Section" "news") ".Draft" false) }}
+{{ if $newsPosts }}
+<section class="section bg-tint">
 	<div class="container">
-		<div class="narrow-col">
-			<h2 style="margin-bottom: 8px; font-family: var(--font-heading);">This project runs on donations</h2>
-			<p style="color: var(--color-muted); font-family: var(--font-heading); font-size: 15px; margin-bottom: 28px;">No ads, no paywalls, no gatekeeping. Your support keeps it that way.</p>
-
-			<!-- Stats banner (hidden until JS loads data) -->
-			<div id="home-donor-stats" class="donor-stats-banner" style="display:none;">
-				<div class="donor-stat-item">
-					<span class="stat-number" id="home-stat-amount">—</span>
-					<span class="stat-label">raised in <span id="home-stat-year"></span></span>
-				</div>
-				<div class="donor-stat-item">
-					<span class="stat-number" id="home-stat-count">—</span>
-					<span class="stat-label">donations</span>
-				</div>
+		<div class="text-center mb-4">
+			<h2>Project News</h2>
+			<p style="max-width: 520px; margin: 0 auto;">Updates, milestones, and announcements.</p>
+		</div>
+		<div class="row g-4" style="max-width: 960px; margin-left: auto; margin-right: auto;">
+			{{ range $newsPosts }}
+			<div class="col-12 col-md-4">
+				<a href="{{ .RelPermalink }}" class="news-card d-flex flex-column">
+					<time class="news-card-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2 January 2006" }}</time>
+					<h3 class="news-card-title">{{ .Title }}</h3>
+					{{ with .Description }}<p class="news-card-excerpt">{{ . }}</p>{{ end }}
+				</a>
 			</div>
-
-			<!-- Goal progress bar -->
-			<div id="home-donor-goal" class="donor-goal" style="display:none;">
-				<div class="donor-goal-header">
-					<span class="donor-goal-label">Annual goal</span>
-					<span class="donor-goal-value"><span id="home-goal-pct">0</span>% of €500</span>
-				</div>
-				<div class="donor-goal-track">
-					<div class="donor-goal-fill" id="home-goal-fill" style="width: 0%;"></div>
-				</div>
-				<p class="donor-goal-note">€500 / year covers our server costs.</p>
-			</div>
-
-			<div class="d-flex flex-wrap gap-3" style="margin-top: 28px;">
-				<a href="{{ "/donate/" | relURL }}" class="btn-amber">Support the project</a>
-			</div>
+			{{ end }}
+		</div>
+		<div class="text-center mt-4">
+			<a href="{{ "/news/" | relURL }}" style="font-family: var(--font-heading); font-size: 15px; font-weight: 500; color: var(--color-primary);">View all news &rarr;</a>
 		</div>
 	</div>
 </section>
+{{ end }}
 
-<!-- ── TRANSPARENCY SUMMARY ── -->
-<section class="section bg-tint">
+<!-- ── ABOUT CTA ── -->
+<section class="section bg-sand" style="padding-top: 56px; padding-bottom: 56px;">
 	<div class="container">
-		<div class="narrow-col" style="margin-bottom: 0;">
-			<h2 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 6px;">Open by design</h2>
-			<p style="font-family: var(--font-heading); font-size: 15px; color: var(--color-muted); margin-bottom: 32px;">No hidden funding, no black-box algorithms. Here is how we operate.</p>
-			<div class="transp-grid" style="grid-template-columns: repeat(3, 1fr);">
-				<div class="transp-card" style="pointer-events: none;">
-					<div class="transp-card-icon">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-					</div>
-					<h3 class="transp-card-title">Donor-funded</h3>
-					<p class="transp-card-desc">No ads, no commercial sponsors. Every euro raised is listed publicly on the transparency page.</p>
-				</div>
-				<div class="transp-card" style="pointer-events: none;">
-					<div class="transp-card-icon">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-					</div>
-					<h3 class="transp-card-title">Documented sources</h3>
-					<p class="transp-card-desc">Every database and registry we query is listed. Search queries are defined by scientific curators.</p>
-				</div>
-				<div class="transp-card" style="pointer-events: none;">
-					<div class="transp-card-icon">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-					</div>
-					<h3 class="transp-card-title">Open source</h3>
-					<p class="transp-card-desc">The website and the GregoryAI engine are open-source and publicly available on GitHub.</p>
-				</div>
+		<div class="narrow-col d-flex flex-column flex-md-row align-items-md-center gap-4" style="margin: 0 auto;">
+			<div style="flex: 1;">
+				<h2 style="margin-bottom: 8px;">This is a project to build hope</h2>
+				<p style="color: var(--color-muted); font-size: 16px; margin-bottom: 0;">Brain Regeneration grew out of Gregory-MS, an observatory for Multiple Sclerosis research built in 2021. Learn how it works, who funds it, and what principles guide the curation.</p>
 			</div>
-			<div style="margin-top: 28px;">
-				<a href="{{ "/transparency/" | relURL }}" class="btn-outline-teal">View full transparency page</a>
+			<div style="flex-shrink: 0;">
+				<a href="{{ "/about/" | relURL }}" class="btn-amber">About this project &rarr;</a>
 			</div>
 		</div>
 	</div>
@@ -422,9 +244,9 @@
 
 <script>
 (function () {
-	var STATS_URL  = 'https://api.gregory-ms.com/stats/?format=json&team=1%2C4%2C5%2C6';
-	var CACHE_KEY  = 'brObsStats';
-	var CACHE_TTL  = 12 * 60 * 60 * 1000; // 12 hours in ms
+	var STATS_URL = 'https://api.gregory-ms.com/stats/?format=json&team=1%2C4%2C5%2C6';
+	var CACHE_KEY = 'brObsStats';
+	var CACHE_TTL = 12 * 60 * 60 * 1000;
 
 	function fmt(n) {
 		return typeof n === 'number' ? n.toLocaleString('en') : '—';
@@ -437,12 +259,10 @@
 
 	function render(data) {
 		set('hero-articles-count', fmt(data.articles));
-		set('hero-authors-count',  fmt(data.authors));
 		set('hero-trials-count',   fmt(data.trials));
 		set('hero-sources-count',  fmt(data.sources && data.sources.total));
 	}
 
-	// Try reading a valid cached value first
 	try {
 		var cached = JSON.parse(localStorage.getItem(CACHE_KEY));
 		if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
@@ -451,53 +271,46 @@
 		}
 	} catch (e) {}
 
-	// Cache missing or stale — fetch fresh data
 	fetch(STATS_URL)
 		.then(function (r) { return r.json(); })
 		.then(function (data) {
 			render(data);
-			try {
-				localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
-			} catch (e) {}
+			try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (e) {}
 		})
 		.catch(function () {});
 })();
-</script>
 
-<script>
+// Per-team paper counts for research fronts
 (function () {
-	var API = 'https://stripe-transparency.human-singularity.workers.dev/';
-	var GOAL = 500;
+	var TEAMS = [4, 5, 6];
+	var CACHE_TTL = 12 * 60 * 60 * 1000;
 
-	var CURRENCY_SYMBOLS = { eur: '€', usd: '$', gbp: '£', cad: 'CA$', aud: 'A$' };
+	TEAMS.forEach(function (teamId) {
+		var cacheKey = 'brObsStatsT' + teamId;
+		var elId = 'team-count-' + teamId;
 
-	function formatCurrency(amount, currency) {
-		var code = (currency || 'eur').toLowerCase();
-		var sym  = CURRENCY_SYMBOLS[code] || currency.toUpperCase() + '\u00a0';
-		return sym + parseFloat(amount).toFixed(2).replace(/\.00$/, '');
-	}
+		function render(count) {
+			var el = document.getElementById(elId);
+			if (el) el.textContent = typeof count === 'number' ? count.toLocaleString('en') : '—';
+		}
 
-	fetch(API)
-		.then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
-		.then(function (data) {
-			var year = data.current_year;
-			var currencies = year.currencies || [];
-			var primaryCurr = currencies.length === 1 ? currencies[0] : 'eur';
-			var totalFmt = currencies.length > 1
-				? year.total_amount.toFixed(2) + ' (multiple currencies)'
-				: formatCurrency(year.total_amount, primaryCurr);
+		try {
+			var cached = JSON.parse(localStorage.getItem(cacheKey));
+			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+				render(cached.count);
+				return;
+			}
+		} catch (e) {}
 
-			document.getElementById('home-stat-amount').textContent = totalFmt;
-			document.getElementById('home-stat-count').textContent  = year.total_donations;
-			document.getElementById('home-stat-year').textContent   = year.year;
-			document.getElementById('home-donor-stats').style.display = '';
-
-			var pct = Math.min(Math.round((year.total_amount / GOAL) * 100), 100);
-			document.getElementById('home-goal-pct').textContent    = pct;
-			document.getElementById('home-goal-fill').style.width   = pct + '%';
-			document.getElementById('home-donor-goal').style.display = '';
-		})
-		.catch(function () {});
+		fetch('https://api.gregory-ms.com/stats/?format=json&team=' + teamId)
+			.then(function (r) { return r.json(); })
+			.then(function (data) {
+				var count = data.articles;
+				render(count);
+				try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), count: count })); } catch (e) {}
+			})
+			.catch(function () {});
+	});
 })();
 </script>
 

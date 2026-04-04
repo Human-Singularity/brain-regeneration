@@ -222,6 +222,21 @@ a:hover {
 	transform: translateY(-2px);
 }
 
+/* Curator logo inside research area card */
+.card-curator-logo {
+	width: 48px;
+	height: 48px;
+	margin-bottom: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.card-curator-logo img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+
 /* ── Hero ── */
 .hero {
 	background-color: var(--color-primary);
@@ -937,8 +952,33 @@ a:hover {
 .form-control:focus, .form-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 107, 106, 0.15); }
 
 /* ── Step icons ── */
+.step-number {
+	width: 36px;
+	height: 36px;
+	background-color: var(--color-primary);
+	color: #fff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	font-weight: 600;
+	margin-bottom: 12px;
+}
 .step-icon { width: 56px; height: 56px; margin-bottom: 20px; }
 .step-icon svg { width: 56px; height: 56px; stroke: var(--color-primary); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── About page example quotes ── */
+.about-example {
+	font-size: 15px;
+	font-style: italic;
+	color: var(--color-muted);
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid var(--color-border);
+	margin-bottom: 0;
+}
 
 /* ── Newsletter prompt (contextual, on research area pages) ── */
 .newsletter-prompt {
