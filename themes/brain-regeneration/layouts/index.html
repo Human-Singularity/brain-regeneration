@@ -203,6 +203,60 @@
 </section>
 {{ end }}
 
+<!-- ── PROJECT NEWS + SUBSCRIBE ── -->
+{{ $globalLists := .Site.Params.subscriptions.global_lists }}
+{{ $newsPosts := first 3 (where (where .Site.RegularPages "Section" "news") ".Draft" false) }}
+<section class="section bg-tint">
+	<div class="container">
+		<div class="text-center mb-4">
+			<h2>Project News</h2>
+			<p style="max-width: 520px; margin: 0 auto;">Updates, milestones, and announcements from the Brain Regeneration Observatory.</p>
+		</div>
+
+		{{ if $newsPosts }}
+		<div class="row g-4 mb-4" style="max-width: 960px; margin-left: auto; margin-right: auto;">
+			{{ range $newsPosts }}
+			<div class="col-12 col-md-4">
+				<a href="{{ .RelPermalink }}" class="news-card d-flex flex-column">
+					<time class="news-card-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2 January 2006" }}</time>
+					<h3 class="news-card-title">{{ .Title }}</h3>
+					{{ with .Description }}<p class="news-card-excerpt">{{ . }}</p>{{ end }}
+				</a>
+			</div>
+			{{ end }}
+		</div>
+		<div class="text-center mb-5">
+			<a href="{{ "/news/" | relURL }}" style="font-family: var(--font-heading); font-size: 15px; font-weight: 500; color: var(--color-primary);">View all news &rarr;</a>
+		</div>
+		{{ end }}
+
+		<div class="newsletter-card" style="max-width: 560px;">
+			<div class="text-center mb-3">
+				<h3 style="font-size: 1.25rem; margin-bottom: 6px;">Stay in the loop</h3>
+				<p style="font-size: 15px; color: var(--color-muted); margin: 0;">Get project updates straight to your inbox.</p>
+			</div>
+			<form action="{{ "/subscribe" | relURL }}" method="POST">
+				{{ range $globalLists }}
+				<input type="hidden" name="feeds" value="list-{{ .list_id }}">
+				{{ end }}
+				<div class="row g-3 align-items-end">
+					<div class="col-6 col-md-3">
+						<label for="news_first_name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name <span style="color: var(--color-accent);">*</span></label>
+						<input type="text" class="form-control" id="news_first_name" name="first_name" autocomplete="given-name" required style="border-color: var(--color-border);">
+					</div>
+					<div class="col-6 col-md-4">
+						<label for="news_email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email <span style="color: var(--color-accent);">*</span></label>
+						<input type="email" class="form-control" id="news_email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-5">
+						<button type="submit" class="btn-amber w-100">Subscribe to updates</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+
 <!-- ── NEWSLETTER SUBSCRIPTION ── -->
 {{ $researchAreas := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
 {{ $trials := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
