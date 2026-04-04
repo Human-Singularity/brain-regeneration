@@ -224,12 +224,13 @@ a:hover {
 
 /* Curator logo inside research area card */
 .card-curator-logo {
-	width: 48px;
-	height: 48px;
-	margin-bottom: 14px;
+	width: auto;
+	max-width: 120px;
+	height: 64px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 }
 .card-curator-logo img {
 	max-width: 100%;

@@ -53,7 +53,7 @@
 					{{ $curatorSlug := . }}
 					{{ with $.Site.GetPage (printf "/curators/%s" $curatorSlug) }}
 					{{ $logo := .Params.logo }}
-					<div class="d-flex align-items-center gap-3 mb-3">
+					<div class="d-flex align-items-start gap-3 mb-3">
 						<p class="meta" style="margin-bottom: 0; flex: 1;">Curated by {{ .Title }}{{ with .Params.institution }}, {{ . }}{{ end }}</p>
 						{{ if $logo }}
 						{{ $logoRes := .Resources.GetMatch $logo }}
