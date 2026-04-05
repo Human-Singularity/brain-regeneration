@@ -981,6 +981,48 @@ a:hover {
 	margin-bottom: 0;
 }
 
+/* ── About page — section TOC nav ── */
+.about-toc {
+	background-color: var(--color-secondary);
+	border-top: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--color-border);
+	padding: 0;
+}
+.about-toc-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+}
+.about-toc-list li {
+	flex: 1 1 auto;
+}
+.about-toc-list a {
+	display: block;
+	padding: 14px 20px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--color-text);
+	text-decoration: none;
+	text-align: center;
+	border-right: 1px solid var(--color-border);
+	transition: background-color 150ms ease, color 150ms ease;
+	white-space: nowrap;
+}
+.about-toc-list li:last-child a { border-right: none; }
+.about-toc-list a:hover {
+	background-color: var(--color-tint);
+	color: var(--color-primary);
+}
+@media (max-width: 767px) {
+	.about-toc-list { flex-direction: column; }
+	.about-toc-list a { border-right: none; border-bottom: 1px solid var(--color-border); }
+	.about-toc-list li:last-child a { border-bottom: none; }
+}
+
 /* ── Newsletter prompt (contextual, on research area pages) ── */
 .newsletter-prompt {
 	background-color: var(--color-tint);
