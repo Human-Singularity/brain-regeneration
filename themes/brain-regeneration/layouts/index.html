@@ -3,8 +3,8 @@
 <!-- ── HERO ── -->
 <section class="hero"{{ with .Params.hero_image }} style="background-image: url('{{ . | relURL }}');"{{ end }}>
 	<div class="container">
-		<h1>Mapping the Science of Brain Regeneration</h1>
-		<p>An AI-powered research observatory, curated by teams at the University of Coimbra, University of Cambridge, and iMed.ULisboa.</p>
+		<h1>{{ .Params.hero_heading | default .Title }}</h1>
+		<p>{{ .Params.hero_subheading | default .Params.subtitle }}</p>
 		<div class="d-flex flex-wrap gap-3 mt-4">
 			<a href="{{ "/observatory/#research-areas" | relURL }}" class="btn-amber">Explore Research</a>
 			<a href="{{ "/observatory/#conditions" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
