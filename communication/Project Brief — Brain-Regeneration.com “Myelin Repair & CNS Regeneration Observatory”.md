@@ -294,7 +294,7 @@ Lower priority — Can be deprioritized for initial launch
 
 **Project Team**
 
-[team@gregory-ms.com](mailto:team@gregory-ms.com)
+[team@brain-regeneration.com](mailto:team@brain-regeneration.com)
 
 **Bruno Amaral** – Project lead — [bruno@gregory-ms.com](mailto:bruno@gregory-ms.com) 
 
@@ -327,7 +327,7 @@ Lower priority — Can be deprioritized for initial launch
    - Under which open-source licence is the code released?
 
      - Creative Commons — Attribution 4.0 International — CC BY 4.0  
-     - The code is available on GitHub [https://github.com/brunoamaral/gregory-ai](https://github.com/brunoamaral/gregory-ai)  
+     - The code is available on GitHub [https://github.com/Human-Singularity/brain-regeneration](https://github.com/Human-Singularity/brain-regeneration)  
    - Who retains ownership of the derivative analytics we create?
 
      - We aim to be an open-science project and therefore that data should be freely available to all stakeholders.  

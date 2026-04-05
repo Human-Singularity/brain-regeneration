@@ -216,7 +216,7 @@ weight = 1
 
 [[menus.footer]]
 name = "Open source"
-url = "https://github.com/brunoamaral/gregory-ai"
+url = "https://github.com/Human-Singularity/brain-regeneration"
 weight = 2
 
 [[menus.footer]]
