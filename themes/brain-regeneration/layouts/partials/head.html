@@ -4,6 +4,8 @@
 {{- $description := .Description | default .Site.Params.description -}}
 {{ with $description }}<meta name="description" content="{{ . }}">{{ end }}
 
+{{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
+
 <!-- Canonical URL -->
 <link rel="canonical" href="{{ .Permalink }}">
 
