@@ -1,5 +1,5 @@
 ---
-title: "Neuroimmune Interactions"
+title: "Neuroimmunometabolism"
 date: 2025-01-06
 draft: false
 subscribe: true
