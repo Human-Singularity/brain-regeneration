@@ -1,6 +1,6 @@
 ---
 title: "Everything Can Change When A Few Believe It Is Possible"
-date: 2026-03-17T17:49:41Z
+date: 2026-04-14T17:49:41Z
 draft: false
 
 # Short summary for cards and meta
@@ -10,7 +10,7 @@ description: ""
 author: ""
 
 # Optional image for the news card (relative path in page bundle)
-image: "getty-images-SP1eE3q6MY8-unsplash.jpg"
+image: "getty-images-G1FpRJcLoCw-unsplash.jpg"
 
 # Tags for categorisation
 tags: []
