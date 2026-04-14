@@ -71,4 +71,4 @@ If you lead a research group working on brain regeneration and want to shape wha
 Hope is difficult to find, and sometimes, we have to create it.  
 
 ## The team
-[Bruno Amaral](https://brunoamaral.eu), [António Lopes](), [Micaela Gonçalves](https://www.linkedin.com/in/memgoncalves/).
+[Bruno Amaral](https://brunoamaral.eu/), [António Lopes](https://antoniolopes.info/), [Micaela Gonçalves](https://www.linkedin.com/in/memgoncalves/).
