@@ -65,6 +65,7 @@ path = "search"
 
 [permalinks]
 	post = "/research/:slug/"
+	news = "/news/:title/"
 	
 [sitemap]
 	changefreq = "weekly"
