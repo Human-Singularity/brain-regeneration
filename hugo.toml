@@ -1,5 +1,5 @@
 baseURL = 'https://brain-regeneration.com/'
-locale = 'en-us'
+locale = 'en-uk'
 title = 'Brain Regeneration Observatory'
 theme = 'brain-regeneration'
 copyright = 'Brain Regeneration Observatory 2025'
