@@ -666,6 +666,28 @@
 								<button class="ct-reset-btn" id="bannerResetBtn" type="button">Reset Banner Layout</button>
 							</div>
 
+							<!-- Content Position -->
+							<div class="ct-field">
+								<label class="ct-label">Content Position</label>
+								<div class="ct-layout-toggle" id="bannerLayoutToggle">
+									<button class="ct-layout-btn" data-layout="top-left" type="button">Top</button>
+									<button class="ct-layout-btn active" data-layout="middle-left" type="button">Middle</button>
+									<button class="ct-layout-btn" data-layout="bottom-left" type="button">Bottom</button>
+								</div>
+								<div class="ct-fine-grid" style="margin-top:10px;">
+									<div class="ct-fine-row">
+										<label for="bannerYOffset">Vertical Offset</label>
+										<input type="range" id="bannerYOffset" min="-30" max="30" step="1" value="0">
+										<span id="bannerYOffsetVal">0%</span>
+									</div>
+									<div class="ct-fine-row">
+										<label for="bannerXOffset">Horizontal Offset</label>
+										<input type="range" id="bannerXOffset" min="-10" max="10" step="1" value="0">
+										<span id="bannerXOffsetVal">0%</span>
+									</div>
+								</div>
+							</div>
+
 							<!-- Footer Text -->
 							<div class="ct-field">
 								<label class="ct-label" for="bannerFooterText">Footer Text</label>
@@ -1094,23 +1116,28 @@
 	var imageStartVal     = document.getElementById('bannerImageStartVal');
 	var diagonalDepthVal  = document.getElementById('bannerDiagonalDepthVal');
 	var contentWidthVal   = document.getElementById('bannerContentWidthVal');
+	var yOffsetVal        = document.getElementById('bannerYOffsetVal');
+	var xOffsetVal        = document.getElementById('bannerXOffsetVal');
 	var dropZone          = document.getElementById('bannerDropZone');
 
 	var state = {
-		format:        'website',
-		title:         document.getElementById('bannerTitle').value,
-		subtitle:      document.getElementById('bannerSubtitle').value,
-		titleColor:    '#2D2D2D',
-		accentColor:   '#1A6B6A',
-		buttonText:    document.getElementById('bannerBtnText').value,
-		showButton:    false,
-		bgImage:       null,
-		overlayColor:  '#ffffff',
+		format:         'website',
+		title:          document.getElementById('bannerTitle').value,
+		subtitle:       document.getElementById('bannerSubtitle').value,
+		titleColor:     '#2D2D2D',
+		accentColor:    '#1A6B6A',
+		buttonText:     document.getElementById('bannerBtnText').value,
+		showButton:     false,
+		bgImage:        null,
+		overlayColor:   '#ffffff',
 		overlayOpacity: 15,
-		imageStart:    74,
-		diagonalDepth: 14,
-		contentWidth:  46,
-		footerText:    document.getElementById('bannerFooterText').value
+		imageStart:     74,
+		diagonalDepth:  14,
+		contentWidth:   46,
+		contentLayout:  'middle-left',
+		contentYOffset: 0,
+		contentXOffset: 0,
+		footerText:     document.getElementById('bannerFooterText').value
 	};
 
 	function hexToRgb(hex) {
@@ -1170,6 +1197,8 @@
 		imageStartVal.textContent     = state.imageStart + '%';
 		diagonalDepthVal.textContent  = state.diagonalDepth + '%';
 		contentWidthVal.textContent   = state.contentWidth + '%';
+		yOffsetVal.textContent        = state.contentYOffset + '%';
+		xOffsetVal.textContent        = state.contentXOffset + '%';
 	}
 
 	function getFmt() { return FORMATS[state.format] || FORMATS.website; }
@@ -1212,43 +1241,72 @@
 			ctx.restore();
 		}
 
-		/* Text area */
-		var textLeft      = padX;
-		var textTop       = padTop + Math.round(h * 0.14);
-		var textRightLim  = Math.min(Math.round(w * (state.contentWidth / 100)), panel.bottomX - Math.round(w * 0.025));
-		var textWidth     = Math.max(280, textRightLim - textLeft);
-
+		/* Font sizes */
 		var titleSize    = Math.round(h * 0.105);
 		var subtitleSize = Math.round(h * 0.078);
 		var footerSize   = Math.round(h * 0.04);
 		var buttonH      = Math.round(h * 0.18);
 		var buttonFont   = Math.round(buttonH * 0.36);
 		var padBottom    = Math.round(h * 0.04);
+		var titleStep    = Math.round(titleSize * 1.05);
+		var subtitleStep = Math.round(subtitleSize * 1.22);
+
+		/* Text column bounds (X offset shifts the left edge) */
+		var xOffsetPx    = Math.round(w * (state.contentXOffset / 100));
+		var textLeft     = Math.max(0, padX + xOffsetPx);
+		var textRightLim = Math.min(Math.round(w * (state.contentWidth / 100)), panel.bottomX - Math.round(w * 0.025));
+		var textWidth    = Math.max(280, textRightLim - textLeft);
 
 		ctx.textBaseline = 'top';
 
-		/* Title */
-		ctx.font      = '700 ' + titleSize + 'px Helvetica, Arial, sans-serif';
+		/* Pre-measure lines to compute block height */
+		ctx.font = '700 ' + titleSize + 'px Helvetica, Arial, sans-serif';
 		var titleLines = getWrappedLines(ctx, state.title, textWidth);
+		ctx.font = subtitleSize + 'px Helvetica, Arial, sans-serif';
+		var subtitleLines = getWrappedLines(ctx, state.subtitle, textWidth);
+		var hasBtn = state.showButton && state.buttonText.trim();
+
+		var blockH = 0;
+		if (titleLines.length)    blockH += titleLines.length * titleStep;
+		if (subtitleLines.length) blockH += Math.round(h * 0.02) + subtitleLines.length * subtitleStep;
+		if (hasBtn)               blockH += Math.round(h * 0.06) + buttonH;
+
+		/* Vertical start from layout preset */
+		var textTop;
+		if (state.contentLayout === 'top-left') {
+			textTop = padTop;
+		} else if (state.contentLayout === 'bottom-left') {
+			textTop = Math.max(padTop, h - padTop - blockH);
+		} else { /* middle-left */
+			textTop = Math.max(padTop, Math.round((h - blockH) / 2));
+		}
+
+		/* Apply Y offset */
+		var yOffsetPx = Math.round(h * (state.contentYOffset / 100));
+		var minTop    = padTop;
+		var maxTop    = Math.max(minTop, h - padTop - blockH);
+		textTop = Math.min(maxTop, Math.max(minTop, textTop + yOffsetPx));
+
+		/* Title */
 		var y = textTop;
+		ctx.font      = '700 ' + titleSize + 'px Helvetica, Arial, sans-serif';
 		ctx.fillStyle = state.titleColor;
 		for (var t = 0; t < titleLines.length; t++) {
 			ctx.fillText(titleLines[t], textLeft, y);
-			y += Math.round(titleSize * 1.05);
+			y += titleStep;
 		}
 
 		/* Subtitle */
 		y += Math.round(h * 0.02);
 		ctx.font      = subtitleSize + 'px Helvetica, Arial, sans-serif';
 		ctx.fillStyle = state.accentColor;
-		var subtitleLines = getWrappedLines(ctx, state.subtitle, textWidth);
 		for (var s = 0; s < subtitleLines.length; s++) {
 			ctx.fillText(subtitleLines[s], textLeft, y);
-			y += Math.round(subtitleSize * 1.22);
+			y += subtitleStep;
 		}
 
 		/* Button */
-		if (state.showButton && state.buttonText.trim()) {
+		if (hasBtn) {
 			y += Math.round(h * 0.06);
 			ctx.font      = '700 ' + buttonFont + 'px Helvetica, Arial, sans-serif';
 			var btnLabel  = state.buttonText + ' \u2192';
@@ -1287,6 +1345,18 @@
 	bindRange('bannerImageStart',     'imageStart');
 	bindRange('bannerDiagonalDepth',  'diagonalDepth');
 	bindRange('bannerContentWidth',   'contentWidth');
+	bindRange('bannerYOffset',        'contentYOffset');
+	bindRange('bannerXOffset',        'contentXOffset');
+
+	var bannerLayoutBtns = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
+	for (var bli = 0; bli < bannerLayoutBtns.length; bli++) {
+		bannerLayoutBtns[bli].addEventListener('click', function () {
+			for (var blj = 0; blj < bannerLayoutBtns.length; blj++) bannerLayoutBtns[blj].classList.remove('active');
+			this.classList.add('active');
+			state.contentLayout = this.getAttribute('data-layout');
+			redraw();
+		});
+	}
 
 	var fmtBtns = document.querySelectorAll('#bannerFormatToggle .ct-format-btn');
 	for (var fi = 0; fi < fmtBtns.length; fi++) {
@@ -1335,14 +1405,22 @@
 	}
 
 	document.getElementById('bannerResetBtn').addEventListener('click', function () {
-		state.overlayOpacity = 15;
-		state.imageStart     = 74;
-		state.diagonalDepth  = 14;
-		state.contentWidth   = 46;
+		state.overlayOpacity  = 15;
+		state.imageStart      = 74;
+		state.diagonalDepth   = 14;
+		state.contentWidth    = 46;
+		state.contentLayout   = 'middle-left';
+		state.contentYOffset  = 0;
+		state.contentXOffset  = 0;
 		document.getElementById('bannerOverlayOpacity').value = '15';
 		document.getElementById('bannerImageStart').value     = '74';
 		document.getElementById('bannerDiagonalDepth').value  = '14';
 		document.getElementById('bannerContentWidth').value   = '46';
+		document.getElementById('bannerYOffset').value        = '0';
+		document.getElementById('bannerXOffset').value        = '0';
+		var bls = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
+		for (var k = 0; k < bls.length; k++) bls[k].classList.remove('active');
+		bls[1].classList.add('active');
 		updateLabels();
 		redraw();
 	});
