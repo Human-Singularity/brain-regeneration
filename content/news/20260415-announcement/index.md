@@ -4,7 +4,7 @@ date: 2026-04-16T12:25:00Z
 draft: false
 
 # Short summary for cards and meta
-description: ""
+description: "Introducing Brain-Regeneration.com — an open observatory tracking published research and clinical trials across CNS regeneration, built on GregoryAI and guided by three scientific research teams."
 
 # Author (slug from content/curators/ or free text)
 author: ""
@@ -13,7 +13,20 @@ author: ""
 image: "getty-images-G1FpRJcLoCw-unsplash.jpg"
 
 # Tags for categorisation
-tags: []
+tags:
+  - brain-regeneration
+  - multiple-sclerosis
+  - neurodegeneration
+  - open-science
+  - gregory-ai
+  - research
+  - remyelination
+  - neuroinflammation
+  - clinical-trials
+  - alzheimers
+  - parkinsons
+  - cell-reprogramming
+  - human-singularity
 
 # Display options
 options:

@@ -16,7 +16,7 @@ api:
   team_id: 6
   subject_id: 12
 
-spotlight: true
+spotlight: false
 
 queries:
   - string: "(neuroinflammation[Title/Abstract]) AND (neurodegeneration[Title/Abstract] OR neurodevelopment[Title/Abstract])"
