@@ -28,6 +28,27 @@
 </section>
 {{ end }}
 
+<!-- ── RESEARCH SPOTLIGHT ── -->
+{{ if and .Params.spotlight .Params.api }}
+<section class="bg-sand" style="padding-bottom: 48px;">
+	<div class="container">
+		<div class="narrow-col">
+			<h2 style="margin-bottom: 24px;">Research spotlight</h2>
+		</div>
+	</div>
+	<div class="spotlight-carousel-wrap">
+		<div class="container">
+			<div class="spotlight-carousel" id="spotlight-papers"
+				data-endpoint="{{ .Params.api.endpoint }}"
+				data-team-id="{{ .Params.api.team_id }}"
+				data-subject-id="{{ .Params.api.subject_id }}">
+				<p class="spotlight-loading" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Loading spotlight papers…</p>
+			</div>
+		</div>
+	</div>
+</section>
+{{ end }}
+
 <!-- ── CONDITION TAGS ── -->
 {{ with .Params.conditions }}
 <section class="bg-sand" style="padding-bottom: 48px;">
@@ -37,7 +58,7 @@
 				<span class="condition-tags-label">Related conditions:</span>
 				{{ range . }}
 				{{ $condSlug := . }}
-				{{ with $.Site.GetPage (printf "/clinical-trials/%s" $condSlug) }}
+				{{ with $.Site.GetPage (printf "/conditions/%s" $condSlug) }}
 				<a href="{{ .RelPermalink }}" class="condition-tag">{{ .Title }}</a>
 				{{ end }}
 				{{ end }}
@@ -208,6 +229,12 @@
 						<option value="researcher">Researcher</option>
 					</select>
 					<button type="submit" class="btn-amber">Subscribe</button>
+					{{ range .Site.Params.subscriptions.global_lists }}
+					<div class="form-check w-100 mt-2">
+						<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-ra-{{ .list_id }}">
+						<label class="form-check-label" for="global-list-ra-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} — <span style="color: var(--color-muted);">{{ . }}</span>{{ end }}</label>
+					</div>
+					{{ end }}
 				</form>
 			</div>
 		</div>
@@ -239,6 +266,9 @@
 </section>
 {{ end }}
 
+{{ if and .Params.spotlight .Params.api }}
+<script src="{{ "js/research-spotlight.js" | relURL }}" defer></script>
+{{ end }}
 <script src="{{ "js/research-feed.js" | relURL }}" defer></script>
 <script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
 

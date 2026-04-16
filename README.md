@@ -121,3 +121,4 @@ GregoryAi requires environment variables to be set in `gregory-ai/.env`. Copy fr
 ## Contributing
 
 Please refer to the project guidelines in the `communication/` folder for branding, messaging, and development standards.
+

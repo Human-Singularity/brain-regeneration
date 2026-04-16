@@ -4,7 +4,7 @@
 	<div class="container">
 		<p class="footer-supporters-label">Supporters</p>
 		<div class="footer-supporters-logos">
-			{{ range $supporters }}
+			{{ range $supporters.ByTitle }}
 			<a href="{{ .RelPermalink }}" class="footer-supporter-logo" title="{{ .Title }}">
 				{{ $logo := .Resources.GetMatch .Params.logo }}
 				{{ if $logo }}
@@ -18,10 +18,48 @@
 	</div>
 </section>
 {{ end }}
-<footer style="background-color: var(--color-primary); color: rgba(255,255,255,0.7); padding: 32px 0; font-family: var(--font-heading); font-size: 14px;">
-	<div class="container text-center">
-		<p style="margin-bottom: 4px;">&copy; {{ now.Year }} {{ .Site.Title }}. Open source under MIT licence.</p>
-		<p style="margin: 0;">Built with <a href="https://github.com/brunoamaral/gregory-ai" style="color: rgba(255,255,255,0.9);">GregoryAI</a></p>
+<footer class="site-footer">
+	<div class="container">
+		<div class="footer-grid">
+			<div class="footer-col">
+				<p class="footer-heading">Observatory</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/about/" | relURL }}">About</a></li>
+					<li><a href="{{ "/news/" | relURL }}">News</a></li>
+					<li><a href="{{ "/supporters/" | relURL }}">Supporters</a></li>
+					<li><a href="{{ "/transparency/" | relURL }}">Transparency</a></li>
+					<li><a href="{{ "/contact/" | relURL }}">Contact</a></li>
+					<li><a href="{{ "/privacy-policy/" | relURL }}">Privacy Policy</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Research</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/research-areas/" | relURL }}">Research Areas</a></li>
+					<li><a href="{{ "/conditions/" | relURL }}">Conditions</a></li>
+					<li><a href="{{ "/curators/" | relURL }}">Scientific Curators</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Get Involved</p>
+				<ul class="footer-links">
+					<li><a href="{{ "/subscribe/" | relURL }}">Subscribe</a></li>
+					<li><a href="{{ "/donate/" | relURL }}">Support the Project</a></li>
+					<li><a href="mailto:team@brain-regeneration.com">team@brain-regeneration.com</a></li>
+				</ul>
+			</div>
+			<div class="footer-col">
+				<p class="footer-heading">Open Source</p>
+				<ul class="footer-links">
+					<li><a href="https://github.com/brunoamaral/gregory-ai" target="_blank" rel="noopener">GregoryAI on GitHub</a></li>
+					<li><a href="https://github.com/Human-Singularity/brain-regeneration" target="_blank" rel="noopener">This website on GitHub</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>&copy; {{ now.Year }} {{ .Site.Title }}.</p>
+			<p>A project by the <a href="https://human-singularity.org/" target="_blank" rel="noopener">Human-Singularity Network</a>, a non-profit registered in Portugal (PT517563363). Open source under MIT licence.</p>
+		</div>
 	</div>
 </footer>
 

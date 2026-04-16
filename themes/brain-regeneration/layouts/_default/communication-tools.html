@@ -1,0 +1,1488 @@
+{{ define "extra-head" }}
+<style>
+/* ── Shared tool styles ──────────────────────────────────────────────────── */
+.ct-section { padding: 32px 0 80px; }
+
+.ct-tabs .nav-link {
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--color-muted);
+	border-radius: 8px 8px 0 0;
+	padding: 10px 24px;
+	border: none;
+	transition: color 150ms ease, background 150ms ease;
+}
+.ct-tabs .nav-link:hover { color: var(--color-primary); }
+.ct-tabs .nav-link.active {
+	color: var(--color-primary);
+	background: #fff;
+	border-bottom: 2px solid var(--color-primary);
+}
+.ct-tab-content { background: transparent; }
+
+/* ── Panel cards ─────────────────────────────────────────────────────────── */
+.ct-panel {
+	background: #fff;
+	border-radius: var(--radius);
+	padding: 28px;
+	box-shadow: var(--shadow);
+	margin-bottom: 24px;
+}
+.ct-panel-title {
+	font-family: var(--font-heading);
+	font-size: 17px;
+	font-weight: 700;
+	color: var(--color-text);
+	margin-bottom: 24px;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+.ct-field { margin-bottom: 20px; }
+.ct-label {
+	display: block;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--color-muted);
+	margin-bottom: 6px;
+}
+.ct-input,
+.ct-textarea {
+	width: 100%;
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 10px 14px;
+	font-size: 14px;
+	color: var(--color-text);
+	background: var(--color-secondary);
+	transition: border-color .2s;
+	outline: none;
+	font-family: var(--font-heading);
+	box-sizing: border-box;
+}
+.ct-input:focus,
+.ct-textarea:focus {
+	border-color: var(--color-primary);
+	background: #fff;
+}
+.ct-textarea { resize: vertical; min-height: 80px; }
+.ct-hint {
+	font-size: 12px;
+	color: var(--color-muted);
+	margin: 6px 0;
+	text-align: center;
+}
+
+/* ── Size & format toggles ───────────────────────────────────────────────── */
+.ct-size-toggle {
+	display: flex;
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+.ct-size-btn {
+	flex: 1;
+	padding: 10px 4px;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	border: none;
+	background: var(--color-secondary);
+	color: var(--color-muted);
+	cursor: pointer;
+	transition: background .15s, color .15s;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	border-right: 1px solid var(--color-border);
+}
+.ct-size-btn:last-child { border-right: none; }
+.ct-size-btn span { font-size: 10px; font-weight: 400; color: #bbb; }
+.ct-size-btn.active { background: var(--color-primary); color: #fff; }
+.ct-size-btn.active span { color: rgba(255,255,255,.75); }
+
+.ct-format-toggle {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+}
+.ct-format-btn {
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	background: var(--color-secondary);
+	color: var(--color-muted);
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	padding: 10px 8px;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color .15s, box-shadow .15s, color .15s;
+}
+.ct-format-btn span {
+	display: block;
+	font-size: 10px;
+	font-weight: 400;
+	color: var(--color-muted);
+}
+.ct-format-btn.active {
+	color: var(--color-text);
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px rgba(26,107,106,.15);
+}
+
+/* ── Layout toggles ──────────────────────────────────────────────────────── */
+.ct-layout-toggle {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+.ct-layout-btn {
+	border: 1.5px solid var(--color-border);
+	border-radius: var(--radius);
+	background: var(--color-secondary);
+	color: var(--color-muted);
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	padding: 10px 8px;
+	cursor: pointer;
+	transition: border-color .15s, box-shadow .15s, color .15s;
+}
+.ct-layout-btn.active {
+	color: var(--color-text);
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px rgba(26,107,106,.15);
+}
+
+/* ── Fine controls ───────────────────────────────────────────────────────── */
+.ct-fine-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px;
+}
+.ct-fine-row {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: 10px;
+}
+.ct-fine-row label {
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--color-muted);
+	min-width: 110px;
+}
+.ct-fine-row input[type="range"] {
+	width: 100%;
+	accent-color: var(--color-primary);
+}
+.ct-fine-row span {
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--color-muted);
+	min-width: 46px;
+	text-align: right;
+}
+.ct-reset-btn {
+	margin-top: 6px;
+	border: 1px solid var(--color-border);
+	background: var(--color-secondary);
+	color: var(--color-text);
+	border-radius: var(--radius);
+	padding: 8px 12px;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background .15s, border-color .15s;
+}
+.ct-reset-btn:hover { border-color: var(--color-primary); }
+
+/* ── Row layout ──────────────────────────────────────────────────────────── */
+.ct-row {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+.ct-row .ct-input { flex: 1; }
+.ct-checkbox-label {
+	white-space: nowrap;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* ── Drop zone ───────────────────────────────────────────────────────────── */
+.ct-drop-zone {
+	border: 2px dashed var(--color-border);
+	border-radius: var(--radius);
+	padding: 20px;
+	text-align: center;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	cursor: pointer;
+	transition: border-color .2s, background .2s;
+}
+.ct-drop-zone:hover,
+.ct-drop-zone.drag-over {
+	border-color: var(--color-primary);
+	background: rgba(26,107,106,.04);
+}
+.ct-file-link {
+	color: var(--color-primary);
+	text-decoration: underline;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+/* ── Colour swatches ─────────────────────────────────────────────────────── */
+.ct-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.ct-swatch {
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	border: 2px solid rgba(0,0,0,.12);
+	cursor: pointer;
+	transition: transform .15s, box-shadow .15s;
+	padding: 0;
+}
+.ct-swatch:hover { transform: scale(1.1); }
+.ct-swatch.active {
+	box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--color-primary);
+}
+
+/* ── Overlay controls ────────────────────────────────────────────────────── */
+.ct-overlay-row {
+	align-items: flex-start;
+	flex-wrap: wrap;
+	gap: 14px;
+}
+.ct-opacity-wrap {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+	min-width: 150px;
+}
+.ct-sublabel {
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--color-muted);
+	white-space: nowrap;
+}
+.ct-opacity-wrap input[type="range"] { flex: 1; accent-color: var(--color-primary); }
+.ct-opacity-wrap span {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	color: var(--color-muted);
+	min-width: 32px;
+}
+
+/* ── Download button ─────────────────────────────────────────────────────── */
+.ct-download-btn {
+	width: 100%;
+	padding: 14px;
+	background: var(--color-text);
+	color: #fff;
+	border: none;
+	border-radius: var(--radius);
+	font-family: var(--font-heading);
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 8px;
+	transition: background .2s;
+}
+.ct-download-btn:hover { background: #444; }
+.ct-download-btn svg { flex-shrink: 0; }
+
+/* ── Quick tips ──────────────────────────────────────────────────────────── */
+.ct-tips {
+	margin-top: 20px;
+	background: var(--color-tint);
+	border-radius: var(--radius);
+	padding: 16px;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+}
+.ct-tips strong { display: block; margin-bottom: 6px; color: var(--color-text); }
+.ct-tips ul { margin: 0; padding-left: 0; list-style: none; }
+.ct-tips li { margin-bottom: 4px; }
+.ct-tips li::before { content: "\2022\00a0"; }
+
+/* ── Preview panel ───────────────────────────────────────────────────────── */
+.ct-preview-panel {
+	background: var(--color-secondary);
+	border-radius: var(--radius);
+	padding: 28px;
+	box-shadow: var(--shadow);
+	position: sticky;
+	top: 80px;
+}
+.ct-canvas-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 260px;
+}
+#smtCanvas,
+#bannerCanvas {
+	max-width: 100%;
+	height: auto;
+	display: block;
+	box-shadow: 0 8px 32px rgba(45,45,45,.18);
+	border-radius: 6px;
+}
+.ct-dimensions {
+	text-align: center;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	color: var(--color-muted);
+	margin-top: 12px;
+	margin-bottom: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+	.ct-preview-panel {
+		position: static;
+		margin-bottom: 24px;
+	}
+	.ct-section .row {
+		flex-direction: column-reverse;
+	}
+}
+</style>
+{{ end }}
+
+{{ define "main" }}
+<section class="page-header bg-tint">
+	<div class="container">
+		<div class="narrow-col">
+			<h1>{{ .Title }}</h1>
+			{{ with .Description }}<p class="lead" style="font-size: 1.2rem; color: var(--color-muted); margin-top: 8px;">{{ . }}</p>{{ end }}
+		</div>
+	</div>
+</section>
+
+<section class="ct-section">
+	<div class="container">
+
+		<!-- Tool tabs -->
+		<ul class="nav ct-tabs mb-0" id="ctTabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active" id="smt-tab" data-bs-toggle="tab" data-bs-target="#smt-pane" type="button" role="tab" aria-controls="smt-pane" aria-selected="true">Social Media Post</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="banner-tab" data-bs-toggle="tab" data-bs-target="#banner-pane" type="button" role="tab" aria-controls="banner-pane" aria-selected="false">Banner</button>
+			</li>
+		</ul>
+		<div class="tab-content ct-tab-content pt-4" id="ctTabContent">
+
+			<!-- ══════════════════════════════════════════════════════════════ -->
+			<!-- TAB 1 — Social Media Post                                    -->
+			<!-- ══════════════════════════════════════════════════════════════ -->
+			<div class="tab-pane fade show active" id="smt-pane" role="tabpanel" aria-labelledby="smt-tab">
+				<div class="row">
+					<!-- Controls -->
+					<div class="col-12 col-lg-5">
+						<div class="ct-panel">
+							<h5 class="ct-panel-title">Customize Post</h5>
+
+							<!-- Post Size -->
+							<div class="ct-field">
+								<label class="ct-label">Post Size</label>
+								<div class="ct-size-toggle" id="smtSizeToggle">
+									<button class="ct-size-btn active" data-size="square" type="button">Square <span>1:1 (Instagram)</span></button>
+									<button class="ct-size-btn" data-size="landscape" type="button">Landscape <span>1.91:1 (FB/X)</span></button>
+									<button class="ct-size-btn" data-size="story" type="button">Story <span>9:16 (Stories)</span></button>
+								</div>
+							</div>
+
+							<!-- Content Layout -->
+							<div class="ct-field">
+								<label class="ct-label">Content Layout</label>
+								<div class="ct-layout-toggle" id="smtLayoutToggle">
+									<button class="ct-layout-btn active" data-layout="top-left" type="button">Top Left</button>
+									<button class="ct-layout-btn" data-layout="center" type="button">Center</button>
+									<button class="ct-layout-btn" data-layout="bottom-left" type="button">Bottom Left</button>
+								</div>
+								<div class="ct-fine-grid" style="margin-top:10px;">
+									<div class="ct-fine-row">
+										<label for="smtYOffset">Vertical Offset</label>
+										<input type="range" id="smtYOffset" min="-20" max="20" step="1" value="0">
+										<span id="smtYOffsetVal">0%</span>
+									</div>
+									<div class="ct-fine-row">
+										<label for="smtSidePad">Side Padding</label>
+										<input type="range" id="smtSidePad" min="0" max="20" step="1" value="0">
+										<span id="smtSidePadVal">0%</span>
+									</div>
+									<button class="ct-reset-btn" id="smtResetLayout" type="button">Reset Layout</button>
+								</div>
+							</div>
+
+							<!-- Title -->
+							<div class="ct-field">
+								<label class="ct-label" for="smtTitle">Title</label>
+								<input type="text" id="smtTitle" class="ct-input" placeholder="Enter title" value="Brain-Regeneration.com">
+							</div>
+
+							<!-- Subtitle -->
+							<div class="ct-field">
+								<label class="ct-label" for="smtDesc">Subtitle</label>
+								<textarea id="smtDesc" class="ct-textarea" placeholder="Enter subtitle" rows="3">When hope can't be found, we create it.</textarea>
+							</div>
+
+							<!-- Title Colour -->
+							<div class="ct-field">
+								<label class="ct-label">Title Colour</label>
+								<div class="ct-swatches" id="smtTitleSwatches">
+									<button class="ct-swatch active" data-color="#2D2D2D" style="background:#2D2D2D" title="Dark" type="button"></button>
+									<button class="ct-swatch" data-color="#ffffff" style="background:#ffffff" title="White" type="button"></button>
+									<button class="ct-swatch" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+								</div>
+							</div>
+
+							<!-- Button Text -->
+							<div class="ct-field">
+								<label class="ct-label" for="smtBtnText">Button Text</label>
+								<div class="ct-row">
+									<input type="text" id="smtBtnText" class="ct-input" placeholder="e.g. Read more" value="Read more">
+									<label class="ct-checkbox-label">
+										<input type="checkbox" id="smtShowBtn"> Show
+									</label>
+								</div>
+							</div>
+
+							<!-- Background Image -->
+							<div class="ct-field">
+								<label class="ct-label">Background Image</label>
+								<input type="text" id="smtBgUrl" class="ct-input" placeholder="Paste image URL...">
+								<p class="ct-hint">Leave empty for no background image — or upload below</p>
+								<div class="ct-drop-zone" id="smtDropZone">
+									<span>Drop an image here or <label for="smtBgFile" class="ct-file-link">browse</label></span>
+									<input type="file" id="smtBgFile" accept="image/*" style="display:none">
+								</div>
+							</div>
+
+							<!-- Overlay -->
+							<div class="ct-field">
+								<label class="ct-label">Image Overlay</label>
+								<div class="ct-row ct-overlay-row">
+									<div class="ct-swatches" id="smtOverlaySwatches">
+										<button class="ct-swatch active" data-color="#ffffff" style="background:#ffffff" title="White" type="button"></button>
+										<button class="ct-swatch" data-color="#000000" style="background:#000000" title="Black" type="button"></button>
+										<button class="ct-swatch" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+									</div>
+									<div class="ct-opacity-wrap">
+										<label class="ct-sublabel">Opacity</label>
+										<input type="range" id="smtOverlayOpacity" min="0" max="90" value="55" step="5">
+										<span id="smtOverlayOpacityVal">55%</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Accent Colour -->
+							<div class="ct-field">
+								<label class="ct-label">Accent Colour</label>
+								<div class="ct-swatches" id="smtAccentSwatches">
+									<button class="ct-swatch active" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#2a9090" style="background:#2a9090" title="Light Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#0d4d4d" style="background:#0d4d4d" title="Dark Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#E8913A" style="background:#E8913A" title="Amber" type="button"></button>
+									<button class="ct-swatch" data-color="#000000" style="background:#000000" title="Black" type="button"></button>
+								</div>
+							</div>
+
+							<!-- Footer Text -->
+							<div class="ct-field">
+								<label class="ct-label" for="smtFooterText">Footer Text</label>
+								<input type="text" id="smtFooterText" class="ct-input" placeholder="e.g. brain-regeneration.com">
+							</div>
+
+							<button class="ct-download-btn" id="smtDownloadBtn" type="button">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+									<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+									<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+								</svg>
+								Download Post
+							</button>
+
+							<div class="ct-tips">
+								<strong>Quick Tips</strong>
+								<ul>
+									<li>Keep titles concise for better readability</li>
+									<li>Use high-quality background images</li>
+									<li>Adjust overlay opacity to ensure text contrast</li>
+									<li>Test different sizes for various platforms</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- Preview -->
+					<div class="col-12 col-lg-7">
+						<div class="ct-preview-panel">
+							<h5 class="ct-panel-title">Preview</h5>
+							<div class="ct-canvas-wrap">
+								<canvas id="smtCanvas"></canvas>
+							</div>
+							<p class="ct-dimensions" id="smtDimensions">1080 &times; 1080 px</p>
+						</div>
+					</div>
+				</div>
+			</div><!-- /smt-pane -->
+
+			<!-- ══════════════════════════════════════════════════════════════ -->
+			<!-- TAB 2 — Banner                                               -->
+			<!-- ══════════════════════════════════════════════════════════════ -->
+			<div class="tab-pane fade" id="banner-pane" role="tabpanel" aria-labelledby="banner-tab">
+				<div class="row">
+					<!-- Controls -->
+					<div class="col-12 col-lg-5">
+						<div class="ct-panel">
+							<h5 class="ct-panel-title">Banner Settings</h5>
+
+							<!-- Banner Format -->
+							<div class="ct-field">
+								<label class="ct-label">Banner Format</label>
+								<div class="ct-format-toggle" id="bannerFormatToggle">
+									<button class="ct-format-btn active" data-format="website" type="button">Website<span>1400 × 400</span></button>
+									<button class="ct-format-btn" data-format="linkedin" type="button">LinkedIn Cover<span>1584 × 396</span></button>
+									<button class="ct-format-btn" data-format="hero" type="button">Hero Banner<span>1920 × 600</span></button>
+									<button class="ct-format-btn" data-format="wide" type="button">Wide Banner<span>1600 × 500</span></button>
+								</div>
+							</div>
+
+							<!-- Title -->
+							<div class="ct-field">
+								<label class="ct-label" for="bannerTitle">Title</label>
+								<input type="text" id="bannerTitle" class="ct-input" value="Brain-Regeneration.com" placeholder="Enter banner title">
+							</div>
+
+							<!-- Subtitle -->
+							<div class="ct-field">
+								<label class="ct-label" for="bannerSubtitle">Subtitle</label>
+								<textarea id="bannerSubtitle" class="ct-textarea" rows="3" placeholder="Enter subtitle">When hope can't be found, we create it.</textarea>
+							</div>
+
+							<!-- Title Colour -->
+							<div class="ct-field">
+								<label class="ct-label">Title Colour</label>
+								<div class="ct-swatches" id="bannerTitleSwatches">
+									<button class="ct-swatch active" data-color="#2D2D2D" style="background:#2D2D2D" title="Dark" type="button"></button>
+									<button class="ct-swatch" data-color="#ffffff" style="background:#ffffff" title="White" type="button"></button>
+									<button class="ct-swatch" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+								</div>
+							</div>
+
+							<!-- Accent Colour -->
+							<div class="ct-field">
+								<label class="ct-label">Accent Colour</label>
+								<div class="ct-swatches" id="bannerAccentSwatches">
+									<button class="ct-swatch active" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#2a9090" style="background:#2a9090" title="Light Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#0d4d4d" style="background:#0d4d4d" title="Dark Teal" type="button"></button>
+									<button class="ct-swatch" data-color="#E8913A" style="background:#E8913A" title="Amber" type="button"></button>
+									<button class="ct-swatch" data-color="#ffffff" style="background:#ffffff" title="White" type="button"></button>
+								</div>
+							</div>
+
+							<!-- Button Text -->
+							<div class="ct-field">
+								<label class="ct-label" for="bannerBtnText">Button Text</label>
+								<div class="ct-row">
+									<input type="text" id="bannerBtnText" class="ct-input" value="Explore the Observatory" placeholder="e.g. Learn more">
+									<label class="ct-checkbox-label">
+										<input type="checkbox" id="bannerShowBtn"> Show
+									</label>
+								</div>
+							</div>
+
+							<!-- Background Image -->
+							<div class="ct-field">
+								<label class="ct-label">Background Image</label>
+								<input type="text" id="bannerBgUrl" class="ct-input" placeholder="Paste image URL...">
+								<p class="ct-hint">Leave empty for no image, or upload below</p>
+								<div class="ct-drop-zone" id="bannerDropZone">
+									<span>Drop an image here or <label for="bannerBgFile" class="ct-file-link">browse</label></span>
+									<input type="file" id="bannerBgFile" accept="image/*" style="display:none">
+								</div>
+							</div>
+
+							<!-- Overlay -->
+							<div class="ct-field">
+								<label class="ct-label">Image Overlay</label>
+								<div class="ct-row" style="align-items:flex-start; flex-wrap:wrap; gap:14px;">
+									<div class="ct-swatches" id="bannerOverlaySwatches">
+										<button class="ct-swatch active" data-color="#ffffff" style="background:#ffffff" title="White" type="button"></button>
+										<button class="ct-swatch" data-color="#000000" style="background:#000000" title="Black" type="button"></button>
+										<button class="ct-swatch" data-color="#1A6B6A" style="background:#1A6B6A" title="Teal" type="button"></button>
+									</div>
+									<div class="ct-fine-row" style="grid-template-columns:auto 1fr auto; flex:1; min-width:170px;">
+										<label for="bannerOverlayOpacity">Opacity</label>
+										<input type="range" id="bannerOverlayOpacity" min="0" max="90" step="5" value="15">
+										<span id="bannerOverlayOpacityVal">15%</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Composition -->
+							<div class="ct-field">
+								<label class="ct-label">Composition</label>
+								<div class="ct-fine-grid">
+									<div class="ct-fine-row">
+										<label for="bannerImageStart">Image Start</label>
+										<input type="range" id="bannerImageStart" min="58" max="82" step="1" value="74">
+										<span id="bannerImageStartVal">74%</span>
+									</div>
+									<div class="ct-fine-row">
+										<label for="bannerDiagonalDepth">Diagonal Angle</label>
+										<input type="range" id="bannerDiagonalDepth" min="4" max="22" step="1" value="14">
+										<span id="bannerDiagonalDepthVal">14%</span>
+									</div>
+									<div class="ct-fine-row">
+										<label for="bannerContentWidth">Text Width</label>
+										<input type="range" id="bannerContentWidth" min="34" max="58" step="1" value="46">
+										<span id="bannerContentWidthVal">46%</span>
+									</div>
+								</div>
+								<button class="ct-reset-btn" id="bannerResetBtn" type="button">Reset Banner Layout</button>
+							</div>
+
+							<!-- Content Position -->
+							<div class="ct-field">
+								<label class="ct-label">Content Position</label>
+								<div class="ct-layout-toggle" id="bannerLayoutToggle">
+									<button class="ct-layout-btn" data-layout="top-left" type="button">Top</button>
+									<button class="ct-layout-btn active" data-layout="middle-left" type="button">Middle</button>
+									<button class="ct-layout-btn" data-layout="bottom-left" type="button">Bottom</button>
+								</div>
+								<div class="ct-fine-grid" style="margin-top:10px;">
+									<div class="ct-fine-row">
+										<label for="bannerYOffset">Vertical Offset</label>
+										<input type="range" id="bannerYOffset" min="-30" max="30" step="1" value="0">
+										<span id="bannerYOffsetVal">0%</span>
+									</div>
+									<div class="ct-fine-row">
+										<label for="bannerXOffset">Horizontal Offset</label>
+										<input type="range" id="bannerXOffset" min="-10" max="10" step="1" value="0">
+										<span id="bannerXOffsetVal">0%</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Footer Text -->
+							<div class="ct-field">
+								<label class="ct-label" for="bannerFooterText">Footer Text</label>
+								<input type="text" id="bannerFooterText" class="ct-input" placeholder="e.g. brain-regeneration.com">
+							</div>
+
+							<button class="ct-download-btn" id="bannerDownloadBtn" type="button">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+									<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+									<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+								</svg>
+								Download Banner
+							</button>
+
+							<div class="ct-tips">
+								<strong>Quick Tips</strong>
+								<ul>
+									<li>Use high-resolution horizontal photography for sharper diagonal crops</li>
+									<li>Keep the title short so the banner stays legible at smaller sizes</li>
+									<li>Use darker overlays when placing white text over bright photos</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- Preview -->
+					<div class="col-12 col-lg-7">
+						<div class="ct-preview-panel">
+							<h5 class="ct-panel-title">Preview</h5>
+							<div class="ct-canvas-wrap">
+								<canvas id="bannerCanvas"></canvas>
+							</div>
+							<p class="ct-dimensions" id="bannerDimensions">1400 × 400 px</p>
+						</div>
+					</div>
+				</div>
+			</div><!-- /banner-pane -->
+
+		</div><!-- /tab-content -->
+	</div><!-- /container -->
+</section>
+{{ end }}
+
+{{ define "page-scripts" }}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Social Media Post Generator ─────────────────────────────────────────── */
+(function () {
+	'use strict';
+
+	var SIZES = {
+		square:    { w: 1080, h: 1080, label: '1080 \u00d7 1080 px' },
+		landscape: { w: 1200, h: 628,  label: '1200 \u00d7 628 px'  },
+		story:     { w: 1080, h: 1920, label: '1080 \u00d7 1920 px' }
+	};
+
+	var canvas     = document.getElementById('smtCanvas');
+	var ctx        = canvas.getContext('2d');
+	var dimLabel   = document.getElementById('smtDimensions');
+	var opacityVal = document.getElementById('smtOverlayOpacityVal');
+	var dropZone   = document.getElementById('smtDropZone');
+	var yOffsetVal = document.getElementById('smtYOffsetVal');
+	var sidePadVal = document.getElementById('smtSidePadVal');
+
+	var state = {
+		size:           'square',
+		contentLayout:  'top-left',
+		contentYOffset: 0,
+		contentSidePad: 0,
+		title:          document.getElementById('smtTitle').value,
+		titleColor:     '#2D2D2D',
+		desc:           document.getElementById('smtDesc').value,
+		btnText:        document.getElementById('smtBtnText').value,
+		showBtn:        false,
+		bgImage:        null,
+		overlayColor:   '#ffffff',
+		overlayOpacity: 55,
+		accentColor:    '#1A6B6A',
+		footerText:     document.getElementById('smtFooterText').value
+	};
+
+	function hexToRgb(hex) {
+		return {
+			r: parseInt(hex.slice(1, 3), 16),
+			g: parseInt(hex.slice(3, 5), 16),
+			b: parseInt(hex.slice(5, 7), 16)
+		};
+	}
+
+	function getWrappedLines(context, text, maxWidth) {
+		if (!text) return [];
+		var paragraphs = text.split('\n');
+		var allLines   = [];
+		for (var p = 0; p < paragraphs.length; p++) {
+			var words = paragraphs[p].split(/\s+/).filter(Boolean);
+			if (!words.length) { allLines.push(''); continue; }
+			var line = '';
+			for (var i = 0; i < words.length; i++) {
+				var test = line ? line + ' ' + words[i] : words[i];
+				if (context.measureText(test).width > maxWidth && line) {
+					allLines.push(line);
+					line = words[i];
+				} else {
+					line = test;
+				}
+			}
+			if (line) allLines.push(line);
+		}
+		return allLines;
+	}
+
+	function drawPill(context, x, y, w, h, r) {
+		context.beginPath();
+		context.moveTo(x + r, y);
+		context.lineTo(x + w - r, y);
+		context.quadraticCurveTo(x + w, y, x + w, y + r);
+		context.lineTo(x + w, y + h - r);
+		context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+		context.lineTo(x + r, y + h);
+		context.quadraticCurveTo(x, y + h, x, y + h - r);
+		context.lineTo(x, y + r);
+		context.quadraticCurveTo(x, y, x + r, y);
+		context.closePath();
+	}
+
+	function updateFineLabels() {
+		yOffsetVal.textContent = state.contentYOffset + '%';
+		sidePadVal.textContent = state.contentSidePad + '%';
+	}
+
+	function redraw() {
+		var sz = SIZES[state.size];
+		var w  = sz.w;
+		var h  = sz.h;
+		canvas.width  = w;
+		canvas.height = h;
+
+		var ref     = Math.min(w, h);
+		var pad     = Math.round(ref * 0.056);
+		var textPad = pad + Math.round(ref * (state.contentSidePad / 100));
+		var textW   = Math.max(Math.round(w * 0.25), w - textPad * 2);
+
+		var titleSize  = Math.round(ref * 0.073);
+		var descSize   = Math.round(ref * 0.046);
+		var footerSize = Math.round(ref * 0.026);
+		var titleStep  = Math.round(titleSize * 1.15);
+		var descStep   = Math.round(descSize * 1.3);
+
+		ctx.textBaseline = 'top';
+
+		/* 1. Background fill */
+		ctx.fillStyle = '#E6F2F2';
+		ctx.fillRect(0, 0, w, h);
+
+		/* 2. Background image (cover) */
+		if (state.bgImage) {
+			var iw    = state.bgImage.naturalWidth;
+			var ih    = state.bgImage.naturalHeight;
+			var scale = Math.max(w / iw, h / ih);
+			ctx.drawImage(state.bgImage, (w - iw * scale) / 2, (h - ih * scale) / 2, iw * scale, ih * scale);
+		}
+
+		/* 3. Overlay */
+		var rgb = hexToRgb(state.overlayColor);
+		ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (state.overlayOpacity / 100) + ')';
+		ctx.fillRect(0, 0, w, h);
+
+		/* 4. Content block */
+		ctx.font = 'bold ' + titleSize + 'px Arial, Helvetica, sans-serif';
+		var titleLines = state.title ? getWrappedLines(ctx, state.title, textW) : [];
+		ctx.font = descSize + 'px Arial, Helvetica, sans-serif';
+		var descLines = state.desc ? getWrappedLines(ctx, state.desc, textW) : [];
+		var hasBtn    = state.showBtn && state.btnText.trim();
+		var btnLabel  = hasBtn ? state.btnText + ' \u2192' : '';
+		var btnH      = Math.round(ref * 0.062);
+		var btnFont   = Math.round(btnH * 0.42);
+		var btnPadX   = btnH * 0.9;
+		var btnW      = 0;
+		var btnR      = btnH / 2;
+
+		if (hasBtn) {
+			ctx.font = 'bold ' + btnFont + 'px Arial, Helvetica, sans-serif';
+			btnW = ctx.measureText(btnLabel).width + btnPadX * 2;
+		}
+
+		var blockH = 0;
+		if (titleLines.length) blockH += titleLines.length * titleStep;
+		if (descLines.length)  blockH += descLines.length * descStep;
+		if (titleLines.length && (descLines.length || hasBtn)) blockH += Math.round(ref * 0.022);
+		if (descLines.length && hasBtn) blockH += Math.round(ref * 0.038);
+		if (hasBtn) blockH += btnH;
+
+		var footerReserve = state.footerText ? footerSize + Math.round(ref * 0.05) : 0;
+		var startY    = pad;
+		var textX     = textPad;
+		var textAlign = 'left';
+
+		if (state.contentLayout === 'center') {
+			textX     = w / 2;
+			textAlign = 'center';
+			startY    = Math.max(pad, Math.round((h - footerReserve - blockH) / 2));
+		} else if (state.contentLayout === 'bottom-left') {
+			startY = Math.max(pad, h - pad - footerReserve - blockH);
+		}
+
+		var offsetPx  = Math.round(ref * (state.contentYOffset / 100));
+		var minStartY = pad;
+		var maxStartY = Math.max(minStartY, h - pad - footerReserve - blockH);
+		startY = Math.min(maxStartY, Math.max(minStartY, startY + offsetPx));
+
+		var cy = startY;
+		ctx.textAlign    = textAlign;
+		ctx.textBaseline = 'top';
+
+		if (titleLines.length) {
+			ctx.font      = 'bold ' + titleSize + 'px Arial, Helvetica, sans-serif';
+			ctx.fillStyle = state.titleColor;
+			for (var t = 0; t < titleLines.length; t++) {
+				ctx.fillText(titleLines[t], textX, cy);
+				cy += titleStep;
+			}
+			if (descLines.length || hasBtn) cy += Math.round(ref * 0.022);
+		}
+
+		if (descLines.length) {
+			ctx.font      = descSize + 'px Arial, Helvetica, sans-serif';
+			ctx.fillStyle = state.accentColor;
+			for (var d = 0; d < descLines.length; d++) {
+				ctx.fillText(descLines[d], textX, cy);
+				cy += descStep;
+			}
+			if (hasBtn) cy += Math.round(ref * 0.038);
+		}
+
+		if (hasBtn) {
+			var btnX = textAlign === 'center' ? Math.round((w - btnW) / 2) : textPad;
+			ctx.fillStyle = state.accentColor;
+			drawPill(ctx, btnX, cy, btnW, btnH, btnR);
+			ctx.fill();
+			ctx.font         = 'bold ' + btnFont + 'px Arial, Helvetica, sans-serif';
+			ctx.fillStyle    = '#ffffff';
+			ctx.textAlign    = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText(btnLabel, btnX + btnW / 2, cy + btnH / 2);
+		}
+		ctx.textAlign    = 'left';
+		ctx.textBaseline = 'top';
+
+		/* 5. Footer */
+		if (state.footerText) {
+			ctx.font         = footerSize + 'px Arial, Helvetica, sans-serif';
+			ctx.fillStyle    = state.accentColor;
+			ctx.textAlign    = 'center';
+			ctx.textBaseline = 'bottom';
+			ctx.fillText(state.footerText, w / 2, h - pad);
+			ctx.textAlign    = 'left';
+			ctx.textBaseline = 'top';
+		}
+	}
+
+	/* Size toggle */
+	var sizeBtns = document.querySelectorAll('#smtSizeToggle .ct-size-btn');
+	for (var i = 0; i < sizeBtns.length; i++) {
+		sizeBtns[i].addEventListener('click', function () {
+			for (var j = 0; j < sizeBtns.length; j++) sizeBtns[j].classList.remove('active');
+			this.classList.add('active');
+			state.size = this.getAttribute('data-size');
+			dimLabel.textContent = SIZES[state.size].label;
+			redraw();
+		});
+	}
+
+	/* Layout toggle */
+	var layoutBtns = document.querySelectorAll('#smtLayoutToggle .ct-layout-btn');
+	for (var ci = 0; ci < layoutBtns.length; ci++) {
+		layoutBtns[ci].addEventListener('click', function () {
+			for (var cj = 0; cj < layoutBtns.length; cj++) layoutBtns[cj].classList.remove('active');
+			this.classList.add('active');
+			state.contentLayout = this.getAttribute('data-layout');
+			redraw();
+		});
+	}
+
+	document.getElementById('smtYOffset').addEventListener('input', function (e) {
+		state.contentYOffset = parseInt(e.target.value, 10);
+		updateFineLabels();
+		redraw();
+	});
+	document.getElementById('smtSidePad').addEventListener('input', function (e) {
+		state.contentSidePad = parseInt(e.target.value, 10);
+		updateFineLabels();
+		redraw();
+	});
+
+	document.getElementById('smtResetLayout').addEventListener('click', function () {
+		state.contentLayout  = 'top-left';
+		state.contentYOffset = 0;
+		state.contentSidePad = 0;
+		document.getElementById('smtYOffset').value  = '0';
+		document.getElementById('smtSidePad').value  = '0';
+		for (var cj = 0; cj < layoutBtns.length; cj++) layoutBtns[cj].classList.remove('active');
+		layoutBtns[0].classList.add('active');
+		updateFineLabels();
+		redraw();
+	});
+
+	var smtFields = { smtTitle: 'title', smtDesc: 'desc', smtBtnText: 'btnText', smtFooterText: 'footerText' };
+	Object.keys(smtFields).forEach(function (id) {
+		document.getElementById(id).addEventListener('input', function (e) {
+			state[smtFields[id]] = e.target.value;
+			redraw();
+		});
+	});
+
+	document.getElementById('smtShowBtn').addEventListener('change', function (e) {
+		state.showBtn = e.target.checked;
+		document.getElementById('smtBtnText').disabled = !e.target.checked;
+		redraw();
+	});
+
+	var smtBgUrlTimer;
+	document.getElementById('smtBgUrl').addEventListener('input', function (e) {
+		clearTimeout(smtBgUrlTimer);
+		var url = e.target.value.trim();
+		if (!url) { state.bgImage = null; redraw(); return; }
+		smtBgUrlTimer = setTimeout(function () {
+			var img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.onload  = function () { state.bgImage = img; redraw(); };
+			img.onerror = function () {};
+			img.src = url;
+		}, 700);
+	});
+
+	function smtHandleFile(file) {
+		if (!file || !file.type.startsWith('image/')) return;
+		var reader = new FileReader();
+		reader.onload = function (ev) {
+			var img = new Image();
+			img.onload = function () { state.bgImage = img; redraw(); };
+			img.src = ev.target.result;
+			document.getElementById('smtBgUrl').value = '';
+			dropZone.querySelector('span').textContent = file.name;
+		};
+		reader.readAsDataURL(file);
+	}
+
+	document.getElementById('smtBgFile').addEventListener('change', function (e) { smtHandleFile(e.target.files[0]); });
+	dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+	dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+	dropZone.addEventListener('drop', function (e) { e.preventDefault(); dropZone.classList.remove('drag-over'); smtHandleFile(e.dataTransfer.files[0]); });
+
+	var smtOverlaySw = document.querySelectorAll('#smtOverlaySwatches .ct-swatch');
+	for (var oi = 0; oi < smtOverlaySw.length; oi++) {
+		smtOverlaySw[oi].addEventListener('click', function () {
+			for (var k = 0; k < smtOverlaySw.length; k++) smtOverlaySw[k].classList.remove('active');
+			this.classList.add('active');
+			state.overlayColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	document.getElementById('smtOverlayOpacity').addEventListener('input', function (e) {
+		state.overlayOpacity = parseInt(e.target.value, 10);
+		opacityVal.textContent = e.target.value + '%';
+		redraw();
+	});
+
+	var smtAccentSw = document.querySelectorAll('#smtAccentSwatches .ct-swatch');
+	for (var ai = 0; ai < smtAccentSw.length; ai++) {
+		smtAccentSw[ai].addEventListener('click', function () {
+			for (var k = 0; k < smtAccentSw.length; k++) smtAccentSw[k].classList.remove('active');
+			this.classList.add('active');
+			state.accentColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	var smtTitleSw = document.querySelectorAll('#smtTitleSwatches .ct-swatch');
+	for (var ti = 0; ti < smtTitleSw.length; ti++) {
+		smtTitleSw[ti].addEventListener('click', function () {
+			for (var tk = 0; tk < smtTitleSw.length; tk++) smtTitleSw[tk].classList.remove('active');
+			this.classList.add('active');
+			state.titleColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	document.getElementById('smtDownloadBtn').addEventListener('click', function () {
+		redraw();
+		var sz = SIZES[state.size];
+		try {
+			var link = document.createElement('a');
+			link.download = 'brain-regeneration-post-' + state.size + '-' + sz.w + 'x' + sz.h + '.png';
+			link.href = canvas.toDataURL('image/png');
+			link.click();
+		} catch (err) {
+			alert('Download failed: the background image may be blocked by cross-origin restrictions.\n\nPlease use the file upload option instead of a URL.');
+		}
+	});
+
+	updateFineLabels();
+	(function () {
+		var defaultImg = new Image();
+		defaultImg.onload = function () { state.bgImage = defaultImg; redraw(); };
+		defaultImg.src = '/images/getty-images-G1FpRJcLoCw-unsplash.jpg';
+		redraw();
+	})();
+})();
+
+/* ── Banner Generator ─────────────────────────────────────────────────────── */
+(function () {
+	'use strict';
+
+	var FORMATS = {
+		website:  { w: 1400, h: 400, label: '1400 \u00d7 400 px' },
+		linkedin: { w: 1584, h: 396, label: '1584 \u00d7 396 px' },
+		hero:     { w: 1920, h: 600, label: '1920 \u00d7 600 px' },
+		wide:     { w: 1600, h: 500, label: '1600 \u00d7 500 px' }
+	};
+
+	var canvas            = document.getElementById('bannerCanvas');
+	var ctx               = canvas.getContext('2d');
+	var dimLabel          = document.getElementById('bannerDimensions');
+	var overlayOpacityVal = document.getElementById('bannerOverlayOpacityVal');
+	var imageStartVal     = document.getElementById('bannerImageStartVal');
+	var diagonalDepthVal  = document.getElementById('bannerDiagonalDepthVal');
+	var contentWidthVal   = document.getElementById('bannerContentWidthVal');
+	var yOffsetVal        = document.getElementById('bannerYOffsetVal');
+	var xOffsetVal        = document.getElementById('bannerXOffsetVal');
+	var dropZone          = document.getElementById('bannerDropZone');
+
+	var state = {
+		format:         'website',
+		title:          document.getElementById('bannerTitle').value,
+		subtitle:       document.getElementById('bannerSubtitle').value,
+		titleColor:     '#2D2D2D',
+		accentColor:    '#1A6B6A',
+		buttonText:     document.getElementById('bannerBtnText').value,
+		showButton:     false,
+		bgImage:        null,
+		overlayColor:   '#ffffff',
+		overlayOpacity: 15,
+		imageStart:     74,
+		diagonalDepth:  14,
+		contentWidth:   46,
+		contentLayout:  'middle-left',
+		contentYOffset: 0,
+		contentXOffset: 0,
+		footerText:     document.getElementById('bannerFooterText').value
+	};
+
+	function hexToRgb(hex) {
+		return {
+			r: parseInt(hex.slice(1, 3), 16),
+			g: parseInt(hex.slice(3, 5), 16),
+			b: parseInt(hex.slice(5, 7), 16)
+		};
+	}
+
+	function getWrappedLines(context, text, maxWidth) {
+		if (!text) return [];
+		var words = text.split(/\s+/).filter(Boolean);
+		var lines = [];
+		var line  = '';
+		for (var i = 0; i < words.length; i++) {
+			var test = line ? line + ' ' + words[i] : words[i];
+			if (context.measureText(test).width > maxWidth && line) {
+				lines.push(line);
+				line = words[i];
+			} else {
+				line = test;
+			}
+		}
+		if (line) lines.push(line);
+		return lines;
+	}
+
+	function drawPill(context, x, y, w, h, r) {
+		context.beginPath();
+		context.moveTo(x + r, y);
+		context.lineTo(x + w - r, y);
+		context.quadraticCurveTo(x + w, y, x + w, y + r);
+		context.lineTo(x + w, y + h - r);
+		context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+		context.lineTo(x + r, y + h);
+		context.quadraticCurveTo(x, y + h, x, y + h - r);
+		context.lineTo(x, y + r);
+		context.quadraticCurveTo(x, y, x + r, y);
+		context.closePath();
+	}
+
+	function drawImagePanel(context, w, h, startX, depth) {
+		var topX    = Math.round(w * (startX / 100));
+		var bottomX = Math.round(w * ((startX - depth) / 100));
+		context.beginPath();
+		context.moveTo(topX, 0);
+		context.lineTo(w, 0);
+		context.lineTo(w, h);
+		context.lineTo(bottomX, h);
+		context.closePath();
+		return { topX: topX, bottomX: bottomX };
+	}
+
+	function updateLabels() {
+		overlayOpacityVal.textContent = state.overlayOpacity + '%';
+		imageStartVal.textContent     = state.imageStart + '%';
+		diagonalDepthVal.textContent  = state.diagonalDepth + '%';
+		contentWidthVal.textContent   = state.contentWidth + '%';
+		yOffsetVal.textContent        = state.contentYOffset + '%';
+		xOffsetVal.textContent        = state.contentXOffset + '%';
+	}
+
+	function getFmt() { return FORMATS[state.format] || FORMATS.website; }
+
+	function redraw() {
+		var fmt = getFmt();
+		var w   = fmt.w;
+		var h   = fmt.h;
+		canvas.width  = w;
+		canvas.height = h;
+		dimLabel.textContent = fmt.label;
+
+		ctx.clearRect(0, 0, w, h);
+		ctx.fillStyle = '#ffffff';
+		ctx.fillRect(0, 0, w, h);
+
+		var padX    = Math.round(w * 0.038);
+		var padTop  = Math.round(h * 0.05);
+		var panel   = drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+
+		/* Image panel */
+		if (state.bgImage) {
+			ctx.save();
+			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+			ctx.clip();
+			var iw    = state.bgImage.naturalWidth;
+			var ih    = state.bgImage.naturalHeight;
+			var scale = Math.max(w / iw, h / ih);
+			ctx.drawImage(state.bgImage, (w - iw * scale) / 2, (h - ih * scale) / 2, iw * scale, ih * scale);
+			var rgb = hexToRgb(state.overlayColor);
+			ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (state.overlayOpacity / 100) + ')';
+			ctx.fillRect(0, 0, w, h);
+			ctx.restore();
+		} else {
+			ctx.save();
+			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+			ctx.clip();
+			ctx.fillStyle = '#E6F2F2';
+			ctx.fillRect(0, 0, w, h);
+			ctx.restore();
+		}
+
+		/* Font sizes */
+		var titleSize    = Math.round(h * 0.105);
+		var subtitleSize = Math.round(h * 0.078);
+		var footerSize   = Math.round(h * 0.04);
+		var buttonH      = Math.round(h * 0.18);
+		var buttonFont   = Math.round(buttonH * 0.36);
+		var padBottom    = Math.round(h * 0.04);
+		var titleStep    = Math.round(titleSize * 1.05);
+		var subtitleStep = Math.round(subtitleSize * 1.22);
+
+		/* Text column bounds (X offset shifts the left edge) */
+		var xOffsetPx    = Math.round(w * (state.contentXOffset / 100));
+		var textLeft     = Math.max(0, padX + xOffsetPx);
+		var textRightLim = Math.min(Math.round(w * (state.contentWidth / 100)), panel.bottomX - Math.round(w * 0.025));
+		var textWidth    = Math.max(280, textRightLim - textLeft);
+
+		ctx.textBaseline = 'top';
+
+		/* Pre-measure lines to compute block height */
+		ctx.font = '700 ' + titleSize + 'px Helvetica, Arial, sans-serif';
+		var titleLines = getWrappedLines(ctx, state.title, textWidth);
+		ctx.font = subtitleSize + 'px Helvetica, Arial, sans-serif';
+		var subtitleLines = getWrappedLines(ctx, state.subtitle, textWidth);
+		var hasBtn = state.showButton && state.buttonText.trim();
+
+		var blockH = 0;
+		if (titleLines.length)    blockH += titleLines.length * titleStep;
+		if (subtitleLines.length) blockH += Math.round(h * 0.02) + subtitleLines.length * subtitleStep;
+		if (hasBtn)               blockH += Math.round(h * 0.06) + buttonH;
+
+		/* Vertical start from layout preset */
+		var textTop;
+		if (state.contentLayout === 'top-left') {
+			textTop = padTop;
+		} else if (state.contentLayout === 'bottom-left') {
+			textTop = Math.max(padTop, h - padTop - blockH);
+		} else { /* middle-left */
+			textTop = Math.max(padTop, Math.round((h - blockH) / 2));
+		}
+
+		/* Apply Y offset */
+		var yOffsetPx = Math.round(h * (state.contentYOffset / 100));
+		var minTop    = padTop;
+		var maxTop    = Math.max(minTop, h - padTop - blockH);
+		textTop = Math.min(maxTop, Math.max(minTop, textTop + yOffsetPx));
+
+		/* Title */
+		var y = textTop;
+		ctx.font      = '700 ' + titleSize + 'px Helvetica, Arial, sans-serif';
+		ctx.fillStyle = state.titleColor;
+		for (var t = 0; t < titleLines.length; t++) {
+			ctx.fillText(titleLines[t], textLeft, y);
+			y += titleStep;
+		}
+
+		/* Subtitle */
+		y += Math.round(h * 0.02);
+		ctx.font      = subtitleSize + 'px Helvetica, Arial, sans-serif';
+		ctx.fillStyle = state.accentColor;
+		for (var s = 0; s < subtitleLines.length; s++) {
+			ctx.fillText(subtitleLines[s], textLeft, y);
+			y += subtitleStep;
+		}
+
+		/* Button */
+		if (hasBtn) {
+			y += Math.round(h * 0.06);
+			ctx.font      = '700 ' + buttonFont + 'px Helvetica, Arial, sans-serif';
+			var btnLabel  = state.buttonText + ' \u2192';
+			var btnW      = Math.round(ctx.measureText(btnLabel).width + buttonH * 1.35);
+			ctx.fillStyle = state.accentColor;
+			drawPill(ctx, textLeft, y, btnW, buttonH, Math.round(buttonH / 2));
+			ctx.fill();
+			ctx.fillStyle    = '#ffffff';
+			ctx.textAlign    = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText(btnLabel, textLeft + btnW / 2, y + buttonH / 2);
+			ctx.textAlign    = 'left';
+			ctx.textBaseline = 'top';
+		}
+
+		/* Footer */
+		if (state.footerText) {
+			ctx.font         = footerSize + 'px Helvetica, Arial, sans-serif';
+			ctx.fillStyle    = state.accentColor;
+			ctx.fillText(state.footerText, padX, h - padBottom - footerSize);
+		}
+	}
+
+	function bindText(id, key) {
+		document.getElementById(id).addEventListener('input', function (e) { state[key] = e.target.value; redraw(); });
+	}
+	function bindRange(id, key) {
+		document.getElementById(id).addEventListener('input', function (e) { state[key] = parseInt(e.target.value, 10); updateLabels(); redraw(); });
+	}
+
+	bindText('bannerTitle',    'title');
+	bindText('bannerSubtitle', 'subtitle');
+	bindText('bannerBtnText',  'buttonText');
+	bindText('bannerFooterText', 'footerText');
+	bindRange('bannerOverlayOpacity', 'overlayOpacity');
+	bindRange('bannerImageStart',     'imageStart');
+	bindRange('bannerDiagonalDepth',  'diagonalDepth');
+	bindRange('bannerContentWidth',   'contentWidth');
+	bindRange('bannerYOffset',        'contentYOffset');
+	bindRange('bannerXOffset',        'contentXOffset');
+
+	var bannerLayoutBtns = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
+	for (var bli = 0; bli < bannerLayoutBtns.length; bli++) {
+		bannerLayoutBtns[bli].addEventListener('click', function () {
+			for (var blj = 0; blj < bannerLayoutBtns.length; blj++) bannerLayoutBtns[blj].classList.remove('active');
+			this.classList.add('active');
+			state.contentLayout = this.getAttribute('data-layout');
+			redraw();
+		});
+	}
+
+	var fmtBtns = document.querySelectorAll('#bannerFormatToggle .ct-format-btn');
+	for (var fi = 0; fi < fmtBtns.length; fi++) {
+		fmtBtns[fi].addEventListener('click', function () {
+			for (var fj = 0; fj < fmtBtns.length; fj++) fmtBtns[fj].classList.remove('active');
+			this.classList.add('active');
+			state.format = this.getAttribute('data-format');
+			redraw();
+		});
+	}
+
+	document.getElementById('bannerShowBtn').addEventListener('change', function (e) {
+		state.showButton = e.target.checked;
+		document.getElementById('bannerBtnText').disabled = !e.target.checked;
+		redraw();
+	});
+
+	var bannerTitleSw = document.querySelectorAll('#bannerTitleSwatches .ct-swatch');
+	for (var ti = 0; ti < bannerTitleSw.length; ti++) {
+		bannerTitleSw[ti].addEventListener('click', function () {
+			for (var tk = 0; tk < bannerTitleSw.length; tk++) bannerTitleSw[tk].classList.remove('active');
+			this.classList.add('active');
+			state.titleColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	var bannerAccentSw = document.querySelectorAll('#bannerAccentSwatches .ct-swatch');
+	for (var ai = 0; ai < bannerAccentSw.length; ai++) {
+		bannerAccentSw[ai].addEventListener('click', function () {
+			for (var ak = 0; ak < bannerAccentSw.length; ak++) bannerAccentSw[ak].classList.remove('active');
+			this.classList.add('active');
+			state.accentColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	var bannerOverlaySw = document.querySelectorAll('#bannerOverlaySwatches .ct-swatch');
+	for (var oi = 0; oi < bannerOverlaySw.length; oi++) {
+		bannerOverlaySw[oi].addEventListener('click', function () {
+			for (var ok = 0; ok < bannerOverlaySw.length; ok++) bannerOverlaySw[ok].classList.remove('active');
+			this.classList.add('active');
+			state.overlayColor = this.getAttribute('data-color');
+			redraw();
+		});
+	}
+
+	document.getElementById('bannerResetBtn').addEventListener('click', function () {
+		state.overlayOpacity  = 15;
+		state.imageStart      = 74;
+		state.diagonalDepth   = 14;
+		state.contentWidth    = 46;
+		state.contentLayout   = 'middle-left';
+		state.contentYOffset  = 0;
+		state.contentXOffset  = 0;
+		document.getElementById('bannerOverlayOpacity').value = '15';
+		document.getElementById('bannerImageStart').value     = '74';
+		document.getElementById('bannerDiagonalDepth').value  = '14';
+		document.getElementById('bannerContentWidth').value   = '46';
+		document.getElementById('bannerYOffset').value        = '0';
+		document.getElementById('bannerXOffset').value        = '0';
+		var bls = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
+		for (var k = 0; k < bls.length; k++) bls[k].classList.remove('active');
+		bls[1].classList.add('active');
+		updateLabels();
+		redraw();
+	});
+
+	function bannerHandleFile(file) {
+		if (!file || !file.type.startsWith('image/')) return;
+		var reader = new FileReader();
+		reader.onload = function (ev) {
+			var img = new Image();
+			img.onload = function () { state.bgImage = img; redraw(); };
+			img.src = ev.target.result;
+			document.getElementById('bannerBgUrl').value = '';
+			dropZone.querySelector('span').textContent = file.name;
+		};
+		reader.readAsDataURL(file);
+	}
+
+	document.getElementById('bannerBgFile').addEventListener('change', function (e) { bannerHandleFile(e.target.files[0]); });
+	dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+	dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+	dropZone.addEventListener('drop', function (e) { e.preventDefault(); dropZone.classList.remove('drag-over'); bannerHandleFile(e.dataTransfer.files[0]); });
+
+	var bannerBgUrlTimer;
+	document.getElementById('bannerBgUrl').addEventListener('input', function (e) {
+		clearTimeout(bannerBgUrlTimer);
+		var url = e.target.value.trim();
+		if (!url) { state.bgImage = null; redraw(); return; }
+		bannerBgUrlTimer = setTimeout(function () {
+			var img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.onload  = function () { state.bgImage = img; redraw(); };
+			img.onerror = function () {};
+			img.src = url;
+		}, 700);
+	});
+
+	document.getElementById('bannerDownloadBtn').addEventListener('click', function () {
+		redraw();
+		try {
+			var fmt  = getFmt();
+			var link = document.createElement('a');
+			link.download = 'brain-regeneration-banner-' + state.format + '-' + fmt.w + 'x' + fmt.h + '.png';
+			link.href = canvas.toDataURL('image/png');
+			link.click();
+		} catch (err) {
+			alert('Download failed: the background image may be blocked by cross-origin restrictions.\n\nPlease use the file upload option instead of a URL.');
+		}
+	});
+
+	/* Re-draw when switching to the banner tab */
+	var bannerTabBtn = document.getElementById('banner-tab');
+	if (bannerTabBtn) {
+		bannerTabBtn.addEventListener('shown.bs.tab', function () { redraw(); });
+	}
+
+	updateLabels();
+	(function () {
+		var defaultImg = new Image();
+		defaultImg.onload = function () { state.bgImage = defaultImg; redraw(); };
+		defaultImg.src = '/images/getty-images-G1FpRJcLoCw-unsplash.jpg';
+		redraw();
+	})();
+})();
+</script>
+{{ end }}

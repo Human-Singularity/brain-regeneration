@@ -5,7 +5,7 @@
 	<div class="container">
 		<a href="{{ "/" | relURL }}">Home</a>
 		<span>/</span>
-		<strong>Clinical Trials</strong>
+		<strong>Conditions</strong>
 	</div>
 </div>
 
@@ -18,7 +18,7 @@
 </section>
 
 <!-- ── CONDITIONS GRID ── -->
-{{ $trials := where .Site.RegularPages "Section" "clinical-trials" }}
+{{ $trials := where .Site.RegularPages "Section" "conditions" }}
 {{ if $trials }}
 <section class="section bg-tint">
 	<div class="container">
@@ -76,7 +76,7 @@
 </section>
 
 <!-- ── NEWSLETTER — TRIAL ALERTS ── -->
-{{ $subscribable := where (where .Site.RegularPages "Section" "clinical-trials") ".Params.subscribe" true }}
+{{ $subscribable := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
 {{ if $subscribable }}
 <section class="section bg-sand" style="padding-top: 0;">
 	<div class="container">
@@ -96,11 +96,25 @@
 					{{ end }}
 				</div>
 				<div class="row g-3 align-items-end">
-					<div class="col-12 col-md-5">
-						<label for="email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+					<div class="col-12 col-md-6">
+						<div class="row g-3">
+							<div class="col-6">
+								<label for="first_name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name <span style="color: var(--color-accent);">*</span></label>
+								<input type="text" class="form-control" id="first_name" name="first_name" autocomplete="given-name" required style="border-color: var(--color-border);">
+							</div>
+							<div class="col-6">
+								<label for="last_name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Last name</label>
+								<input type="text" class="form-control" id="last_name" name="last_name" autocomplete="family-name" style="border-color: var(--color-border);">
+							</div>
+						</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<label for="email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address <span style="color: var(--color-accent);">*</span></label>
 						<input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
 					</div>
-					<div class="col-12 col-md-4">
+				</div>
+				<div class="row g-3 align-items-end mt-1">
+					<div class="col-12 col-md-6">
 						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
 						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
 							<option value="">Select (optional)</option>
@@ -110,7 +124,7 @@
 							<option value="other">Other</option>
 						</select>
 					</div>
-					<div class="col-12 col-md-3">
+					<div class="col-12 col-md-6">
 						<button type="submit" class="btn-amber w-100">Subscribe</button>
 					</div>
 				</div>

@@ -5,7 +5,7 @@
 	<div class="container">
 		<a href="{{ "/" | relURL }}">Home</a>
 		<span>/</span>
-		<a href="{{ "/clinical-trials/" | relURL }}">Clinical Trials</a>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
 		<span>/</span>
 		<strong>{{ .Title }}</strong>
 	</div>
@@ -14,10 +14,23 @@
 <!-- ── HERO ── -->
 <section class="hero" style="padding: 56px 0 64px;">
 	<div class="container">
-		<h1>{{ .Title }} — Clinical Trials</h1>
+		<h1>{{ .Title }}</h1>
 		<p>{{ .Params.hero_description | default .Description }}</p>
+		{{ if and .Params.subscribe .Params.list_id }}
+		<a href="#ct-alerts" class="btn-amber" style="display: inline-block; margin-top: 16px;">Get trial alerts</a>
+		{{ end }}
 	</div>
 </section>
+
+<!-- ── SECTION TABS ── -->
+<div class="section-tabs">
+	<div class="container">
+		<nav class="section-tabs-nav">
+			<a href="#" class="section-tab active" aria-current="page">Clinical Trials</a>
+			<span class="section-tab disabled" aria-disabled="true" title="Coming soon">Research Papers <span class="coming-soon-badge">Coming soon</span></span>
+		</nav>
+	</div>
+</div>
 
 <!-- ── STATS BAR (populated by JS) ── -->
 <div class="stats-bar"
@@ -50,37 +63,97 @@
 <!-- ── FILTER BAR (sticky) ── -->
 <div class="filter-bar" id="trials-filters">
 	<div class="container">
-		<div class="row g-2 align-items-end">
-			<div class="col-12 col-md-5">
-				<label for="search-input">Search trials</label>
-				<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
+		<form id="trials-filter-form" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-3">
+					<label for="search-input">Search trials</label>
+					<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="filter-phase">Phase</label>
+					<select class="form-select" id="filter-phase">
+						<option value="">All phases</option>
+						<option value="PHASE1">Phase 1</option>
+						<option value="PHASE2">Phase 2</option>
+						<option value="PHASE3">Phase 3</option>
+						<option value="PHASE4">Phase 4</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="filter-status">Status</label>
+					<select class="form-select" id="filter-status">
+						<option value="">All statuses</option>
+						<option value="RECRUITING">Recruiting</option>
+						<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
+						<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
+						<option value="COMPLETED">Completed</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="filter-country">Country</label>
+					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
+					<datalist id="country-list">
+						<option value="Argentina">
+						<option value="Australia">
+						<option value="Austria">
+						<option value="Belgium">
+						<option value="Brazil">
+						<option value="Canada">
+						<option value="China">
+						<option value="Czech Republic">
+						<option value="Denmark">
+						<option value="Finland">
+						<option value="France">
+						<option value="Germany">
+						<option value="Greece">
+						<option value="Hungary">
+						<option value="India">
+						<option value="Ireland">
+						<option value="Israel">
+						<option value="Italy">
+						<option value="Japan">
+						<option value="Mexico">
+						<option value="Netherlands">
+						<option value="New Zealand">
+						<option value="Norway">
+						<option value="Poland">
+						<option value="Portugal">
+						<option value="Romania">
+						<option value="Russia">
+						<option value="South Korea">
+						<option value="Spain">
+						<option value="Sweden">
+						<option value="Switzerland">
+						<option value="Turkey">
+						<option value="United Kingdom">
+						<option value="United States">
+					</datalist>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="submit" class="btn-amber w-100" id="search-btn" style="padding: 8px 12px; font-size: 13px;">Search</button>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end" style="margin-left: auto;">
+					<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
 			</div>
-			<div class="col-6 col-md-3">
-				<label for="filter-phase">Phase</label>
-				<select class="form-select" id="filter-phase">
-					<option value="">All phases</option>
-					<option value="PHASE1">Phase 1</option>
-					<option value="PHASE2">Phase 2</option>
-					<option value="PHASE3">Phase 3</option>
-					<option value="PHASE4">Phase 4</option>
-				</select>
-			</div>
-			<div class="col-6 col-md-3">
-				<label for="filter-status">Status</label>
-				<select class="form-select" id="filter-status">
-					<option value="">All statuses</option>
-					<option value="RECRUITING">Recruiting</option>
-					<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
-					<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
-					<option value="COMPLETED">Completed</option>
-				</select>
-			</div>
-			<div class="col-12 col-md-1 d-flex align-items-end">
-				<button class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
-			</div>
-		</div>
-		<div class="mt-2">
+		</form>
+		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="results-count"></span>
+			<div class="download-dropdown">
+				<button class="btn-download" id="download-toggle" aria-haspopup="true" aria-expanded="false">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+						<polyline points="7 10 12 15 17 10"/>
+						<line x1="12" y1="15" x2="12" y2="3"/>
+					</svg>
+					Download
+					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+				</button>
+				<ul class="download-menu" role="menu">
+					<li><button class="download-option" data-scope="page" role="menuitem">Current page</button></li>
+					<li><button class="download-option" data-scope="all" role="menuitem">All results</button></li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </div>
@@ -115,7 +188,7 @@
 
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}
-<section class="section bg-sand" style="padding-top: 0;">
+<section id="ct-alerts" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
 	<div class="container">
 		<div class="newsletter-card">
 			<div class="text-center mb-4">
@@ -135,7 +208,7 @@
 						<label for="ct-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
 						<input type="text" class="form-control" id="ct-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
 					</div>
-					<div class="col-12 col-md-4">
+					<div class="col-12 col-md-3">
 						<label for="ct-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
 						<input type="email" class="form-control" id="ct-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
 					</div>
@@ -150,9 +223,17 @@
 							<option value="researcher">Researcher</option>
 						</select>
 					</div>
-					<div class="col-12 col-md-2">
+					<div class="col-12 col-md-3 d-flex align-items-end">
 						<button type="submit" class="btn-amber w-100">Subscribe</button>
 					</div>
+					{{ range .Site.Params.subscriptions.global_lists }}
+					<div class="col-12">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-ct-{{ .list_id }}">
+							<label class="form-check-label" for="global-list-ct-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
+						</div>
+					</div>
+					{{ end }}
 				</div>
 			</form>
 		</div>

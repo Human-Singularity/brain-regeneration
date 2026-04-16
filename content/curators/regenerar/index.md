@@ -8,6 +8,8 @@ type_of: "organisation"
 lead_researcher: "Lino Ferreira"
 institution: "Faculty of Medicine, University of Coimbra / CNC-UC / CIBB"
 website: "https://REGENERAR.eu"
+website_label: "REGENERAR project website"
+lab_website: "https://cibb.uc.pt/en/research-group/terapias-avan%C3%A7adas"
 logo: "regenerar.svg"
 bio: "The REGENERAR research project aims to use epigenetic tools that allow certain brain cells to be reprogrammed into neurons, manipulating cells that have increased in number after the disease process into neuronal cells important for brain function."
 

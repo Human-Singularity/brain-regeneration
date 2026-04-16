@@ -66,10 +66,4 @@ concepts:
     definition: ""
 ---
 
-When the brain is damaged — by disease, injury, or the slow accumulation of neurodegeneration — it loses neurons it cannot replace on its own. The standard approach to treating this loss has been to supply new cells from outside, or to slow the damage. Cell reprogramming takes a different path: it works with what is already there.
-
-The brain contains large numbers of non-neuronal cells — glial cells, astrocytes, and others — that support neural function but are not themselves neurons. After disease or injury, many of these cells increase in number, often as part of an inflammatory response. Cell reprogramming uses epigenetic tools to redirect these cells, converting them into the functional neurons the brain needs.
-
-This is not a distant concept. Research groups are already demonstrating that glial cells can be guided — without genetic modification, using non-viral delivery methods — to adopt neuronal identity and behaviour. The approach is being studied in the context of ischemic brain injury (stroke), where neuron loss is rapid and the need for repair is urgent, and in broader neurodegenerative conditions where progressive loss of specific neuron populations drives the disease.
-
-The significance for brain regeneration is direct: if the brain can be coaxed into repairing itself using its own resources, the therapeutic possibilities extend across conditions that currently have no treatment capable of reversing damage.
+Transforming the body's own cells into functioning neurons. Instead of replacing damaged tissue from outside, cell reprogramming works with existing non-neuronal cells — guiding them to become the neurons needed to restore brain function. This area covers epigenetic editing techniques and their potential to unlock the brain's capacity for self-repair.

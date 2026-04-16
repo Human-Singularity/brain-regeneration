@@ -1,9 +1,10 @@
 baseURL = 'https://brain-regeneration.com/'
-locale = 'en-us'
+locale = 'en-uk'
 title = 'Brain Regeneration Observatory'
 theme = 'brain-regeneration'
 copyright = 'Brain Regeneration Observatory 2026'
 enableRobotsTXT = true
+enableGitInfo = true
 rssLimit = 30
 timeout = '20s'
 summaryLength = 10
@@ -51,7 +52,7 @@ defaultAuthor = "authors/default-author"
 subtitle = "Accelerating research into brain regeneration and myelin repair"
 summary = "A comprehensive knowledge hub tracking therapeutic approaches for reversing damage caused by MS, Alzheimer's, Parkinson's, and other neuro-degenerative diseases."
 description = "The Brain Regeneration Observatory surfaces high-impact research within 24 hours of publication, maps therapeutic avenues including remyelination and stem-cell approaches, and provides patient-centric views of cutting-edge neurological research."
-
+og_image = "images/getty-images-xMig9xXKKTU-unsplash.jpg"
 [outputs]
 	home = [ "HTML", "RSS" ]
 	section = [ "HTML", "RSS"]
@@ -64,6 +65,7 @@ path = "search"
 
 [permalinks]
 	post = "/research/:slug/"
+	news = "/news/:title/"
 	
 [sitemap]
 	changefreq = "weekly"
@@ -74,7 +76,6 @@ path = "search"
 	tag = "tags"
 	category = "categories"
 	author = "authors"
-	condition = "conditions"
 
 [params.clinicalTrials]
 	apiBase = "https://api.gregory-ms.com/trials/"
@@ -83,6 +84,12 @@ path = "search"
 	api_endpoint = "https://api.gregory-ms.com/subscriptions/new/"
 	thank_you_url = "/thank-you/"
 	error_url = "/error/"
+
+[[params.subscriptions.global_lists]]
+	title = "Project News"
+	description = "Updates on new developments from the Brain-Regeneration.com project."
+	list_id = 10
+	team_id = 1
 
 DefaultContentLanguage = "en"
 

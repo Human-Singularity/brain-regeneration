@@ -2,10 +2,12 @@
 <html lang="{{ .Site.Language.Lang }}">
 <head>
 	{{ partial "head.html" . }}
+	{{ block "extra-head" . }}{{ end }}
 </head>
 <body>
 	{{ partial "nav.html" . }}
 	{{ block "main" . }}{{ end }}
 	{{ partial "footer.html" . }}
+	{{ block "page-scripts" . }}{{ end }}
 </body>
 </html>

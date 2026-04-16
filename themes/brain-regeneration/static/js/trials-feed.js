@@ -17,8 +17,10 @@
 	var searchInput     = document.getElementById('search-input');
 	var filterPhase     = document.getElementById('filter-phase');
 	var filterStatus    = document.getElementById('filter-status');
+	var filterCountry   = document.getElementById('filter-country');
 	var resetBtn        = document.getElementById('reset-filters');
 	var clearBtn        = document.getElementById('clear-filters');
+	var downloadToggle  = document.getElementById('download-toggle');
 	var resultsCountEl  = document.getElementById('results-count');
 	var paginationEl    = document.getElementById('pagination');
 	var prevBtn         = document.getElementById('prev-btn');
@@ -37,6 +39,7 @@
 		keyword:    '',
 		phase:      listEl.dataset.defaultPhase  || '',
 		status:     normaliseStatus(rawDefaultStatus),
+		country:    '',
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -94,6 +97,7 @@
 		if (state.keyword) url.searchParams.set('search',   state.keyword);
 		if (state.phase)   url.searchParams.set('phase',    state.phase);
 		if (state.status)  url.searchParams.set('recruitment_status', state.status);
+		if (state.country) url.searchParams.set('countries', state.country);
 		url.searchParams.set('page', String(page));
 		return url.toString();
 	}
@@ -302,34 +306,50 @@
 	}
 
 	// ── Event listeners ───────────────────────────────────────────────────────
+	var filterForm = document.getElementById('trials-filter-form');
+
+	function applyFilters() {
+		state.keyword = searchInput  ? searchInput.value.trim()  : '';
+		state.phase   = filterPhase  ? filterPhase.value         : '';
+		state.status  = filterStatus ? filterStatus.value        : '';
+		state.country = filterCountry? filterCountry.value.trim(): '';
+		fetchPage(1);
+	}
+
+	// Form submit handles both the Search button and Enter key from any field
+	if (filterForm) {
+		filterForm.addEventListener('submit', function (e) {
+			e.preventDefault();
+			applyFilters();
+		});
+	}
+
+	// Individual fields also apply immediately for a snappy feel
 	if (searchInput) {
-		searchInput.addEventListener('input', debounce(function () {
-			state.keyword = searchInput.value.trim();
-			fetchPage(1);
-		}, 400));
+		searchInput.addEventListener('input', debounce(applyFilters, 400));
 	}
 
 	if (filterPhase) {
-		filterPhase.addEventListener('change', function () {
-			state.phase = this.value;
-			fetchPage(1);
-		});
+		filterPhase.addEventListener('change', applyFilters);
 	}
 
 	if (filterStatus) {
-		filterStatus.addEventListener('change', function () {
-			state.status = this.value;
-			fetchPage(1);
-		});
+		filterStatus.addEventListener('change', applyFilters);
+	}
+
+	if (filterCountry) {
+		filterCountry.addEventListener('change', applyFilters);
 	}
 
 	function resetAll() {
 		state.keyword = '';
 		state.phase   = '';
 		state.status  = '';
-		if (searchInput)  searchInput.value  = '';
-		if (filterPhase)  filterPhase.value  = '';
-		if (filterStatus) filterStatus.value = '';
+		state.country = '';
+		if (searchInput)   searchInput.value   = '';
+		if (filterPhase)   filterPhase.value   = '';
+		if (filterStatus)  filterStatus.value  = '';
+		if (filterCountry) filterCountry.value = '';
 		fetchPage(1);
 	}
 
@@ -352,6 +372,94 @@
 		var btn = e.target.closest && e.target.closest('.pagination-btn.page-num');
 		if (btn && !btn.disabled) fetchPage(parseInt(btn.dataset.page, 10));
 	});
+
+	// ── CSV download ─────────────────────────────────────────────────────────
+	function buildCSVURL(allResults) {
+		var url = new URL(endpoint);
+		url.searchParams.set('format', 'csv');
+		if (teamId)        url.searchParams.set('team_id',    teamId);
+		if (subjectId)     url.searchParams.set('subject_id', subjectId);
+		if (state.keyword) url.searchParams.set('search',     state.keyword);
+		if (state.phase)   url.searchParams.set('phase',      state.phase);
+		if (state.status)  url.searchParams.set('recruitment_status', state.status);
+		if (state.country) url.searchParams.set('countries',   state.country);
+		if (allResults) {
+			url.searchParams.set('all_results', 'true');
+		} else {
+			url.searchParams.set('page', String(state.page));
+		}
+		return url.toString();
+	}
+
+	function buildFilename(allResults) {
+		var parts = ['clinical-trials'];
+		if (state.keyword) parts.push(state.keyword.replace(/\s+/g, '-').toLowerCase());
+		if (state.phase)   parts.push(state.phase.toLowerCase());
+		if (state.status)  parts.push(state.status.toLowerCase().replace(/_/g, '-'));
+		if (state.country) parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
+		if (!allResults)   parts.push('page-' + state.page);
+		return parts.join('_') + '.csv';
+	}
+
+	function triggerDownload(allResults) {
+		if (!downloadToggle) return;
+
+		// Show loading state
+		downloadToggle.classList.add('is-downloading');
+		downloadToggle.disabled = true;
+
+		fetch(buildCSVURL(allResults))
+			.then(function (r) {
+				if (!r.ok) throw new Error('HTTP ' + r.status);
+				return r.blob();
+			})
+			.then(function (blob) {
+				var url = URL.createObjectURL(blob);
+				var a   = document.createElement('a');
+				a.href     = url;
+				a.download = buildFilename(allResults);
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+				// Snap to solid green briefly to confirm completion
+				downloadToggle.classList.remove('is-downloading');
+				downloadToggle.classList.add('is-download-done');
+				setTimeout(function () {
+					downloadToggle.classList.remove('is-download-done');
+					downloadToggle.disabled = false;
+				}, 800);
+			})
+			.catch(function () {
+				alert('Download failed. Please try again.');
+				downloadToggle.classList.remove('is-downloading');
+				downloadToggle.disabled = false;
+			});
+	}
+
+	if (downloadToggle) {
+		var downloadMenu = downloadToggle.parentElement.querySelector('.download-menu');
+
+		downloadToggle.addEventListener('click', function (e) {
+			e.stopPropagation();
+			var open = downloadToggle.getAttribute('aria-expanded') === 'true';
+			downloadToggle.setAttribute('aria-expanded', String(!open));
+			downloadMenu.classList.toggle('is-open', !open);
+		});
+
+		downloadMenu.addEventListener('click', function (e) {
+			var btn = e.target.closest('.download-option');
+			if (!btn) return;
+			triggerDownload(btn.dataset.scope === 'all');
+			downloadToggle.setAttribute('aria-expanded', 'false');
+			downloadMenu.classList.remove('is-open');
+		});
+
+		document.addEventListener('click', function () {
+			downloadToggle.setAttribute('aria-expanded', 'false');
+			downloadMenu.classList.remove('is-open');
+		});
+	}
 
 	// ── Init ──────────────────────────────────────────────────────────────────
 	if (filterStatus && state.status) filterStatus.value = state.status;

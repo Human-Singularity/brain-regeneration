@@ -1,0 +1,21 @@
+{{ define "main" }}
+<section class="section bg-sand">
+	<div class="container">
+		<div class="narrow-col text-center" style="padding: 80px 0;">
+
+			<h1 style="font-size: 4rem; color: var(--color-primary); margin-bottom: 8px;">404</h1>
+			<p style="font-size: 22px; font-family: var(--font-heading); color: var(--color-text); margin-bottom: 12px;">Page not found</p>
+			<p style="font-size: 17px; color: var(--color-muted); max-width: 440px; margin: 0 auto 36px;">
+				The page you're looking for doesn't exist or may have been moved.
+			</p>
+
+			<div class="d-flex flex-wrap gap-3 justify-content-center">
+				<a href="{{ "/" | relURL }}" class="btn-amber">Back to Home</a>
+				<a href="{{ "/research-areas/" | relURL }}" class="btn-outline-teal">Explore Research</a>
+				<a href="mailto:team@brain-regeneration.com" class="btn-outline-teal">Contact Us</a>
+			</div>
+
+		</div>
+	</div>
+</section>
+{{ end }}
