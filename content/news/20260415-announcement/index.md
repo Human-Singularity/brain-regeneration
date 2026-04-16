@@ -1,6 +1,6 @@
 ---
 title: "Everything Can Change When A Few Believe It Is Possible"
-date: 2026-04-14T17:49:41Z
+date: 2026-04-16T12:25:00Z
 draft: false
 
 # Short summary for cards and meta
