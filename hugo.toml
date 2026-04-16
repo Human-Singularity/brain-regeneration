@@ -53,7 +53,7 @@ defaultAuthor = "authors/default-author"
 subtitle = "Accelerating research into brain regeneration and myelin repair"
 summary = "A comprehensive knowledge hub tracking therapeutic approaches for reversing damage caused by MS, Alzheimer's, Parkinson's, and other neuro-degenerative diseases."
 description = "The Brain Regeneration Observatory surfaces high-impact research within 24 hours of publication, maps therapeutic avenues including remyelination and stem-cell approaches, and provides patient-centric views of cutting-edge neurological research."
-og_image = "images/getty-images-xMig9xXKKTU-unsplash.jpg"
+og_image = "images/getty-images-G1FpRJcLoCw-unsplash.jpg"
 [outputs]
 	home = [ "HTML", "RSS" ]
 	section = [ "HTML", "RSS"]
