@@ -24,8 +24,9 @@
 {{- end }}
 {{- $ogImage := "" -}}
 {{- with .Params.image }}{{ $ogImage = . }}{{ end -}}
-{{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" }}{{ $ogImage = .RelPermalink }}{{ end -}}
+{{- with .Params.hero_image }}{{ if not $ogImage }}{{ $ogImage = . }}{{ end }}{{ end -}}
 {{- with .Site.Params.og_image }}{{ if not $ogImage }}{{ $ogImage = . }}{{ end }}{{ end -}}
+{{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" }}{{ if not $ogImage }}{{ $ogImage = .RelPermalink }}{{ end }}{{ end -}}
 {{ with $ogImage }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}
 
 <!-- Twitter Card -->
