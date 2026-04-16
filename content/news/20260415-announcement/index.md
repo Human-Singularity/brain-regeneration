@@ -33,7 +33,7 @@ options:
   header: "small"
 ---
 
-In Coimbra, Portugal, a lab is reprogramming glial cells into neurons. In Cambridge, a similar team researches how to rewrite the brain's immune system and improve it's response to damage. A research institute in Lisbon is mapping how inflammation outside the brain accelerates destruction inside it.
+In Coimbra, Portugal, a lab is reprogramming glial cells into neurons. In Cambridge, a similar team researches how to rewrite the brain's immune system and improve it's response to damage. A research lab in Lisbon is mapping how inflammation outside the brain accelerates destruction inside it.
 
 They work outside the spotlight while some of us silently hope for them to see a breakthrough. Because they can reshape the future of everyone living with Multiple Sclerosis, Alzheimer’s, Parkinson’s and other neurodegenerative diseases.
 
@@ -49,7 +49,7 @@ Today, we launch [Brain-Regeneration.com](https://brain-regeneration.com/) — a
 
 Brain-Regeneration.com tracks published research and clinical trials across the full landscape of central nervous system regeneration. Remyelination, neuroinflammation, stem-cell therapies, cell reprogramming — all updated within hours of publication, all searchable, all free.
 
-The platform is powered by [GregoryAI](https://github.com/Human-Singularity/brain-regeneration), an open-source software that harvests scientific literature and uses machine learning to surface the papers that matter most. It does not replace the expertise of researchers — it makes their work visible to the people who need it.
+The platform is powered by [GregoryAI](https://gregory-ai.com/), an open-source software that harvests scientific literature and uses machine learning to surface the papers that matter most. It does not replace the expertise of researchers — it makes their work visible to the people who need it.
 
 ## Already proven at scale
 
@@ -65,7 +65,7 @@ Three scientific teams act as scientific curators of this project, defining the 
 
 [LPJ Lab](https://www.lpjlab.org/), led by Prof. Luca Peruzzotti-Jametti, investigates how cell metabolism shapes brain-immune interactions, opening new therapeutic paths for MS and other CNS disorders.
 
-The [Research Institute for CNS, Blood and Peripheral Inflammation](https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/), led by Prof. Adelaide Fernandes, studies how inflammation drives the emergence and progression of neurodevelopmental and neurodegenerative disorders.
+The [CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa](https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/), led by Prof. Adelaide Fernandes, studies how inflammation drives the emergence and progression of neurodevelopmental and neurodegenerative disorders.
 
 Their involvement means the observatory reflects real scientific priorities — not keyword algorithms, not editorial bias, not what generates clicks.
 
@@ -84,4 +84,5 @@ If you lead a research group working on brain regeneration and want to shape wha
 Hope is difficult to find, and sometimes, we have to create it.  
 
 ## The team
+
 [Bruno Amaral](https://brunoamaral.eu/), [António Lopes](https://antoniolopes.info/), [Micaela Gonçalves](https://www.linkedin.com/in/memgoncalves/).
