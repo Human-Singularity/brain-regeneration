@@ -9,6 +9,7 @@ rssLimit = 30
 timeout = '20s'
 summaryLength = 10
 defaultContentLanguage = 'en'
+timeZone = "Europe/Lisbon"
 
 [markup]
   defaultMarkdownHandler = "goldmark"
