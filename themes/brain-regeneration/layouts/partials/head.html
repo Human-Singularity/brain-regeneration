@@ -26,14 +26,40 @@
 {{- with .Params.image -}}
   {{- $res := $.Resources.GetMatch . -}}
   {{- if $res -}}
-    {{- $ogImage = $res.Permalink -}}
+    {{- $filled := $res.Fill "1200x628 center" -}}
+    {{- $ogImage = $filled.Permalink -}}
   {{- else -}}
     {{- $ogImage = . | absURL -}}
   {{- end -}}
 {{- end -}}
-{{- if not $ogImage -}}{{- with .Params.hero_image }}{{ $ogImage = . | absURL }}{{ end }}{{- end -}}
-{{- if not $ogImage -}}{{- with .Site.Params.og_image }}{{ $ogImage = . | absURL }}{{ end }}{{- end -}}
-{{- if not $ogImage -}}{{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" }}{{ $ogImage = .Permalink }}{{ end }}{{- end -}}
+{{- if not $ogImage -}}
+  {{- with .Params.hero_image -}}
+    {{- $res := resources.Get . -}}
+    {{- if $res -}}
+      {{- $filled := $res.Fill "1200x628 center" -}}
+      {{- $ogImage = $filled.Permalink -}}
+    {{- else -}}
+      {{- $ogImage = . | absURL -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $ogImage -}}
+  {{- with .Site.Params.og_image -}}
+    {{- $res := resources.Get . -}}
+    {{- if $res -}}
+      {{- $filled := $res.Fill "1200x628 center" -}}
+      {{- $ogImage = $filled.Permalink -}}
+    {{- else -}}
+      {{- $ogImage = . | absURL -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $ogImage -}}
+  {{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" -}}
+    {{- $filled := .Fill "1200x628 center" -}}
+    {{- $ogImage = $filled.Permalink -}}
+  {{- end -}}
+{{- end -}}
 {{ with $ogImage }}<meta property="og:image" content="{{ $ogImage }}">{{ end }}
 
 <!-- Twitter Card -->
