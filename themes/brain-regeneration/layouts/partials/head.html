@@ -23,17 +23,24 @@
 <meta property="og:type" content="website">
 {{- end }}
 {{- $ogImage := "" -}}
-{{- with .Params.image }}{{ $ogImage = . }}{{ end -}}
-{{- with .Params.hero_image }}{{ if not $ogImage }}{{ $ogImage = . }}{{ end }}{{ end -}}
-{{- with .Site.Params.og_image }}{{ if not $ogImage }}{{ $ogImage = . }}{{ end }}{{ end -}}
-{{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" }}{{ if not $ogImage }}{{ $ogImage = .RelPermalink }}{{ end }}{{ end -}}
-{{ with $ogImage }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}
+{{- with .Params.image -}}
+  {{- $res := $.Resources.GetMatch . -}}
+  {{- if $res -}}
+    {{- $ogImage = $res.Permalink -}}
+  {{- else -}}
+    {{- $ogImage = . | absURL -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $ogImage -}}{{- with .Params.hero_image }}{{ $ogImage = . | absURL }}{{ end }}{{- end -}}
+{{- if not $ogImage -}}{{- with .Site.Params.og_image }}{{ $ogImage = . | absURL }}{{ end }}{{- end -}}
+{{- if not $ogImage -}}{{- with .Resources.GetMatch "*.{png,jpg,jpeg,webp}" }}{{ $ogImage = .Permalink }}{{ end }}{{- end -}}
+{{ with $ogImage }}<meta property="og:image" content="{{ $ogImage }}">{{ end }}
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="{{ if $ogImage }}summary_large_image{{ else }}summary{{ end }}">
 <meta name="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
 {{ with $description }}<meta name="twitter:description" content="{{ . }}">{{ end }}
-{{ with $ogImage }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}
+{{ with $ogImage }}<meta name="twitter:image" content="{{ $ogImage }}">{{ end }}
 {{ with .Site.Params.twitter }}<meta name="twitter:site" content="@{{ . }}">{{ end }}
 
 <!-- JSON-LD structured data -->
