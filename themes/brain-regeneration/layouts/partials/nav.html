@@ -11,8 +11,8 @@
 				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/news" }} active{{ end }}" href="{{ "/news/" | relURL }}">News</a></li>
 				<li class="nav-item"><a class="nav-link{{ if eq .RelPermalink "/about/" }} active{{ end }}" href="{{ "/about/" | relURL }}">About</a></li>
 				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/supporters" }} active{{ end }}" href="{{ "/supporters/" | relURL }}">Supporters</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ "/subscribe/" | relURL }}">Subscribe</a></li>
-				<li class="nav-item ms-lg-2"><a class="nav-link-donate" href="{{ "/donate/" | relURL }}">Support the project</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ "/subscribe/" | relURL }}" data-umami-event="Nav: Subscribe">Subscribe</a></li>
+				<li class="nav-item ms-lg-2"><a class="nav-link-donate" href="{{ "/donate/" | relURL }}" data-umami-event="Nav: Support the project">Support the project</a></li>
 			</ul>
 		</div>
 	</div>

@@ -228,7 +228,7 @@
 						<option value="clinical centre">Clinical Centre</option>
 						<option value="researcher">Researcher</option>
 					</select>
-					<button type="submit" class="btn-amber">Subscribe</button>
+					<button type="submit" class="btn-amber" data-umami-event="Research Area: Subscribe" data-umami-event-area="{{ .Title }}">Subscribe</button>
 					{{ range .Site.Params.subscriptions.global_lists }}
 					<div class="form-check w-100 mt-2">
 						<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-ra-{{ .list_id }}">

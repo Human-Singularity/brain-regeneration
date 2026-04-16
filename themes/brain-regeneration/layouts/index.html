@@ -6,8 +6,8 @@
 		<h1>{{ .Params.hero_heading | default .Title }}</h1>
 		<p>{{ .Params.hero_subheading | default .Params.subtitle }}</p>
 		<div class="d-flex flex-wrap gap-3 mt-4">
-			<a href="{{ "/observatory/#research-areas" | relURL }}" class="btn-amber">Explore Research</a>
-			<a href="{{ "/observatory/#conditions" | relURL }}" class="btn-outline-light">Find Clinical Trials</a>
+			<a href="{{ "/observatory/#research-areas" | relURL }}" class="btn-amber" data-umami-event="Hero: Explore Research">Explore Research</a>
+			<a href="{{ "/observatory/#conditions" | relURL }}" class="btn-outline-light" data-umami-event="Hero: Find Clinical Trials">Find Clinical Trials</a>
 		</div>
 		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
 			<div>
@@ -71,7 +71,7 @@
 					{{ if $teamID }}
 					<p class="meta" style="margin-bottom: 16px;"><span id="team-count-{{ $teamID }}">—</span> papers indexed</p>
 					{{ end }}
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View latest papers &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Research Area: View Papers" data-umami-event-area="{{ .Title }}">View latest papers &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
@@ -99,7 +99,7 @@
 						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
 					</div>
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Condition: View Trials" data-umami-event-condition="{{ .Title }}">View trials &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
@@ -192,7 +192,7 @@
 						</select>
 					</div>
 					<div class="col-12 col-md-3">
-						<button type="submit" class="btn-amber w-100">Subscribe</button>
+							<button type="submit" class="btn-amber w-100" data-umami-event="Homepage: Subscribe">Subscribe</button>
 					</div>
 				</div>
 			</form>
@@ -236,7 +236,7 @@
 				<p style="color: var(--color-muted); font-size: 16px; margin-bottom: 0;">Brain Regeneration grew out of Gregory-MS, an observatory for Multiple Sclerosis research built in 2021. Learn how it works, who funds it, and what principles guide the curation.</p>
 			</div>
 			<div style="flex-shrink: 0;">
-				<a href="{{ "/about/" | relURL }}" class="btn-amber">About this project &rarr;</a>
+				<a href="{{ "/about/" | relURL }}" class="btn-amber" data-umami-event="Homepage: About CTA">About this project &rarr;</a>
 			</div>
 		</div>
 	</div>

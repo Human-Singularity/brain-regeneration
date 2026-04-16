@@ -27,7 +27,7 @@
 					{{ end }}
 					{{ end }}
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Explore this area &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Research Areas: Explore" data-umami-event-area="{{ .Title }}">Explore this area &rarr;</a>
 				</div>
 			</div>
 			{{ end }}

@@ -17,7 +17,7 @@
 		<h1>{{ .Title }}</h1>
 		<p>{{ .Params.hero_description | default .Description }}</p>
 		{{ if and .Params.subscribe .Params.list_id }}
-		<a href="#ct-alerts" class="btn-amber" style="display: inline-block; margin-top: 16px;">Get trial alerts</a>
+		<a href="#ct-alerts" class="btn-amber" style="display: inline-block; margin-top: 16px;" data-umami-event="Condition: Get Trial Alerts" data-umami-event-condition="{{ .Title }}">Get trial alerts</a>
 		{{ end }}
 	</div>
 </section>
@@ -130,7 +130,7 @@
 					</datalist>
 				</div>
 				<div class="col-6 col-md-1 d-flex align-items-end">
-					<button type="submit" class="btn-amber w-100" id="search-btn" style="padding: 8px 12px; font-size: 13px;">Search</button>
+					<button type="submit" class="btn-amber w-100" id="search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Trials: Search" data-umami-event-condition="{{ .Title }}">Search</button>
 				</div>
 				<div class="col-6 col-md-1 d-flex align-items-end" style="margin-left: auto;">
 					<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
@@ -224,7 +224,7 @@
 						</select>
 					</div>
 					<div class="col-12 col-md-3 d-flex align-items-end">
-						<button type="submit" class="btn-amber w-100">Subscribe</button>
+						<button type="submit" class="btn-amber w-100" data-umami-event="Condition: Subscribe" data-umami-event-condition="{{ .Title }}">Subscribe</button>
 					</div>
 					{{ range .Site.Params.subscriptions.global_lists }}
 					<div class="col-12">

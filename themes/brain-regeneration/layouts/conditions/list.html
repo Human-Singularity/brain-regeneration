@@ -51,7 +51,7 @@
 						{{ end }}
 					</div>
 					{{ end }}
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Conditions List: View Trials" data-umami-event-condition="{{ .Title }}">View trials &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
@@ -125,7 +125,7 @@
 						</select>
 					</div>
 					<div class="col-12 col-md-6">
-						<button type="submit" class="btn-amber w-100">Subscribe</button>
+						<button type="submit" class="btn-amber w-100" data-umami-event="Conditions List: Subscribe">Subscribe</button>
 					</div>
 				</div>
 			</form>

@@ -40,7 +40,7 @@
 					{{ end }}
 					{{ end }}
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">Explore this area &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Observatory: Explore Research Area" data-umami-event-area="{{ .Title }}">Explore this area &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
@@ -67,7 +67,7 @@
 						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
 					</div>
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;">View trials &rarr;</a>
+					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Observatory: View Trials" data-umami-event-condition="{{ .Title }}">View trials &rarr;</a>
 				</div>
 			</div>
 			{{ end }}
