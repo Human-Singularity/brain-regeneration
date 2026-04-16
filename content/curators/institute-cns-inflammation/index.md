@@ -1,12 +1,12 @@
 ---
-title: "Institute for CNS, Blood and Peripheral Inflammation"
+title: "CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa"
 date: 2025-01-06
 draft: false
 
-name: "Institute for CNS, Blood and Peripheral Inflammation"
+name: "CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa"
 type_of: "organisation"
 lead_researcher: "Adelaide Fernandes"
-institution: "iMed.ULisboa"
+institution: "Faculty of Pharmacy, Universidade de Lisboa"
 website: "https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/"
 logo: ""
 bio: "Research institute focusing on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders."
@@ -19,4 +19,4 @@ commitment:
   - "legitimacy"
 ---
 
-The [Research Institute for Central Nervous System, Blood and Peripheral Inflammation](https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/), led by Prof. Adelaide Fernandes, focuses on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.
+The [CNS, Blood and Peripheral Inflammation Lab](https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/), led by Prof. Adelaide Fernandes, focuses on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.
