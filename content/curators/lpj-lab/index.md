@@ -12,7 +12,7 @@ logo: "LPJLAB_ICON_LOGO.svg"
 bio: "LPJ Lab is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for MS and other Central Nervous System disorders."
 
 research_areas:
-  - "neuroimmune-interactions"
+  - "neuroimmunometabolism"
 
 commitment:
   - "searches"
