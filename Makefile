@@ -1,13 +1,3 @@
-# Braihelp: ## Show this help message
-	@echo "Brain Regeneration Observatory - Available commands:"
-	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
-	@echo ""
-	@echo "🚀 Quick start: make init && make dev"
-	@echo "📖 View site: http://localhost:1313"
-	@echo ""eneration Project Makefile
-# Manages GregoryAi submodule and Docker operations
-
 .PHONY: help init update-gregory start-gregory stop-gregory logs-gregory clean-gregory status
 
 # Default target

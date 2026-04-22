@@ -69,7 +69,7 @@
 					<label for="search-input">Search trials</label>
 					<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
 				</div>
-				<div class="col-6 col-md-2">
+				<div class="col-6 col-md-1">
 					<label for="filter-phase">Phase</label>
 					<select class="form-select" id="filter-phase">
 						<option value="">All phases</option>
@@ -129,10 +129,23 @@
 						<option value="United States">
 					</datalist>
 				</div>
+				<div class="col-6 col-md-2">
+					<label for="sort-order">Sort by</label>
+					<select class="form-select" id="sort-order">
+						<option value="-discovery_date">Date added (newest first)</option>
+						<option value="discovery_date">Date added (oldest first)</option>
+						<option value="-last_updated">Last updated (newest first)</option>
+						<option value="last_updated">Last updated (oldest first)</option>
+						<option value="-published_date">Published date (newest first)</option>
+						<option value="published_date">Published date (oldest first)</option>
+						<option value="title">Title (A–Z)</option>
+						<option value="-title">Title (Z–A)</option>
+					</select>
+				</div>
 				<div class="col-6 col-md-1 d-flex align-items-end">
 					<button type="submit" class="btn-amber w-100" id="search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Trials: Search" data-umami-event-condition="{{ .Title }}">Search</button>
 				</div>
-				<div class="col-6 col-md-1 d-flex align-items-end" style="margin-left: auto;">
+				<div class="col-6 col-md-1 d-flex align-items-end">
 					<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>
