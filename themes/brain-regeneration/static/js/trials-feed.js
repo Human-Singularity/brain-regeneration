@@ -18,6 +18,7 @@
 	var filterPhase     = document.getElementById('filter-phase');
 	var filterStatus    = document.getElementById('filter-status');
 	var filterCountry   = document.getElementById('filter-country');
+	var sortOrder       = document.getElementById('sort-order');
 	var resetBtn        = document.getElementById('reset-filters');
 	var clearBtn        = document.getElementById('clear-filters');
 	var downloadToggle  = document.getElementById('download-toggle');
@@ -40,6 +41,7 @@
 		phase:      listEl.dataset.defaultPhase  || '',
 		status:     normaliseStatus(rawDefaultStatus),
 		country:    '',
+		sort:       '-discovery_date',
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -98,6 +100,7 @@
 		if (state.phase)   url.searchParams.set('phase',    state.phase);
 		if (state.status)  url.searchParams.set('recruitment_status', state.status);
 		if (state.country) url.searchParams.set('countries', state.country);
+		url.searchParams.set('ordering', state.sort);
 		url.searchParams.set('page', String(page));
 		return url.toString();
 	}
@@ -313,6 +316,7 @@
 		state.phase   = filterPhase  ? filterPhase.value         : '';
 		state.status  = filterStatus ? filterStatus.value        : '';
 		state.country = filterCountry? filterCountry.value.trim(): '';
+		state.sort    = sortOrder    ? sortOrder.value           : '-discovery_date';
 		fetchPage(1);
 	}
 
@@ -340,16 +344,20 @@
 	if (filterCountry) {
 		filterCountry.addEventListener('change', applyFilters);
 	}
-
+	if (sortOrder) {
+		sortOrder.addEventListener('change', applyFilters);
+	}
 	function resetAll() {
 		state.keyword = '';
 		state.phase   = '';
 		state.status  = '';
 		state.country = '';
+		state.sort    = '-discovery_date';
 		if (searchInput)   searchInput.value   = '';
 		if (filterPhase)   filterPhase.value   = '';
 		if (filterStatus)  filterStatus.value  = '';
 		if (filterCountry) filterCountry.value = '';
+		if (sortOrder)     sortOrder.value     = '-discovery_date';
 		fetchPage(1);
 	}
 
@@ -383,6 +391,7 @@
 		if (state.phase)   url.searchParams.set('phase',      state.phase);
 		if (state.status)  url.searchParams.set('recruitment_status', state.status);
 		if (state.country) url.searchParams.set('countries',   state.country);
+		url.searchParams.set('ordering', state.sort);
 		if (allResults) {
 			url.searchParams.set('all_results', 'true');
 		} else {
