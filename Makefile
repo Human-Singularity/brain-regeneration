@@ -63,6 +63,10 @@ h: ## Start Hugo development server (alias for hugo-dev)
 
 hugo-dev: h ## Alias for h command
 
+hugo-dev-local: ## Start Hugo dev server pointed at local Django API (localhost:8000) — disables analytics
+	@echo "Starting Hugo against local API (http://localhost:8000)..."
+	HUGO_PARAMS_APIBASE=http://localhost:8000 HUGO_ENV=development hugo server -F -O -N -D
+
 hugo-build: ## Build the Hugo site
 	@echo "Building Hugo site..."
 	hugo --minify

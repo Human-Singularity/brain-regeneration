@@ -47,6 +47,10 @@ timeZone = "Europe/Lisbon"
     startLevel = 2
 
 [params]
+# API base URL — override with HUGO_PARAMS_APIBASE env var for local dev
+# e.g. HUGO_PARAMS_APIBASE=http://localhost:8000 make dev-local
+apiBase = "https://api.gregory-ms.com"
+
 # Site configuration
 author = "Brain Regeneration Observatory Team"
 defaultAuthor = "authors/default-author"
@@ -78,11 +82,7 @@ path = "search"
 	category = "categories"
 	author = "authors"
 
-[params.clinicalTrials]
-	apiBase = "https://api.gregory-ms.com/trials/"
-
 [params.subscriptions]
-	api_endpoint = "https://api.gregory-ms.com/subscriptions/new/"
 	thank_you_url = "/thank-you/"
 	error_url = "/error/"
 

@@ -9,7 +9,7 @@
 	var container = document.getElementById('paper-list');
 	if (!container) return;
 
-	var endpoint  = container.dataset.endpoint || 'https://api.gregory-ms.com/articles/';
+	var endpoint  = container.dataset.endpoint || (window.__API_BASE__ || 'https://api.gregory-ms.com') + '/articles/';
 	var teamId    = container.dataset.teamId    || '';
 	var subjectId = container.dataset.subjectId || '';
 

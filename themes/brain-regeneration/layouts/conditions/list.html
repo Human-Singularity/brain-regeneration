@@ -25,7 +25,7 @@
 		<div class="row g-4" id="conditions-grid">
 			{{ range $trials }}
 			<div class="col-12 col-md-4 condition-card"
-				data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+				data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.gregory-ms.com" $.Site.Params.apiBase }}{{ end }}"
 				data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 				data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}">
 				<div class="card-trial d-flex flex-column" style="height: 100%;">

@@ -25,7 +25,7 @@
 			<div class="subscribe-card">
 				<form
 					id="subscribe-form"
-					data-api="{{ $sub.api_endpoint }}"
+					data-api="{{ site.Params.apiBase }}/subscriptions/new/"
 					data-thank-you="{{ $sub.thank_you_url }}"
 					data-error="{{ $sub.error_url }}"
 					novalidate
