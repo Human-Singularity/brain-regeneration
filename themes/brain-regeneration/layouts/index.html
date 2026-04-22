@@ -213,6 +213,11 @@
 			{{ range $newsPosts }}
 			<div class="col-12 col-md-4">
 				<a href="{{ .RelPermalink }}" class="news-card d-flex flex-column">
+					{{ with (.Resources.GetMatch .Params.image) }}
+					<div class="news-card-image">
+						<img src="{{ .RelPermalink }}" alt="" loading="lazy">
+					</div>
+					{{ end }}
 					<time class="news-card-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2 January 2006" }}</time>
 					<h3 class="news-card-title">{{ .Title }}</h3>
 					{{ with .Description }}<p class="news-card-excerpt">{{ . }}</p>{{ end }}

@@ -1859,7 +1859,8 @@ a:hover {
 .news-list { display: flex; flex-direction: column; gap: 24px; }
 .news-card h3 a { color: var(--color-primary); text-decoration: none; }
 .news-card h3 a:hover { text-decoration: underline; }
-.news-card-image { width: calc(100% + 48px); height: 220px; object-fit: cover; border-radius: var(--radius) var(--radius) 0 0; margin: -24px -24px 20px -24px; }
+.news-card-image { width: calc(100% + 48px); height: 200px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; margin: -24px -24px 20px -24px; }
+.news-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .news-featured-image { width: 100%; border-radius: var(--radius); margin-bottom: 32px; }
 
 /* ── Subscribe form ── */
