@@ -18,7 +18,6 @@ The platform uses AI models to rank research relevance and delivers tailored ale
 
 ### Prerequisites
 
-- Git
 - Docker and Docker Compose
 - Hugo (for frontend development)
 
@@ -30,24 +29,18 @@ git clone <repository-url>
 cd brain-regeneration
 ```
 
-2. Initialize the project and GregoryAi submodule:
+2. Set up environment variables:
 ```bash
-make init
-```
-
-3. Set up environment variables for GregoryAi:
-```bash
-cd gregory-ai
-cp example.env .env
+cp .env.example .env
 # Edit .env with your configuration
 ```
 
-4. Start GregoryAi services:
+3. Start GregoryAi services:
 ```bash
 make start-gregory
 ```
 
-5. Start Hugo development server:
+4. Start Hugo development server:
 ```bash
 make hugo-dev
 ```
@@ -61,13 +54,11 @@ make dev
 
 Run `make help` to see all available commands:
 
-- `make init` - Initialize and setup the project (run this first)
-- `make update-gregory` - Update GregoryAi submodule from upstream
-- `make start-gregory` - Start GregoryAi using docker-compose
+- `make start-gregory` - Start GregoryAi using Docker Compose
 - `make stop-gregory` - Stop GregoryAi services
+- `make restart-gregory` - Restart GregoryAi services
 - `make logs-gregory` - Show GregoryAi logs
 - `make status-gregory` - Show status of GregoryAi services
-- `make restart-gregory` - Restart GregoryAi services
 - `make clean-gregory` - Stop and remove GregoryAi containers and volumes
 - `make hugo-dev` - Start Hugo development server
 - `make hugo-build` - Build the Hugo site
@@ -80,40 +71,33 @@ Run `make help` to see all available commands:
 - `/content` - Site content and pages
 - `/assets` - CSS, JS, and other assets
 - `/static` - Static files
-- `/gregory-ai` - GregoryAi submodule (API backend)
 - `/communication` - Project documentation and briefs
+- `docker-compose.yml` - GregoryAi backend service definitions
 
 ## GregoryAi Integration
 
-GregoryAi is included as a git submodule and provides the backend API for:
-- Fetching scientific articles
-- Organizing clinical trials data
-- Processing and filtering research content
+GregoryAi runs as a set of Docker services defined in `docker-compose.yml`:
 
-The GregoryAi services include:
 - PostgreSQL database (port 5432)
 - Django API server (port 8000)
 
 ## Development Workflow
 
-1. **Update GregoryAi**: `make update-gregory`
-2. **Start services**: `make start-gregory`
-3. **Develop frontend**: `make hugo-dev`
-4. **Check logs**: `make logs-gregory`
-5. **Check status**: `make status`
+1. **Start services**: `make start-gregory`
+2. **Develop frontend**: `make hugo-dev`
+3. **Check logs**: `make logs-gregory`
+4. **Check status**: `make status`
 
 ## Environment Configuration
 
-GregoryAi requires environment variables to be set in `gregory-ai/.env`. Copy from `gregory-ai/example.env` and configure:
+Create a `.env` file at the repo root (copy from `.env.example`) and configure:
 
-- Database settings (POSTGRES_*)
-- Email configuration (EMAIL_*)
-- API keys (ORCID_*, etc.)
-- Security keys (SECRET_KEY, FERNET_SECRET_KEY)
+- Database settings (`POSTGRES_*`)
+- Email configuration (`EMAIL_*`)
+- Security keys (`SECRET_KEY`, `FERNET_SECRET_KEY`)
 
 ## Troubleshooting
 
-- **Submodule issues**: Run `make init` to reinitialize
 - **Docker issues**: Run `make clean-gregory` then `make start-gregory`
 - **Port conflicts**: Check if ports 5432 or 8000 are already in use
 - **Logs**: Use `make logs-gregory` to see detailed error messages
