@@ -35,7 +35,7 @@
 <!-- ── STATS BAR (populated by JS) ── -->
 <div class="stats-bar"
 	id="trials-stats"
-	data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+	data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.gregory-ms.com" $.Site.Params.apiBase }}{{ end }}"
 	data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 	data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}">
 	<div class="container">
@@ -163,7 +163,7 @@
 	<div class="container">
 		{{/* React mount point — populated at runtime */}}
 		<div id="trials-list"
-			data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+			data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.gregory-ms.com" $.Site.Params.apiBase }}{{ end }}"
 			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 			data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
 			data-default-status="{{ with .Params.filters }}{{ .default_status }}{{ end }}"
@@ -197,7 +197,7 @@
 			</div>
 			<form
 				data-inline-subscribe
-				data-api="{{ .Site.Params.subscriptions.api_endpoint }}"
+				data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
 				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
 				data-error="{{ .Site.Params.subscriptions.error_url }}"
 				novalidate

@@ -39,7 +39,7 @@
 	<div class="spotlight-carousel-wrap">
 		<div class="container">
 			<div class="spotlight-carousel" id="spotlight-papers"
-				data-endpoint="{{ .Params.api.endpoint }}"
+				data-endpoint="{{ replace .Params.api.endpoint "https://api.gregory-ms.com" .Site.Params.apiBase }}"
 				data-team-id="{{ .Params.api.team_id }}"
 				data-subject-id="{{ .Params.api.subject_id }}">
 				<p class="spotlight-loading" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Loading spotlight papers…</p>
@@ -114,7 +114,7 @@
 			</div>
 
 			<div id="paper-list"
-				data-endpoint="{{ with .Params.api }}{{ .endpoint }}{{ end }}"
+				data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.gregory-ms.com" $.Site.Params.apiBase }}{{ end }}"
 				data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 				data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
 				data-keywords="{{ delimit .Params.keywords "," }}">
@@ -212,7 +212,7 @@
 				<form
 					class="form-inline"
 					data-inline-subscribe
-					data-api="{{ .Site.Params.subscriptions.api_endpoint }}"
+					data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
 					data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
 					data-error="{{ .Site.Params.subscriptions.error_url }}"
 					novalidate

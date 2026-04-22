@@ -16,7 +16,8 @@ curator: ""
 
 # GregoryAI API configuration
 # The React component reads these as data attributes on the mount point div
-# Endpoint: https://api.gregory-ms.com/trials/
+# Endpoint base is controlled by params.apiBase in hugo.toml
+# (override with HUGO_PARAMS_APIBASE=http://localhost:8000 for local dev)
 api:
   endpoint: "https://api.gregory-ms.com/trials/"
   team_id: 1       # team_id is always 1 for this GregoryAI instance

@@ -9,7 +9,7 @@
 	var listEl = document.getElementById('trials-list');
 	if (!listEl) return;
 
-	var endpoint  = listEl.dataset.endpoint  || 'https://api.gregory-ms.com/trials/';
+	var endpoint  = listEl.dataset.endpoint  || (window.__API_BASE__ || 'https://api.gregory-ms.com') + '/trials/';
 	var teamId    = listEl.dataset.teamId    || '';
 	var subjectId = listEl.dataset.subjectId || '';
 
