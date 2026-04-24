@@ -112,6 +112,7 @@
 </section>
 
 <!-- ── SUBSCRIBE ── -->
+{{ $sub := site.Params.subscriptions }}
 {{ $researchSubscribe := where (where .Site.RegularPages "Section" "research-areas") ".Params.subscribe" true }}
 {{ $trialsSubscribe := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
 {{ $globalLists := .Site.Params.subscriptions.global_lists }}
@@ -123,14 +124,20 @@
 				<p style="max-width: 520px; margin: 0 auto;">Choose the areas you want to follow. We send one digest per week for each.</p>
 			</div>
 
-			<form action="{{ "/subscribe" | relURL }}" method="POST">
+			<form
+				id="homepage-subscribe-form"
+				data-api="{{ site.Params.apiBase }}/subscriptions/new/"
+				data-thank-you="{{ $sub.thank_you_url }}"
+				data-error="{{ $sub.error_url }}"
+				novalidate
+			>
 				<div class="row g-4">
 					<!-- Research digests -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Research Digests</div>
 						{{ range $researchSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-{{ .Slug }}" name="feeds" value="{{ .Slug }}">
+							<input class="form-check-input" type="checkbox" id="sub-feed-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
 							<label class="form-check-label" for="sub-feed-{{ .Slug }}">{{ .Title }} — weekly digest</label>
 						</div>
 						{{ end }}
@@ -140,7 +147,7 @@
 						<div class="checkbox-group-label">Clinical Trial Alerts</div>
 						{{ range $trialsSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
+							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
 							<label class="form-check-label" for="sub-feed-trials-{{ .Slug }}">{{ .Title }}</label>
 						</div>
 						{{ end }}
@@ -153,7 +160,7 @@
 						<div class="checkbox-group-label">Project Updates</div>
 						{{ range $globalLists }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-list-{{ .list_id }}" name="feeds" value="list-{{ .list_id }}">
+							<input class="form-check-input" type="checkbox" id="sub-list-{{ .list_id }}" name="list" value="{{ .list_id }}">
 							<label class="form-check-label" for="sub-list-{{ .list_id }}">{{ .title }}</label>
 						</div>
 						{{ end }}
@@ -179,23 +186,73 @@
 						<input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required style="border-color: var(--color-border);">
 					</div>
 				</div>
-				<!-- Audience + submit -->
+				<!-- Profile + submit -->
 				<div class="row g-3 align-items-end mt-1">
 					<div class="col-12 col-md-6">
-						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
-						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
+						<label for="profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="profile" name="profile" style="border-color: var(--color-border);">
 							<option value="">Select (optional)</option>
 							<option value="researcher">Researcher</option>
-							<option value="clinician">Clinician</option>
-							<option value="patient">Patient or caregiver</option>
+							<option value="doctor">Clinician</option>
+							<option value="patient">Patient</option>
+							<option value="caregiver">Caregiver</option>
 							<option value="other">Other</option>
 						</select>
 					</div>
+					<div id="homepage-form-alert" role="alert" style="display:none; color: var(--color-error); font-size: 14px; margin-top: 8px;"></div>
 					<div class="col-12 col-md-3">
-							<button type="submit" class="btn-amber w-100" data-umami-event="Homepage: Subscribe">Subscribe</button>
+							<button type="submit" id="homepage-subscribe-btn" class="btn-amber w-100" data-umami-event="Homepage: Subscribe">Subscribe</button>
 					</div>
 				</div>
 			</form>
+
+			<script>
+			(function () {
+				var form = document.getElementById('homepage-subscribe-form');
+				if (!form) return;
+
+				var btn = document.getElementById('homepage-subscribe-btn');
+				var alert = document.getElementById('homepage-form-alert');
+
+				form.addEventListener('submit', function (e) {
+					e.preventDefault();
+					alert.style.display = 'none';
+
+					// Validate required fields
+					var valid = true;
+					form.querySelectorAll('[required]').forEach(function (field) {
+						if (!field.value.trim()) { valid = false; }
+					});
+					if (!valid) {
+						alert.textContent = 'Please fill in all required fields.';
+						alert.style.display = 'block';
+						return;
+					}
+
+					btn.disabled = true;
+					btn.textContent = 'Submitting…';
+
+					fetch(form.dataset.api, {
+						method: 'POST',
+						body: new FormData(form),
+						redirect: 'manual'
+					})
+					.then(function (r) {
+						if (r.type === 'opaqueredirect' || r.ok) {
+							window.location.href = form.dataset.thankYou;
+						} else {
+							window.location.href = form.dataset.error;
+						}
+					})
+					.catch(function () {
+						alert.textContent = 'Unable to submit. Please check your connection and try again.';
+						alert.style.display = 'block';
+						btn.disabled = false;
+						btn.textContent = 'Subscribe';
+					});
+				});
+			})();
+			</script>
 		</div>
 	</div>
 </section>
