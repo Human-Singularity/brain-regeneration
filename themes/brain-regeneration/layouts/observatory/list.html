@@ -50,7 +50,8 @@
 {{ end }}
 
 <!-- ── CONDITIONS ── -->
-{{ $conditions := where .Site.RegularPages "Section" "conditions" }}
+{{ $conditionsSection := .Site.GetPage "/conditions" }}
+{{ $conditions := $conditionsSection.Sections }}
 {{ if $conditions }}
 <section id="conditions" class="section bg-tint" style="scroll-margin-top: 80px;">
 	<div class="container">

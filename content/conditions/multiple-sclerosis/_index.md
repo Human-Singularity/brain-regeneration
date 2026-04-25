@@ -1,5 +1,6 @@
 ---
 title: "Multiple Sclerosis"
+layout: single
 url: /conditions/multiple-sclerosis/clinical-trials/
 date: 2025-01-06
 draft: false

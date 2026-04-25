@@ -18,7 +18,7 @@
 </section>
 
 <!-- ── CONDITIONS GRID ── -->
-{{ $trials := where .Site.RegularPages "Section" "conditions" }}
+{{ $trials := .Sections }}
 {{ if $trials }}
 <section class="section bg-tint">
 	<div class="container">
@@ -76,7 +76,7 @@
 </section>
 
 <!-- ── NEWSLETTER — TRIAL ALERTS ── -->
-{{ $subscribable := where (where .Site.RegularPages "Section" "conditions") ".Params.subscribe" true }}
+{{ $subscribable := where .Sections ".Params.subscribe" true }}
 {{ if $subscribable }}
 <section class="section bg-sand" style="padding-top: 0;">
 	<div class="container">
