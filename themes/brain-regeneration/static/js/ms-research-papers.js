@@ -82,6 +82,15 @@
 			.replace(/'/g,  '&#39;');
 	}
 
+	function safeLink(url) {
+		if (!url) return '#';
+		try {
+			var parsed = new URL(String(url));
+			if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '#';
+			return parsed.href;
+		} catch (e) { return '#'; }
+	}
+
 	function stripHtml(str) {
 		if (!str) return '';
 		return str.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').trim();
@@ -120,15 +129,16 @@
 		var params = new URLSearchParams(window.location.search);
 		state.keyword  = params.get('q')        || '';
 		state.category = params.get('category') || '';
+		state.sort     = params.get('sort')     || 'date';
 		state.page     = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
-		if (state.keyword)  params.set('q',        state.keyword);
-		if (state.category) params.set('category', state.category);
-		if (state.page > 1) params.set('page',     String(state.page));
-		var search = params.toString() ? '?' + params.toString() : window.location.pathname;
+		if (state.keyword)              params.set('q',        state.keyword);
+		if (state.category)             params.set('category', state.category);
+		if (state.sort && state.sort !== 'date') params.set('sort', state.sort);
+		if (state.page > 1)             params.set('page',     String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
 			history.pushState(null, '', url);
@@ -269,7 +279,7 @@
 
 		return '<article class="paper-card">' +
 			'<div class="paper-card-title">' +
-				'<a href="' + escHtml(a.link) + '" target="_blank" rel="noopener noreferrer">' + escHtml(a.title) + '</a>' +
+				'<a href="' + escHtml(safeLink(a.link)) + '" target="_blank" rel="noopener noreferrer">' + escHtml(a.title) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
 				(mlBadges    ? ' ' + mlBadges    : '') +
 			'</div>' +
@@ -507,6 +517,7 @@
 			renderCards(state.results);
 			updatePagination(cached.current_page || page, cached.total_pages || 1);
 			updateCounter(cached.count || 0);
+			writeURL(push === true);
 			return;
 		}
 
