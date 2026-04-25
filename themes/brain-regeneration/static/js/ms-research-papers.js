@@ -27,6 +27,7 @@
 	var categoryPanel    = document.getElementById('category-panel');
 	var categoryPanelName = document.getElementById('category-panel-name');
 	var categoryPanelDesc = document.getElementById('category-panel-description');
+	var categoryPanelSparkline = document.getElementById('category-panel-sparkline');
 
 	var firstBtn         = document.getElementById('papers-first-btn');
 	var prevBtn          = document.getElementById('papers-prev-btn');
@@ -48,21 +49,24 @@
 	};
 
 	// ── Cache ─────────────────────────────────────────────────────────────
-	var CACHE_TTL = 60 * 60 * 1000; // 1 hour
+	var CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 	function getCached(url) {
 		try {
-			var raw = sessionStorage.getItem('brPapers:' + url);
+			var raw = localStorage.getItem('brPapers:' + url);
 			if (!raw) return null;
 			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) return null;
+			if (Date.now() - entry.ts > CACHE_TTL) {
+				localStorage.removeItem('brPapers:' + url);
+				return null;
+			}
 			return entry.data;
 		} catch (e) { return null; }
 	}
 
 	function setCached(url, data) {
 		try {
-			sessionStorage.setItem('brPapers:' + url, JSON.stringify({ ts: Date.now(), data: data }));
+			localStorage.setItem('brPapers:' + url, JSON.stringify({ ts: Date.now(), data: data }));
 		} catch (e) { /* quota exceeded — ignore */ }
 	}
 
@@ -298,6 +302,103 @@
 		mount.innerHTML = sorted.map(buildCard).join('');
 	}
 
+	// ── Sparklines ───────────────────────────────────────────────────────
+
+	// Converts a sorted array of {month, count} into cumulative values mapped to SVG coords.
+	function toCumulativePoints(counts, W, H, globalMax) {
+		if (!counts || !counts.length) return [];
+		var cum = 0;
+		var values = counts.map(function (d) {
+			cum += (d.count || 0);
+			return cum;
+		});
+		var step = W / Math.max(values.length - 1, 1);
+		return values.map(function (v, i) {
+			return {
+				x: Math.round(i * step),
+				y: Math.round(H - (v / globalMax) * (H - 4)),
+				v: v,
+			};
+		});
+	}
+
+	// Renders one SVG containing multiple series, each as a polyline.
+	// series: [{counts, color, label}, ...]
+	function makeSVGMultiSparkline(seriesList) {
+		var W = 120, H = 40;
+		// Compute global max across all series for a shared y-scale
+		var globalMax = 1;
+		seriesList.forEach(function (s) {
+			if (!s.counts || !s.counts.length) return;
+			var cum = 0;
+			s.counts.forEach(function (d) {
+				cum += (d.count || 0);
+				if (cum > globalMax) globalMax = cum;
+			});
+		});
+
+		var lines = seriesList.map(function (s) {
+			var pts = toCumulativePoints(s.counts, W, H, globalMax);
+			if (!pts.length) return '';
+			var ptsStr = pts.map(function (p) { return p.x + ',' + p.y; }).join(' ');
+			var last = pts[pts.length - 1];
+			return '<polyline points="' + ptsStr + '" fill="none" stroke="' + s.color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+				'<circle cx="' + last.x + '" cy="' + last.y + '" r="2.5" fill="' + s.color + '"/>';
+		}).join('');
+
+		if (!lines) {
+			return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><line x1="0" y1="' + H + '" x2="' + W + '" y2="' + H + '" stroke="var(--color-border)" stroke-width="1" stroke-dasharray="2"/></svg>';
+		}
+
+		return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" overflow="visible">' + lines + '</svg>';
+	}
+
+	function last12Months(counts) {
+		if (!counts || !counts.length) return counts;
+		var sorted = counts.slice().sort(function (a, b) { return a.month < b.month ? -1 : a.month > b.month ? 1 : 0; });
+		return sorted.slice(-12);
+	}
+
+	function buildSparklines(monthly) {
+		var articleCounts = last12Months(monthly.monthly_article_counts || []);
+		var trialCounts   = last12Months(monthly.monthly_trial_counts   || []);
+
+		// Aggregate ML counts across all models by month
+		var mlByMonth = {};
+		var mlByModel = monthly.monthly_ml_article_counts_by_model || {};
+		Object.keys(mlByModel).forEach(function (model) {
+			(mlByModel[model] || []).forEach(function (d) {
+				mlByMonth[d.month] = (mlByMonth[d.month] || 0) + (d.count || 0);
+			});
+		});
+		var mlCounts = last12Months(Object.keys(mlByMonth).sort().map(function (m) {
+			return { month: m, count: mlByMonth[m] };
+		}));
+
+		// Chart 1: Articles (teal) + ML predictions (muted) on shared y-scale
+		var articlesChart = '<div class="sparkline-group">' +
+			'<span class="sparkline-label">Papers &amp; Relevancy</span>' +
+			makeSVGMultiSparkline([
+				{ counts: articleCounts, color: 'var(--color-muted)'   },
+				{ counts: mlCounts,      color: 'var(--color-accent)' },
+			]) +
+			'<div class="sparkline-legend">' +
+				'<span class="sparkline-legend-dot" style="background:var(--color-muted);"></span>Papers ' +
+				'<span class="sparkline-legend-dot" style="background:var(--color-accent);"></span>Relevancy' +
+			'</div>' +
+		'</div>';
+
+		// Chart 2: Clinical trials
+		var trialsChart = '<div class="sparkline-group">' +
+			'<span class="sparkline-label">Trials</span>' +
+			makeSVGMultiSparkline([
+				{ counts: trialCounts, color: 'var(--color-primary)' },
+			]) +
+		'</div>';
+
+		return articlesChart + trialsChart;
+	}
+
 	function renderCategoryPanel() {
 		if (!state.category || !categoryPanel) return;
 		var catId = state.category;
@@ -305,31 +406,52 @@
 		if (!cat) { categoryPanel.hidden = true; return; }
 		if (categoryPanelName) categoryPanelName.textContent = cat.name;
 		
-		// Fetch category description from API
-		if (categoryPanelDesc) {
-			categoryPanelDesc.textContent = '';
-			var url = new URL(apiBase.replace(/\/$/, '') + '/categories/');
-			url.searchParams.set('team_id', teamId);
-			url.searchParams.set('category_id', catId);
-			url.searchParams.set('include_authors', 'false');
-			
+		// Fetch category description and monthly counts from API
+		var url = new URL(apiBase.replace(/\/$/, '') + '/categories/');
+		url.searchParams.set('team_id', teamId);
+		url.searchParams.set('category_id', catId);
+		url.searchParams.set('include_authors', 'false');
+		url.searchParams.set('monthly_counts', 'true');
+		
+		var catCacheKey = url.toString();
+		var catCached = getCached(catCacheKey);
+
+		if (categoryPanelDesc) categoryPanelDesc.textContent = '';
+		categoryPanel.hidden = false;
+
+		function applyCategoryData(data) {
+			var results = Array.isArray(data) ? data : (data.results || []);
+			var match = results.find(function (c) {
+				return String(c.id) === catId || String(c.category_id) === catId;
+			});
+			if (!match) {
+				if (categoryPanelSparkline) categoryPanelSparkline.innerHTML = '';
+				return;
+			}
+			if (categoryPanelDesc && match.category_description) {
+				categoryPanelDesc.textContent = match.category_description;
+			}
+			if (categoryPanelSparkline) {
+				categoryPanelSparkline.innerHTML = match.monthly_counts ? buildSparklines(match.monthly_counts) : '';
+			}
+		}
+
+		if (catCached) {
+			if (categoryPanelSparkline) categoryPanelSparkline.innerHTML = '';
+			applyCategoryData(catCached);
+		} else {
+			if (categoryPanelSparkline) categoryPanelSparkline.innerHTML = '<div class="sparkline-loading"><span></span><span></span><span></span></div>';
 			fetch(url.toString())
 				.then(function (r) { return r.json(); })
 				.then(function (data) {
-					var results = Array.isArray(data) ? data : (data.results || []);
-					var match = results.find(function (c) {
-						return String(c.id) === catId || String(c.category_id) === catId;
-					});
-					if (match && match.category_description) {
-						categoryPanelDesc.textContent = match.category_description;
-					}
+					setCached(catCacheKey, data);
+					applyCategoryData(data);
 				})
 				.catch(function () {
-					categoryPanelDesc.textContent = '';
+					if (categoryPanelDesc) categoryPanelDesc.textContent = '';
+					if (categoryPanelSparkline) categoryPanelSparkline.innerHTML = '';
 				});
 		}
-		
-		categoryPanel.hidden = false;
 	}
 
 	function hideCategoryPanel() {
