@@ -1,0 +1,189 @@
+{{ define "main" }}
+
+{{/* Resolve parent condition page (e.g. /conditions/multiple-sclerosis/) */}}
+{{ $conditionPage := .Parent }}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
+		<span>/</span>
+		<a href="{{ $conditionPage.RelPermalink }}">{{ $conditionPage.Title }}</a>
+		<span>/</span>
+		<strong>Research Papers</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }} — Research Papers</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── SECTION TABS ── -->
+<div class="section-tabs">
+	<div class="container">
+		<nav class="section-tabs-nav">
+			<a href="{{ $conditionPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
+			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers</a>
+		</nav>
+	</div>
+</div>
+
+<!-- ── FILTER BAR ── -->
+<div class="filter-bar" id="papers-filters">
+	<div class="container">
+		<form id="papers-filter-form" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-4">
+					<label for="papers-search-input">Search papers</label>
+					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
+				</div>
+				<div class="col-12 col-md-3">
+					<label for="papers-category-select">Category</label>
+					<select class="form-select" id="papers-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-sort-select">Sort by</label>
+					<select class="form-select" id="papers-sort-select">
+						<option value="date">Newest first</option>
+						<option value="relevance">AI relevance</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-condition="{{ $conditionPage.Title }}">Search</button>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+		</form>
+		<div class="mt-2 d-flex align-items-center justify-content-between">
+			<span class="results-count" id="papers-result-count"></span>
+			<div class="download-dropdown">
+				<button class="btn-download" id="papers-download-toggle" aria-haspopup="true" aria-expanded="false" data-umami-event="click--research-papers-download" data-umami-event-condition="{{ $conditionPage.Title }}">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+						<polyline points="7 10 12 15 17 10"/>
+						<line x1="12" y1="15" x2="12" y2="3"/>
+					</svg>
+					Download
+					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+				</button>
+				<ul class="download-menu" role="menu">
+					<li><button class="download-option" data-scope="page" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="page">Current page</button></li>
+					<li><button class="download-option" data-scope="all" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="all">All matching results</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ── CATEGORY DESCRIPTION PANEL ── -->
+<div id="category-panel" class="category-description-panel" hidden>
+	<div class="container">
+		<div class="category-panel-inner">
+			<strong id="category-panel-name"></strong>
+			<p id="category-panel-description"></p>
+		</div>
+	</div>
+</div>
+
+<!-- ── PAPER LISTING ── -->
+<section class="section bg-sand" style="padding-top: 24px;">
+	<div class="container">
+		<noscript>
+			<p>JavaScript is required to load papers. You can also browse the full MS research feed at <a href="https://gregory-ms.com" target="_blank" rel="noopener">gregory-ms.com</a>.</p>
+		</noscript>
+
+		<div
+			id="papers-list"
+			data-api-base="{{ .Site.Params.apiBase }}"
+			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
+			data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
+			data-categories="{{ with .Params.categories }}{{ . | jsonify }}{{ end }}">
+		</div>
+
+		<div class="pagination-controls" id="papers-pagination">
+			<button class="pagination-btn" id="papers-first-btn" title="First page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+			</button>
+			<button class="pagination-btn" id="papers-prev-btn" disabled title="Previous page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
+			</button>
+			<span id="papers-pagination-numbers"></span>
+			<button class="pagination-btn" id="papers-next-btn" title="Next page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
+			</button>
+			<button class="pagination-btn" id="papers-last-btn" title="Last page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+			</button>
+		</div>
+	</div>
+</section>
+
+<!-- ── NEWSLETTER ── -->
+{{ if and .Params.subscribe .Params.list_id }}
+<section id="rp-alerts" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
+	<div class="container">
+		<div class="newsletter-card">
+			<div class="text-center mb-4">
+				<h2 style="margin-bottom: 8px;">Get a weekly digest of new {{ $conditionPage.Title }} research</h2>
+				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">New relevant papers delivered to your inbox every week.</p>
+			</div>
+			<form
+				data-inline-subscribe
+				data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
+				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
+				data-error="{{ .Site.Params.subscriptions.error_url }}"
+				novalidate
+			>
+				<input type="hidden" name="list" value="{{ .Params.list_id }}">
+				<div class="row g-3 align-items-end">
+					<div class="col-12 col-md-3">
+						<label for="rp-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
+						<input type="text" class="form-control" id="rp-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-3">
+						<label for="rp-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+						<input type="email" class="form-control" id="rp-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-3">
+						<label for="rp-profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="rp-profile" name="profile" required style="border-color: var(--color-border);">
+							<option value="" disabled selected>Select…</option>
+							<option value="patient">Patient</option>
+							<option value="caregiver">Caregiver</option>
+							<option value="doctor">Doctor</option>
+							<option value="clinical centre">Clinical Centre</option>
+							<option value="researcher">Researcher</option>
+						</select>
+					</div>
+					<div class="col-12 col-md-3 d-flex align-items-end">
+						<button type="submit" class="btn-amber w-100" data-umami-event="Condition: Subscribe Papers" data-umami-event-condition="{{ $conditionPage.Title }}">Subscribe</button>
+					</div>
+					{{ range .Site.Params.subscriptions.global_lists }}
+					<div class="col-12">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-rp-{{ .list_id }}">
+							<label class="form-check-label" for="global-list-rp-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
+						</div>
+					</div>
+					{{ end }}
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+{{ end }}
+
+<script src="{{ "js/ms-research-papers.js" | relURL }}" defer></script>
+<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
+
+{{ end }}

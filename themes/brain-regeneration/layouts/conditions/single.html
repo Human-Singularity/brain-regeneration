@@ -23,11 +23,17 @@
 </section>
 
 <!-- ── SECTION TABS ── -->
+{{/* Find research-papers sibling page within this section's pages */}}
+{{ $rpPage := index (where .Pages "Params.layout" "research-papers") 0 }}
 <div class="section-tabs">
 	<div class="container">
 		<nav class="section-tabs-nav">
 			<a href="#" class="section-tab active" aria-current="page">Clinical Trials</a>
+			{{ if $rpPage }}
+			<a href="{{ $rpPage.RelPermalink }}" class="section-tab">Research Papers</a>
+			{{ else }}
 			<span class="section-tab disabled" aria-disabled="true" title="Coming soon">Research Papers <span class="coming-soon-badge">Coming soon</span></span>
+			{{ end }}
 		</nav>
 	</div>
 </div>

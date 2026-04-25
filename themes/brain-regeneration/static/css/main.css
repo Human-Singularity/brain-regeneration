@@ -2360,3 +2360,134 @@ a:hover {
                 padding: 24px;
         }
 }
+
+/* ── Research Papers listing ────────────────────────────────────────────── */
+
+/* Category description panel */
+.category-description-panel {
+	background: var(--color-tint);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 16px 24px;
+	margin: 0 0 8px;
+}
+.category-panel-inner strong {
+	display: block;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--color-primary);
+	margin-bottom: 6px;
+}
+.category-panel-inner p {
+	font-family: var(--font-body);
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--color-text);
+	margin: 0;
+}
+
+/* Abstract on paper cards */
+.paper-card-abstract {
+	font-family: var(--font-body);
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--color-text);
+	margin: 6px 0 8px;
+}
+
+/* Category chips on paper cards */
+.paper-card-categories {
+	margin-top: 8px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+/* ML prediction badge */
+.ml-badge {
+	display: inline-block;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	font-weight: 500;
+	padding: 2px 7px;
+	border-radius: 3px;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+.ml-badge.success {
+	background: #D1FAE5;
+	color: #065F46;
+}
+.ml-badge.warning {
+	background: #FEF3C7;
+	color: #92400E;
+}
+.ml-badge.muted {
+	background: var(--color-border);
+	color: var(--color-muted);
+}
+
+/* Expert / curator badge */
+.expert-badge {
+	display: inline-block;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 3px;
+	background: var(--color-primary);
+	color: #fff;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+/* Skeleton loading cards */
+@keyframes skeleton-pulse {
+	0%, 100% { opacity: 1; }
+	50%       { opacity: 0.4; }
+}
+.paper-skeleton {
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 20px 24px;
+	margin-bottom: 24px;
+	animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.paper-skeleton-title {
+	height: 18px;
+	width: 70%;
+	background: var(--color-border);
+	border-radius: 4px;
+	margin-bottom: 10px;
+}
+.paper-skeleton-meta {
+	height: 12px;
+	width: 40%;
+	background: var(--color-border);
+	border-radius: 4px;
+	margin-bottom: 12px;
+}
+.paper-skeleton-body {
+	height: 12px;
+	width: 90%;
+	background: var(--color-border);
+	border-radius: 4px;
+}
+
+/* Pagination ellipsis */
+.pagination-ellipsis {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 6px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	color: var(--color-muted);
+}
+
+@media (max-width: 768px) {
+	.category-description-panel {
+		padding: 12px 16px;
+	}
+}
