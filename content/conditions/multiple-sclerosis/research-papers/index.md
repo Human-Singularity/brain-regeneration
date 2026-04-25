@@ -17,39 +17,39 @@ api:
   subject_id: 1
 
 categories:
-  - slug: "alemtuzumab"
+  - id: 1
     name: "Alemtuzumab"
-  - slug: "cladribine"
+  - id: 3
     name: "Cladribine"
-  - slug: "natalizumab"
+  - id: 5
     name: "Natalizumab"
-  - slug: "ocrelizumab"
+  - id: 6
     name: "Ocrelizumab"
-  - slug: "siponimod"
+  - id: 10
     name: "Siponimod"
-  - slug: "fingolimod"
+  - id: 35
     name: "Fingolimod"
-  - slug: "tecfidera"
-    name: "Dimethyl Fumarate (Tecfidera)"
-  - slug: "teriflunomide"
+  - id: 36
+    name: "Dimethyl Fumarate"
+  - id: 37
     name: "Teriflunomide"
-  - slug: "ofatumumab"
+  - id: 29
     name: "Ofatumumab"
-  - slug: "mitoxantrone"
+  - id: 38
     name: "Mitoxantrone"
-  - slug: "ublituximab"
+  - id: 39
     name: "Ublituximab"
-  - slug: "rituximab"
+  - id: 28
     name: "Rituximab"
-  - slug: "ponesimod"
+  - id: 40
     name: "Ponesimod"
-  - slug: "vumerity"
-    name: "Diroximel Fumarate (Vumerity)"
-  - slug: "monomethyl-fumarate"
+  - id: 42
+    name: "Diroximel Fumarate"
+  - id: 43
     name: "Monomethyl Fumarate"
-  - slug: "car-t"
+  - id: 49
     name: "CAR-T Cell Therapy"
-  - slug: "stem-cells"
+  - id: 9
     name: "Stem Cells"
 ---
 

@@ -160,7 +160,7 @@
 		if (teamId)         url.searchParams.set('team_id',       teamId);
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_slug', state.category);
+		if (state.category) url.searchParams.set('category_id', state.category);
 		// Relevance filter only applies when browsing without a category
 		if (!state.category) url.searchParams.set('relevant', 'true');
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
@@ -176,7 +176,7 @@
 		if (teamId)         url.searchParams.set('team_id',       teamId);
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_slug', state.category);
+		if (state.category) url.searchParams.set('category_id', state.category);
 		if (!state.category) url.searchParams.set('relevant', 'true');
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
 		return url.toString();
@@ -300,27 +300,28 @@
 
 	function renderCategoryPanel() {
 		if (!state.category || !categoryPanel) return;
-		var cat = state.categories.find(function (c) { return c.slug === state.category; });
+		var catId = state.category;
+		var cat = state.categories.find(function (c) { return String(c.id) === catId; });
 		if (!cat) { categoryPanel.hidden = true; return; }
 		if (categoryPanelName) categoryPanelName.textContent = cat.name;
 		
 		// Fetch category description from API
 		if (categoryPanelDesc) {
-			categoryPanelDesc.textContent = 'Loading...';
+			categoryPanelDesc.textContent = '';
 			var url = new URL(apiBase.replace(/\/$/, '') + '/categories/');
 			url.searchParams.set('team_id', teamId);
-			url.searchParams.set('slug', state.category);
+			url.searchParams.set('category_id', catId);
 			url.searchParams.set('include_authors', 'false');
 			
 			fetch(url.toString())
 				.then(function (r) { return r.json(); })
 				.then(function (data) {
 					var results = Array.isArray(data) ? data : (data.results || []);
-					var category = results[0];
-					if (category && category.category_description) {
-						categoryPanelDesc.textContent = category.category_description;
-					} else {
-						categoryPanelDesc.textContent = '';
+					var match = results.find(function (c) {
+						return String(c.id) === catId || String(c.category_id) === catId;
+					});
+					if (match && match.category_description) {
+						categoryPanelDesc.textContent = match.category_description;
 					}
 				})
 				.catch(function () {
@@ -424,8 +425,9 @@
 		while (categorySelect.options.length > 1) categorySelect.remove(1);
 
 		state.categories.forEach(function (c) {
+			if (!c.id) return; // skip entries without an id
 			var opt = document.createElement('option');
-			opt.value       = c.slug;
+			opt.value       = String(c.id);
 			opt.textContent = c.name;
 			categorySelect.appendChild(opt);
 		});
