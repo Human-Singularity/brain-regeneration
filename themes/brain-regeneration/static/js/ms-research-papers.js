@@ -660,6 +660,10 @@
 			state.page     = 1;
 			if (state.category) {
 				renderCategoryPanel();
+				var panel = document.getElementById('category-panel');
+				if (panel) {
+					panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
 			} else {
 				hideCategoryPanel();
 			}
