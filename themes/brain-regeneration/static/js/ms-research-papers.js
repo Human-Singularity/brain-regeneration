@@ -9,9 +9,10 @@
 	var mount = document.getElementById('papers-list');
 	if (!mount) return;
 
-	var apiBase   = mount.dataset.apiBase   || 'https://api.gregory-ms.com';
-	var teamId    = mount.dataset.teamId    || '';
-	var subjectId = mount.dataset.subjectId || '';
+	var apiBase          = mount.dataset.apiBase          || 'https://api.gregory-ms.com';
+	var teamId           = mount.dataset.teamId           || '';
+	var subjectId        = mount.dataset.subjectId        || '';
+	var requireRelevant  = mount.dataset.requireRelevant  !== 'false';
 
 	var articlesEndpoint = apiBase.replace(/\/$/, '') + '/articles/';
 	var searchEndpoint   = apiBase.replace(/\/$/, '') + '/articles/search/';
@@ -20,6 +21,7 @@
 	var searchInput      = document.getElementById('papers-search-input');
 	var categorySelect   = document.getElementById('papers-category-select');
 	var sortSelect       = document.getElementById('papers-sort-select');
+	var relevantSelect   = document.getElementById('papers-relevant-select');
 	var searchBtn        = document.getElementById('papers-search-btn');
 	var resetBtn         = document.getElementById('papers-reset-btn');
 	var resultCount      = document.getElementById('papers-result-count');
@@ -44,6 +46,7 @@
 		keyword:     '',
 		category:    '',   // slug
 		sort:        'date',
+		relevant:    requireRelevant,  // true = curated feed, false = full feed
 		results:     [],   // current page articles
 		categories:  [],   // fetched once
 	};
@@ -130,15 +133,17 @@
 		state.keyword  = params.get('q')        || '';
 		state.category = params.get('category') || '';
 		state.sort     = params.get('sort')     || 'date';
+		state.relevant = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.page     = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
-		if (state.keyword)              params.set('q',        state.keyword);
-		if (state.category)             params.set('category', state.category);
-		if (state.sort && state.sort !== 'date') params.set('sort', state.sort);
-		if (state.page > 1)             params.set('page',     String(state.page));
+		if (state.keyword)                        params.set('q',        state.keyword);
+		if (state.category)                       params.set('category', state.category);
+		if (state.sort && state.sort !== 'date')  params.set('sort',     state.sort);
+		if (state.relevant !== requireRelevant)   params.set('relevant', String(state.relevant));
+		if (state.page > 1)                       params.set('page',     String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
 			history.pushState(null, '', url);
@@ -154,9 +159,10 @@
 	});
 
 	function syncUIFromState() {
-		if (searchInput)    searchInput.value    = state.keyword;
-		if (categorySelect) categorySelect.value = state.category;
-		if (sortSelect)     sortSelect.value     = state.sort;
+		if (searchInput)     searchInput.value     = state.keyword;
+		if (categorySelect)  categorySelect.value  = state.category;
+		if (sortSelect)      sortSelect.value      = state.sort;
+		if (relevantSelect)  relevantSelect.value  = String(state.relevant);
 		renderCategoryPanel();
 	}
 
@@ -175,8 +181,8 @@
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
 		if (state.category) url.searchParams.set('category_id', state.category);
-		// Relevance filter only applies when browsing without a category
-		if (!state.category) url.searchParams.set('relevant', 'true');
+		// Apply relevance filter based on current state (user-controlled)
+		if (!state.category && state.relevant) url.searchParams.set('relevant', 'true');
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -191,7 +197,7 @@
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
 		if (state.category) url.searchParams.set('category_id', state.category);
-		if (!state.category) url.searchParams.set('relevant', 'true');
+		if (!state.category && state.relevant) url.searchParams.set('relevant', 'true');
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
 		return url.toString();
 	}
@@ -684,15 +690,25 @@
 		});
 	}
 
+	if (relevantSelect) {
+		relevantSelect.addEventListener('change', function () {
+			state.relevant = this.value !== 'false';
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
+
 	if (resetBtn) {
 		resetBtn.addEventListener('click', function () {
 			state.keyword  = '';
 			state.category = '';
 			state.page     = 1;
 			state.sort     = 'date';
-			if (searchInput)    searchInput.value    = '';
-			if (categorySelect) categorySelect.value = '';
-			if (sortSelect)     sortSelect.value     = 'date';
+			state.relevant = requireRelevant;
+			if (searchInput)     searchInput.value     = '';
+			if (categorySelect)  categorySelect.value  = '';
+			if (sortSelect)      sortSelect.value      = 'date';
+			if (relevantSelect)  relevantSelect.value  = String(requireRelevant);
 			hideCategoryPanel();
 			fetchPage(1, false);
 		});

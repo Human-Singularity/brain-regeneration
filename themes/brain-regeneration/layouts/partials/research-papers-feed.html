@@ -1,0 +1,128 @@
+{{/*
+  Partial: research-papers-feed.html
+  Renders the research papers filter bar, category description panel, listing, and pagination.
+
+  Expected parameters (pass as dict):
+    .page            — the Hugo page object
+    .contextTitle    — string used for umami event context attributes (e.g. condition or research area title)
+    .requireRelevant — boolean (default true); set to false to show all articles regardless of relevance flag
+*/}}
+{{- $page := .page -}}
+{{- $apiBase := $page.Site.Params.apiBase -}}
+{{- $teamId := "" -}}
+{{- $subjectId := "" -}}
+{{- with $page.Params.api -}}
+	{{- $teamId = .team_id | string -}}
+	{{- $subjectId = .subject_id | string -}}
+{{- end -}}
+{{- $categories := $page.Params.categories -}}
+{{- $contextTitle := .contextTitle -}}
+{{- $requireRelevant := "true" -}}
+{{- if isset . "requireRelevant" -}}{{- if not .requireRelevant -}}{{- $requireRelevant = "false" -}}{{- end -}}{{- end -}}
+
+<!-- ── FILTER BAR ── -->
+<div class="filter-bar" id="papers-filters">
+	<div class="container">
+		<form id="papers-filter-form" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-4">
+					<label for="papers-search-input">Search papers</label>
+					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
+				</div>
+				<div class="col-12 col-md-3">
+					<label for="papers-category-select">Category</label>
+					<select class="form-select" id="papers-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-sort-select">Sort by</label>
+					<select class="form-select" id="papers-sort-select">
+						<option value="date">Newest first</option>
+						<option value="relevance">AI relevance</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-relevant-select">Show</label>
+					<select class="form-select" id="papers-relevant-select">
+						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers</option>
+						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-context="{{ $contextTitle }}">Search</button>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+		</form>
+		<div class="mt-2 d-flex align-items-center justify-content-between">
+			<span class="results-count" id="papers-result-count"></span>
+			<div class="download-dropdown">
+				<button class="btn-download" id="papers-download-toggle" aria-haspopup="true" aria-expanded="false" data-umami-event="click--research-papers-download" data-umami-event-context="{{ $contextTitle }}">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+						<polyline points="7 10 12 15 17 10"/>
+						<line x1="12" y1="15" x2="12" y2="3"/>
+					</svg>
+					Download
+					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+				</button>
+				<ul class="download-menu" role="menu">
+					<li><button class="download-option" data-scope="page" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="page">Current page</button></li>
+					<li><button class="download-option" data-scope="all" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="all">All matching results</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ── CATEGORY DESCRIPTION PANEL ── -->
+<div id="category-panel" class="category-description-panel" hidden>
+	<div class="container">
+		<div class="category-panel-inner">
+			<div class="category-panel-text">
+				<strong id="category-panel-name"></strong>
+				<p id="category-panel-description"></p>
+			</div>
+			<div id="category-panel-sparkline" class="category-panel-sparkline" aria-hidden="true"></div>
+		</div>
+	</div>
+</div>
+
+<!-- ── PAPER LISTING ── -->
+<section class="section bg-sand" style="padding-top: 24px;">
+	<div class="container">
+		<noscript>
+			<p>JavaScript is required to load papers. You can also browse the full research feed at <a href="https://gregory-ms.com" target="_blank" rel="noopener">gregory-ms.com</a>.</p>
+		</noscript>
+
+		<div
+			id="papers-list"
+			data-api-base="{{ $apiBase }}"
+			data-team-id="{{ $teamId }}"
+			data-subject-id="{{ $subjectId }}"
+			data-require-relevant="{{ $requireRelevant }}"
+			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}>
+		</div>
+
+		<div class="pagination-controls" id="papers-pagination">
+			<button class="pagination-btn" id="papers-first-btn" title="First page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+			</button>
+			<button class="pagination-btn" id="papers-prev-btn" disabled title="Previous page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
+			</button>
+			<span id="papers-pagination-numbers"></span>
+			<button class="pagination-btn" id="papers-next-btn" title="Next page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
+			</button>
+			<button class="pagination-btn" id="papers-last-btn" title="Last page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+			</button>
+		</div>
+	</div>
+</section>
+
+<script src="{{ "js/ms-research-papers.js" | relURL }}" defer></script>

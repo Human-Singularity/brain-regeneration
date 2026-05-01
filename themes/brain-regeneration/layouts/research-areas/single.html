@@ -69,69 +69,7 @@
 {{ end }}
 
 <!-- ── RESEARCH FEED ── -->
-<section class="section bg-sand" style="padding-top: 0;">
-	<div class="container">
-		<div class="narrow-col">
-			<div class="feed-header">
-				<h2>Latest research</h2>
-				<div class="download-dropdown">
-					<button class="btn-download" id="download-toggle" aria-haspopup="true" aria-expanded="false">
-						<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-							<polyline points="7 10 12 15 17 10"/>
-							<line x1="12" y1="15" x2="12" y2="3"/>
-						</svg>
-						Download
-						<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
-					</button>
-					<ul class="download-menu" role="menu">
-						<li><button class="download-option" data-scope="page" role="menuitem">Current page</button></li>
-						<li><button class="download-option" data-scope="all" role="menuitem">All results</button></li>
-					</ul>
-				</div>
-			</div>
-
-			<div class="feed-controls">
-				<div class="form-group">
-					<label for="sort-select">Sort by</label>
-					<select class="form-select" id="sort-select" style="min-width: 160px;">
-						<option value="date">Newest first</option>
-						<option value="relevance">AI relevance</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="date-from">From</label>
-					<input type="date" class="form-control" id="date-from" style="min-width: 150px;">
-				</div>
-				<div class="form-group">
-					<label for="date-to">To</label>
-					<input type="date" class="form-control" id="date-to" style="min-width: 150px;">
-				</div>
-				<div class="form-group feed-search">
-					<label for="keyword-search">Search</label>
-					<input type="text" class="form-control" id="keyword-search" placeholder="Search titles and abstracts…" style="border-color: var(--color-border);">
-				</div>
-			</div>
-
-			<div id="paper-list"
-				data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.gregory-ms.com" $.Site.Params.apiBase }}{{ end }}"
-				data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
-				data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
-				data-keywords="{{ delimit .Params.keywords "," }}">
-			</div>
-
-			<div class="pagination-controls" id="pagination">
-				<button class="pagination-btn" id="prev-btn" disabled title="Previous page">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
-				</button>
-				<button class="pagination-btn" id="next-btn" title="Next page">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
-				</button>
-				<span class="pagination-info">Page <span id="current-page">1</span></span>
-			</div>
-		</div>
-	</div>
-</section>
+{{ partial "research-papers-feed" (dict "page" . "contextTitle" .Title "requireRelevant" false) }}
 
 <!-- ── KEY CONCEPTS ── -->
 {{ with .Params.concepts }}
@@ -270,7 +208,6 @@
 {{ if and .Params.spotlight .Params.api }}
 <script src="{{ "js/research-spotlight.js" | relURL }}" defer></script>
 {{ end }}
-<script src="{{ "js/research-feed.js" | relURL }}" defer></script>
 <script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
 
 {{ end }}
