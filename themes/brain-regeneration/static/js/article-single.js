@@ -173,7 +173,7 @@
 	function renderActionRow(a) {
 		var doiHref = a.doi ? 'https://doi.org/' + encodeURIComponent(a.doi) : safeLink(a.link);
 		return '<div class="action-row">' +
-			'<a class="btn btn--amber" href="' + escHtml(safeLink(a.link)) + '" target="_blank" rel="noopener noreferrer">' +
+			'<a class="btn-amber" href="' + escHtml(safeLink(a.link)) + '" target="_blank" rel="noopener noreferrer">' +
 				icon('external', 16) + ' Read full article' +
 			'</a>' +
 			(a.doi ? '<a class="btn btn--ghost" href="' + escHtml(doiHref) + '" target="_blank" rel="noopener noreferrer">' + icon('file', 14) + ' DOI</a>' : '') +
@@ -283,7 +283,7 @@
 		return '<div class="aside-card aside-card--tint">' +
 			'<p class="aside-card__label">' + icon('bell', 12) + ' Stay informed</p>' +
 			'<p class="aside-card__body">Get a weekly digest of new <strong>' + escHtml(areaName) + '</strong> papers.</p>' +
-			'<a href="/subscribe/" class="btn btn--outline-teal" style="font-size:13px;padding:7px 16px;">Subscribe to digest ' + icon('external', 14) + '</a>' +
+			'<a href="/subscribe/" class="btn-outline-teal" style="font-size:13px;padding:7px 16px;">Subscribe to digest ' + icon('external', 14) + '</a>' +
 		'</div>';
 	}
 
@@ -373,6 +373,11 @@
 			} else {
 				navigator.clipboard.writeText(window.location.href).then(function () {
 					btn.textContent = 'Copied!';
+					setTimeout(function () {
+						btn.innerHTML = icon('share', 14) + ' Share';
+					}, 2000);
+				}).catch(function () {
+					btn.textContent = 'Copy link';
 					setTimeout(function () {
 						btn.innerHTML = icon('share', 14) + ' Share';
 					}, 2000);
