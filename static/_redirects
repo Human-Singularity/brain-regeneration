@@ -1,0 +1,4 @@
+# Cloudflare Pages — rewrite rules
+# Serve the articles shell for any /articles/{id}/ path so that
+# the client-side JS can extract the article ID and fetch from the API.
+/articles/*  /articles/  200
