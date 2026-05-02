@@ -299,6 +299,7 @@
 			'<div class="article-section__head">' +
 				'<h2>' + icon('flask', 12) + ' Related trials</h2>' +
 			'</div>' +
+			'<p style="font-family:var(--font-heading);font-size:13px;color:var(--color-muted);margin:-8px 0 14px;">Clinical trials referenced in the abstract</p>' +
 			'<div class="related-trials-grid">' + cards + '</div>' +
 		'</section>';
 	}
