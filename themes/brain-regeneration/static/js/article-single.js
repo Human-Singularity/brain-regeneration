@@ -278,47 +278,35 @@
 	function renderRelatedTrials(trials) {
 		if (!trials || !trials.length) return '';
 		var cards = trials.map(function (t) {
-			var nct    = t.identifiers && t.identifiers.nct_id || t.nct_id || '';
 			var title  = t.title || '';
-			var status = (t.overall_status || t.status || '').toLowerCase();
-			var phase  = t.phase || '';
-			var loc    = (t.locations && t.locations[0] && (t.locations[0].city || t.locations[0].country)) || '';
-			var n      = t.enrollment || '';
-			var href   = '/trials/' + encodeURIComponent(nct) + '/';
-
-			var statusBadge = '';
-			if (status.indexOf('recruit') !== -1) {
-				statusBadge = '<span class="badge badge--recruiting">Recruiting</span>';
-			} else if (status === 'active' || status.indexOf('not yet') !== -1) {
-				statusBadge = '<span class="badge badge--active">Active</span>';
+			var href   = safeLink(t.link) || '#';
+			// Extract NCT ID from the ClinicalTrials.gov link if present
+			var nct    = '';
+			if (t.link) {
+				var m = String(t.link).match(/NCT\d+/i);
+				if (m) nct = m[0].toUpperCase();
 			}
 
-			return '<a class="related-trial" href="' + escHtml(href) + '">' +
+			return '<a class="related-trial" href="' + escHtml(href) + '" target="_blank" rel="noopener noreferrer">' +
 				'<div class="related-trial__head">' +
 					'<p class="related-trial__title">' + escHtml(title) + '</p>' +
-					statusBadge +
 				'</div>' +
 				(nct ? '<p class="related-trial__nct">' + escHtml(nct) + '</p>' : '') +
-				'<div class="related-trial__meta">' +
-					(phase ? '<span class="badge badge--phase">Phase ' + escHtml(phase) + '</span><span>·</span>' : '') +
-					(loc   ? '<span>' + icon('pin', 12) + escHtml(loc) + '</span><span>·</span>' : '') +
-					(n     ? '<span>n=' + escHtml(String(n)) + '</span>' : '') +
-				'</div>' +
 			'</a>';
 		}).join('');
 
 		return '<section class="article-section">' +
 			'<div class="article-section__head">' +
 				'<h2>' + icon('flask', 12) + ' Related trials</h2>' +
-				'<a href="/observatory/#trials" class="article-section__count">View all →</a>' +
 			'</div>' +
 			'<div class="related-trials-grid">' + cards + '</div>' +
 		'</section>';
 	}
 
-	function renderArticle(a, trials) {
+	function renderArticle(a) {
 		var mlGrouped = groupPredictions(a.ml_predictions);
 		var summary   = a.summary_plain_english || '';
+		var trials    = a.clinical_trials || [];
 
 		var main = renderArticleHeader(a) +
 			renderMetaInline(a) +
@@ -429,13 +417,7 @@
 			})
 			.then(function (article) {
 				updateBreadcrumb(article);
-				var trialsUrl = apiBase + '/trials/?article_id=' + encodeURIComponent(id) + '&format=json&page_size=6';
-				return fetch(trialsUrl, { headers: { 'Accept': 'application/json' } })
-					.then(function (r) { return r.ok ? r.json() : { results: [] }; })
-					.then(function (trialsData) {
-						var trials = trialsData.results || trialsData || [];
-						showContent(renderArticle(article, trials));
-					});
+				showContent(renderArticle(article));
 			})
 			.catch(function () {
 				showError();
