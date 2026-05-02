@@ -1,0 +1,59 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/article-single.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.gregory-ms.com" -}}
+
+<div id="article-shell" data-api-base="{{ $apiBase }}">
+
+	{{/* Breadcrumb — updated by JS once article loads */}}
+	<nav class="article-breadcrumb" id="article-breadcrumb" aria-label="Breadcrumb">
+		<div class="container">
+			<a href="{{ "/observatory/" | relURL }}">Observatory</a>
+			<span class="article-breadcrumb__sep" aria-hidden="true">›</span>
+			<span id="article-breadcrumb-area" class="article-breadcrumb__placeholder"></span>
+			<span class="article-breadcrumb__sep" id="article-breadcrumb-sep2" aria-hidden="true" hidden>›</span>
+			<span id="article-breadcrumb-label">Article</span>
+		</div>
+	</nav>
+
+	{{/* Loading skeleton */}}
+	<main id="article-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
+		<div class="container">
+			<div id="article-loading" class="article-loading-skeleton">
+				<div class="skeleton skeleton--eyebrow"></div>
+				<div class="skeleton skeleton--title"></div>
+				<div class="skeleton skeleton--title skeleton--title-short"></div>
+				<div class="skeleton skeleton--authors"></div>
+				<div class="skeleton skeleton--meta"></div>
+			</div>
+			<div id="article-error" class="article-error-state" hidden>
+				<p>We could not load this article.</p>
+				<button class="btn-outline-teal" id="article-retry-btn">Try again</button>
+			</div>
+			<div id="article-content" hidden></div>
+		</div>
+	</main>
+
+</div>
+
+{{ end }}
+
+{{ define "page-scripts" }}
+<script>
+	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.gregory-ms.com" | jsonify }};
+	// Map of normalised subject name → URL, built from Hugo content at build time.
+	{{- $map := dict -}}
+	{{- range where .Site.RegularPages "Section" "research-areas" -}}
+		{{- $map = merge $map (dict (.Title | lower) .RelPermalink) -}}
+	{{- end -}}
+	{{- range where .Site.Pages "Kind" "section" -}}
+		{{- if and (eq .Section "conditions") (ne .RelPermalink "/conditions/") -}}
+			{{- $map = merge $map (dict (.Title | lower) .RelPermalink) -}}
+		{{- end -}}
+	{{- end }}
+	window.__SUBJECT_URLS__ = {{ $map | jsonify | safeJS }};
+</script>
+<script src="{{ "js/article-single.js" | relURL }}"></script>
+{{ end }}

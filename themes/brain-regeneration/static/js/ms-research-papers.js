@@ -283,9 +283,10 @@
 			'</div>';
 		}
 
+		var rawUrl = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		return '<article class="paper-card">' +
 			'<div class="paper-card-title">' +
-				'<a href="' + escHtml(safeLink(a.link)) + '" target="_blank" rel="noopener noreferrer">' + escHtml(a.title) + '</a>' +
+				'<a href="' + escHtml(rawUrl) + '">' + escHtml(a.title) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
 				(mlBadges    ? ' ' + mlBadges    : '') +
 			'</div>' +
