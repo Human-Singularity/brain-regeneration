@@ -160,8 +160,8 @@
 	function renderMetaInline(a) {
 		var accessIcon = a.access === 'open' ? icon('unlock', 14) : icon('lock', 14);
 		var accessBadge = a.access === 'open'
-			? '<span class="badge badge--open">Open access</span>'
-			: '<span class="badge badge--restricted">Restricted</span>';
+			? '<span class="badge access-badge open">Open access</span>'
+			: '<span class="badge access-badge restricted">Restricted</span>';
 		return '<div class="meta-inline">' +
 			(a.doi ? '<span class="meta-inline__cell">' + icon('file', 14) + ' DOI <span class="mono">' + escHtml(a.doi) + '</span></span>' : '') +
 			'<span class="meta-inline__cell">' + icon('calendar', 14) + ' Published <strong>' + escHtml(formatDate(a.published_date)) + '</strong></span>' +
