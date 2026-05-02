@@ -189,6 +189,13 @@
 		'</div>';
 	}
 
+	var subjectUrls = window.__SUBJECT_URLS__ || {};
+
+	function subjectUrl(name) {
+		// Normalise to lowercase for lookup — matches Hugo's `.Title | lower` at build time.
+		return subjectUrls[String(name).toLowerCase().trim()] || null;
+	}
+
 	function renderSubjects(a) {
 		var subjects   = a.subjects   || [];
 		var categories = a.team_categories || [];
@@ -198,7 +205,12 @@
 			out += '<div class="tag-list">';
 			subjects.forEach(function (s) {
 				var name = s.subject_name || s.name || s;
-				out += '<span class="tag-item">' + escHtml(name) + '</span>';
+				var url  = subjectUrl(name);
+				if (url) {
+					out += '<a class="tag-item" href="' + escHtml(url) + '">' + escHtml(name) + '</a>';
+				} else {
+					out += '<span class="tag-item">' + escHtml(name) + '</span>';
+				}
 			});
 			out += '</div>';
 		}
