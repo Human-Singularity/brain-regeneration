@@ -318,7 +318,7 @@
 
 	function renderArticle(a, trials) {
 		var mlGrouped = groupPredictions(a.ml_predictions);
-		var summary   = a.summary_plain_english || a.summary_plain || a.summary || '';
+		var summary   = a.summary_plain_english || '';
 
 		var main = renderArticleHeader(a) +
 			renderMetaInline(a) +
