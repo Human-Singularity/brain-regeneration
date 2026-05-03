@@ -46,8 +46,8 @@
 					<label for="papers-relevant-select">Show</label>
 					<select class="form-select" id="papers-relevant-select">
 						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers</option>
-						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
-					</select>
+						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>					<option value="has_clinical_trials_true">With clinical trials</option>
+					<option value="has_clinical_trials_false">Without clinical trials</option>					</select>
 				</div>
 				<div class="col-6 col-md-1 d-flex align-items-end">
 					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-context="{{ $contextTitle }}">Search</button>

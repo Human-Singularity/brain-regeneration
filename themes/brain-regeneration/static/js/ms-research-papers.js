@@ -39,16 +39,17 @@
 
 	// ── State ─────────────────────────────────────────────────────────────
 	var state = {
-		page:        1,
-		totalPages:  1,
-		totalCount:  0,
-		pageSize:    10,
-		keyword:     '',
-		category:    '',   // slug
-		sort:        'date',
-		relevant:    requireRelevant,  // true = curated feed, false = full feed
-		results:     [],   // current page articles
-		categories:  [],   // fetched once
+		page:               1,
+		totalPages:         1,
+		totalCount:         0,
+		pageSize:           10,
+		keyword:            '',
+		category:           '',   // slug
+		sort:               'date',
+		relevant:           requireRelevant,  // true = curated feed, false = full feed
+		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
+		results:            [],   // current page articles
+		categories:         [],   // fetched once
 	};
 
 	// ── Cache ─────────────────────────────────────────────────────────────
@@ -130,11 +131,12 @@
 
 	function readURL() {
 		var params = new URLSearchParams(window.location.search);
-		state.keyword  = params.get('q')        || '';
-		state.category = params.get('category') || '';
-		state.sort     = params.get('sort')     || 'date';
-		state.relevant = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
-		state.page     = parseInt(params.get('page') || '1', 10) || 1;
+		state.keyword            = params.get('q')        || '';
+		state.category           = params.get('category') || '';
+		state.sort               = params.get('sort')     || 'date';
+		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
+		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
+		state.page               = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
 	function writeURL(push) {
@@ -143,6 +145,7 @@
 		if (state.category)                       params.set('category', state.category);
 		if (state.sort && state.sort !== 'date')  params.set('sort',     state.sort);
 		if (state.relevant !== requireRelevant)   params.set('relevant', String(state.relevant));
+		if (state.hasClinicalTrials !== null)     params.set('has_clinical_trials', String(state.hasClinicalTrials));
 		if (state.page > 1)                       params.set('page',     String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
@@ -159,10 +162,16 @@
 	});
 
 	function syncUIFromState() {
-		if (searchInput)     searchInput.value     = state.keyword;
-		if (categorySelect)  categorySelect.value  = state.category;
-		if (sortSelect)      sortSelect.value      = state.sort;
-		if (relevantSelect)  relevantSelect.value  = String(state.relevant);
+		if (searchInput)    searchInput.value    = state.keyword;
+		if (categorySelect) categorySelect.value = state.category;
+		if (sortSelect)     sortSelect.value     = state.sort;
+		if (relevantSelect) {
+			if (state.hasClinicalTrials !== null) {
+				relevantSelect.value = 'has_clinical_trials_' + (state.hasClinicalTrials ? 'true' : 'false');
+			} else {
+				relevantSelect.value = String(state.relevant);
+			}
+		}
 		renderCategoryPanel();
 	}
 
@@ -182,7 +191,11 @@
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
 		if (state.category) url.searchParams.set('category_id', state.category);
 		// Apply relevance filter based on current state (user-controlled)
-		if (!state.category && state.relevant) url.searchParams.set('relevant', 'true');
+		if (state.hasClinicalTrials !== null) {
+			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
+		} else if (!state.category && state.relevant) {
+			url.searchParams.set('relevant', 'true');
+		}
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -197,7 +210,11 @@
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
 		if (state.category) url.searchParams.set('category_id', state.category);
-		if (!state.category && state.relevant) url.searchParams.set('relevant', 'true');
+		if (state.hasClinicalTrials !== null) {
+			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
+		} else if (!state.category && state.relevant) {
+			url.searchParams.set('relevant', 'true');
+		}
 		url.searchParams.set('ordering', sortToOrdering(state.sort));
 		return url.toString();
 	}
@@ -693,19 +710,30 @@
 
 	if (relevantSelect) {
 		relevantSelect.addEventListener('change', function () {
-			state.relevant = this.value !== 'false';
-			state.page     = 1;
+			var val = this.value;
+			if (val === 'has_clinical_trials_true') {
+				state.hasClinicalTrials = true;
+				state.relevant         = requireRelevant;
+			} else if (val === 'has_clinical_trials_false') {
+				state.hasClinicalTrials = false;
+				state.relevant         = requireRelevant;
+			} else {
+				state.hasClinicalTrials = null;
+				state.relevant         = val !== 'false';
+			}
+			state.page = 1;
 			fetchPage(1, false);
 		});
 	}
 
 	if (resetBtn) {
 		resetBtn.addEventListener('click', function () {
-			state.keyword  = '';
-			state.category = '';
-			state.page     = 1;
-			state.sort     = 'date';
-			state.relevant = requireRelevant;
+			state.keyword           = '';
+			state.category          = '';
+			state.page              = 1;
+			state.sort              = 'date';
+			state.relevant          = requireRelevant;
+			state.hasClinicalTrials = null;
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
 			if (sortSelect)      sortSelect.value      = 'date';
