@@ -144,13 +144,13 @@
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
-		if (state.keyword)                        params.set('q',        state.keyword);
-		if (state.category)                       params.set('category', state.category);
-		if (state.subjects)                       params.set('subjects', state.subjects);
-		if (state.sort && state.sort !== 'date')  params.set('sort',     state.sort);
-		if (state.relevant !== requireRelevant)   params.set('relevant', String(state.relevant));
-		if (state.hasClinicalTrials !== null)     params.set('has_clinical_trials', String(state.hasClinicalTrials));
-		if (state.page > 1)                       params.set('page',     String(state.page));
+		if (state.keyword)                    params.set('q',                    state.keyword);
+		if (state.category)                   params.set('category',             state.category);
+		if (state.subjects)                   params.set('subjects',             state.subjects);
+		params.set('sort',                    state.sort);
+		params.set('relevant',                String(state.relevant));
+		if (state.hasClinicalTrials !== null) params.set('has_clinical_trials',  String(state.hasClinicalTrials));
+		if (state.page > 1)                   params.set('page',                 String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
 			history.pushState(null, '', url);
