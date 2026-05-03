@@ -24,15 +24,47 @@
 <div class="filter-bar" id="papers-filters">
 	<div class="container">
 		<form id="papers-filter-form" action="javascript:void(0)">
+			{{- $conditionPages := slice -}}
+			{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
+				{{- if and .Params.api .Params.api.subject_id -}}
+					{{- $conditionPages = $conditionPages | append . -}}
+				{{- end -}}
+			{{- end -}}
+			{{- $researchAreaPages := slice -}}
+			{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
+				{{- if and .Params.api .Params.api.subject_id -}}
+					{{- $researchAreaPages = $researchAreaPages | append . -}}
+				{{- end -}}
+			{{- end -}}
 			<div class="row g-2 align-items-end">
-				<div class="col-12 col-md-4">
+				<div class="col-12 col-md-3">
 					<label for="papers-search-input">Search papers</label>
 					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
 				</div>
-				<div class="col-12 col-md-3">
+				<div class="col-12 col-md-2">
 					<label for="papers-category-select">Category</label>
 					<select class="form-select" id="papers-category-select">
 						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-subject-select">Intersect with ...</label>
+					<select class="form-select" id="papers-subject-select">
+						<option value="">All subjects</option>
+						{{- if $conditionPages }}
+						<optgroup label="Conditions">
+							{{- range $conditionPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
+						{{- if $researchAreaPages }}
+						<optgroup label="Research Areas">
+							{{- range $researchAreaPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
 					</select>
 				</div>
 				<div class="col-12 col-md-2">
@@ -46,13 +78,15 @@
 					<label for="papers-relevant-select">Show</label>
 					<select class="form-select" id="papers-relevant-select">
 						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers</option>
-						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>					<option value="has_clinical_trials_true">With clinical trials</option>
-					<option value="has_clinical_trials_false">Without clinical trials</option>					</select>
+						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
+						<option value="has_clinical_trials_true">With clinical trials</option>
+						<option value="has_clinical_trials_false">Without clinical trials</option>
+					</select>
 				</div>
-				<div class="col-6 col-md-1 d-flex align-items-end">
+				<div class="col-6 col-md-auto d-flex align-items-end">
 					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-context="{{ $contextTitle }}">Search</button>
 				</div>
-				<div class="col-6 col-md-1 d-flex align-items-end">
+				<div class="col-6 col-md-auto d-flex align-items-end">
 					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>

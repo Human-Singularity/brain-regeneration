@@ -20,6 +20,7 @@
 	// ── UI references ────────────────────────────────────────────────────────
 	var searchInput      = document.getElementById('papers-search-input');
 	var categorySelect   = document.getElementById('papers-category-select');
+	var subjectsSelect   = document.getElementById('papers-subject-select');
 	var sortSelect       = document.getElementById('papers-sort-select');
 	var relevantSelect   = document.getElementById('papers-relevant-select');
 	var searchBtn        = document.getElementById('papers-search-btn');
@@ -45,6 +46,7 @@
 		pageSize:           10,
 		keyword:            '',
 		category:           '',   // slug
+		subjects:           '',   // comma-separated subject IDs (AND match)
 		sort:               'date',
 		relevant:           requireRelevant,  // true = curated feed, false = full feed
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
@@ -133,6 +135,7 @@
 		var params = new URLSearchParams(window.location.search);
 		state.keyword            = params.get('q')        || '';
 		state.category           = params.get('category') || '';
+		state.subjects           = params.get('subjects') || '';
 		state.sort               = params.get('sort')     || 'date';
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
@@ -143,6 +146,7 @@
 		var params = new URLSearchParams();
 		if (state.keyword)                        params.set('q',        state.keyword);
 		if (state.category)                       params.set('category', state.category);
+		if (state.subjects)                       params.set('subjects', state.subjects);
 		if (state.sort && state.sort !== 'date')  params.set('sort',     state.sort);
 		if (state.relevant !== requireRelevant)   params.set('relevant', String(state.relevant));
 		if (state.hasClinicalTrials !== null)     params.set('has_clinical_trials', String(state.hasClinicalTrials));
@@ -164,6 +168,7 @@
 	function syncUIFromState() {
 		if (searchInput)    searchInput.value    = state.keyword;
 		if (categorySelect) categorySelect.value = state.category;
+		if (subjectsSelect) subjectsSelect.value = state.subjects;
 		if (sortSelect)     sortSelect.value     = state.sort;
 		if (relevantSelect) {
 			if (state.hasClinicalTrials !== null) {
@@ -209,7 +214,8 @@
 		if (teamId)         url.searchParams.set('team_id',       teamId);
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_id', state.category);
+		if (state.category) url.searchParams.set('category_id',   state.category);
+		if (state.subjects) url.searchParams.set('subjects',      state.subjects);
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -658,8 +664,9 @@
 	// ── Event listeners ────────────────────────────────────────────────────
 
 	function doSearch() {
-		state.keyword  = searchInput ? searchInput.value.trim() : '';
-		state.category = categorySelect ? categorySelect.value : '';
+		state.keyword  = searchInput  ? searchInput.value.trim() : '';
+		state.category = categorySelect ? categorySelect.value  : '';
+		state.subjects = subjectsSelect ? subjectsSelect.value  : '';
 		state.page     = 1;
 		renderCategoryPanel();
 		if (!state.category) hideCategoryPanel();
@@ -708,6 +715,14 @@
 		});
 	}
 
+	if (subjectsSelect) {
+		subjectsSelect.addEventListener('change', function () {
+			state.subjects = this.value;
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
+
 	if (relevantSelect) {
 		relevantSelect.addEventListener('change', function () {
 			var val = this.value;
@@ -730,12 +745,14 @@
 		resetBtn.addEventListener('click', function () {
 			state.keyword           = '';
 			state.category          = '';
+			state.subjects          = '';
 			state.page              = 1;
 			state.sort              = 'date';
 			state.relevant          = requireRelevant;
 			state.hasClinicalTrials = null;
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
+			if (subjectsSelect)  subjectsSelect.value  = '';
 			if (sortSelect)      sortSelect.value      = 'date';
 			if (relevantSelect)  relevantSelect.value  = String(requireRelevant);
 			hideCategoryPanel();
