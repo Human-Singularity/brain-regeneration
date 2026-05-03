@@ -194,7 +194,8 @@
 		if (teamId)         url.searchParams.set('team_id',       teamId);
 		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_id', state.category);
+		if (state.category) url.searchParams.set('category_id',   state.category);
+		if (state.subjects) url.searchParams.set('subjects',      state.subjects);
 		// Apply relevance filter based on current state (user-controlled)
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
