@@ -75,6 +75,16 @@ options:
 				<span class="transp-card-cta">View analytics</span>
 			</a>
 
+			<!-- ML Relevancy Models -->
+			<a href="#ml-models" class="transp-card">
+				<div class="transp-card-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 21h4"/><path d="M12 3v3"/><path d="M12 18v3"/><rect x="5" y="6" width="14" height="12" rx="2"/></svg>
+				</div>
+				<h3 class="transp-card-title">ML Relevancy Models</h3>
+				<p class="transp-card-desc">How our machine learning models score article relevance, and key caveats about the training data.</p>
+				<span class="transp-card-cta">View model details</span>
+			</a>
+
 			<!-- Disclaimer -->
 			<a href="#disclaimer" class="transp-card">
 				<div class="transp-card-icon">
@@ -85,6 +95,21 @@ options:
 				<span class="transp-card-cta">View disclaimer</span>
 			</a>
 
+		</div>
+	</div>
+</section>
+
+<!-- ── QUICK JUMP ── -->
+<section class="section bg-sand" style="padding-top: 0;">
+	<div class="container">
+		<div class="transp-quick-jump" aria-label="Quick links on transparency page">
+			<span class="transp-quick-jump-label">Quick jump:</span>
+			<a href="#donations" class="transp-quick-jump-link">Donations</a>
+			<a href="#data-sources" class="transp-quick-jump-link">Data sources</a>
+			<a href="#open-source" class="transp-quick-jump-link">Open source</a>
+			<a href="#analytics" class="transp-quick-jump-link">Analytics</a>
+			<a href="#ml-models" class="transp-quick-jump-link">ML models</a>
+			<a href="#disclaimer" class="transp-quick-jump-link">Disclaimer</a>
 		</div>
 	</div>
 </section>
@@ -161,7 +186,8 @@ options:
 	<div class="container">
 		<div class="narrow-col body-text">
 			<h2>Annual Reports</h2>
-			<p>We publish a yearly summary of our activities, growth, and financials so anyone can verify how we operate. Reports will appear here as they become available.</p>
+			<p class="transp-section-intro">We publish a yearly summary of our activities, growth, and finances so anyone can verify how we operate.</p>
+			<p>Reports will appear here as they become available.</p>
 			<p>Our finances are processed through the <a href="https://human-singularity.org/" target="_blank">Human-Singularity Network</a>, a non-profit registered in Portugal (PT517563363).</p>
 			<p style="font-size: 15px; color: var(--color-muted); font-style: italic;">No reports published yet — the first report will cover 2026.</p>
 		</div>
@@ -173,23 +199,29 @@ options:
 	<div class="container">
 		<div class="narrow-col body-text">
 			<h2>Data Sources</h2>
-			<p>GregoryAI continuously harvests new publications and clinical trials from the following sources. Searches are defined by scientific curators and run automatically every day.</p>
-			<dl>
-				<dt>PubMed / MEDLINE</dt>
-				<dd>The primary database of biomedical literature maintained by the US National Library of Medicine. The main source for peer-reviewed journal articles.</dd>
-
-				<dt>bioRxiv &amp; medRxiv</dt>
-				<dd>Preprint servers for biology and medicine. Articles here have not yet been peer-reviewed, and results are marked accordingly.</dd>
-
-				<dt>ClinicalTrials.gov</dt>
-				<dd>The US National Library of Medicine registry of publicly and privately supported clinical studies. Used for tracking ongoing and completed trials.</dd>
-
-				<dt>EU Clinical Trials Register</dt>
-				<dd>The European register of clinical trials authorised under the EU Clinical Trials Directive, covering trials conducted in EU member states.</dd>
-
-				<dt>ISRCTN Registry</dt>
-				<dd>An international primary clinical trial registry, providing coverage of trials not registered in the US or EU registers.</dd>
-			</dl>
+			<p class="transp-section-intro">GregoryAI continuously harvests new publications and clinical trials from trusted registries.</p>
+			<ul class="transp-source-list">
+				<li class="transp-source-item">
+					<h3>PubMed / MEDLINE</h3>
+					<p>The primary database of biomedical literature maintained by the US National Library of Medicine. The main source for peer-reviewed journal articles.</p>
+				</li>
+				<li class="transp-source-item">
+					<h3>bioRxiv &amp; medRxiv</h3>
+					<p>Preprint servers for biology and medicine. Articles here have not yet been peer-reviewed, and results are marked accordingly.</p>
+				</li>
+				<li class="transp-source-item">
+					<h3>ClinicalTrials.gov</h3>
+					<p>The US National Library of Medicine registry of publicly and privately supported clinical studies. Used for tracking ongoing and completed trials.</p>
+				</li>
+				<li class="transp-source-item">
+					<h3>EU Clinical Trials Register</h3>
+					<p>The European register of clinical trials authorised under the EU Clinical Trials Directive, covering trials conducted in EU member states.</p>
+				</li>
+				<li class="transp-source-item">
+					<h3>ISRCTN Registry</h3>
+					<p>An international primary clinical trial registry, providing coverage of trials not registered in the US or EU registers.</p>
+				</li>
+			</ul>
 			<p style="font-size: 15px; color: var(--color-muted);">Source queries and keywords are defined by our scientific curators and are visible in the GregoryAI configuration for each research area.</p>
 		</div>
 	</div>
@@ -222,15 +254,38 @@ options:
 	</div>
 </section>
 
+<!-- ── ML MODELS ── -->
+<section class="section bg-sand" id="ml-models">
+	<div class="container">
+		<div class="narrow-col body-text">
+			<h2>ML Relevancy Models</h2>
+			<p class="transp-section-intro">Relevancy badges on article cards are generated by machine learning models that analyze paper titles and abstracts.</p>
+			<ul class="transp-bullet-list">
+				<li>Prediction score ranges and what each score means.</li>
+				<li>The specific algorithms currently used.</li>
+				<li>Known limitations and caveats in the training data.</li>
+			</ul>
+			<p style="font-size: 15px; color: var(--color-muted);">This section includes an important caveat about the current annotation source for the training data.</p>
+			<div class="d-flex flex-wrap gap-3" style="margin-top: 24px;">
+				<a href="/relevancy-badges/" class="btn-outline-teal">Read how relevancy badges work</a>
+			</div>
+		</div>
+	</div>
+</section>
+
 <!-- ── DISCLAIMER ── -->
 <section class="section bg-sand" id="disclaimer">
 	<div class="container">
 		<div class="narrow-col body-text">
 			<h2>Disclaimer</h2>
-			<h3 style="font-size: 1.1rem; margin-top: 28px;">AI limitations</h3>
-			<p>Content on this observatory is gathered and ranked by GregoryAI, a machine learning system. While the models are trained to identify relevant research, they are not infallible. Articles may be incorrectly ranked, miscategorised, or missed entirely. Scientific curators review results, but this process is ongoing and imperfect. Always verify information against the original source.</p>
-			<h3 style="font-size: 1.1rem; margin-top: 28px;">Not medical advice</h3>
-			<p>Nothing on this website constitutes medical advice. Research summaries, clinical trial listings, and AI-generated rankings are provided for informational purposes only. They should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified health professional before making any medical decisions.</p>
+			<div class="transp-note-card">
+				<h3>AI limitations</h3>
+				<p>Content on this observatory is gathered and ranked by GregoryAI, a machine learning system. While the models are trained to identify relevant research, they are not infallible. Articles may be incorrectly ranked, miscategorised, or missed entirely. Scientific curators review results, but this process is ongoing and imperfect. Always verify information against the original source.</p>
+			</div>
+			<div class="transp-note-card">
+				<h3>Not medical advice</h3>
+				<p>Nothing on this website constitutes medical advice. Research summaries, clinical trial listings, and AI-generated rankings are provided for informational purposes only. They should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified health professional before making any medical decisions.</p>
+			</div>
 		</div>
 	</div>
 </section>
