@@ -1,7 +1,7 @@
 /* ms-research-papers.js — Research papers listing for conditions pages.
  * Fetches from api.gregory-ms.com/articles/ and /articles/search/.
  * Supports: category filter (server-side), text search (server-side),
- * client-side sort, URL state, ML/expert badges, CSV download, pagination.
+ * client-side sort, URL state, ML/expert scores, CSV download, pagination.
  */
 (function () {
 	'use strict';
@@ -280,7 +280,7 @@
 			? '<a class="paper-card-doi" href="https://doi.org/' + escHtml(a.doi) + '" target="_blank" rel="noopener noreferrer">DOI</a>'
 			: '';
 
-		var mlBadges = '';
+		var mlScores = '';
 		if (a.ml_predictions && a.ml_predictions.length) {
 			// Keep only the most recent prediction per algorithm.
 			// The API returns entries with an `id` field; higher id = more recent run.
@@ -292,7 +292,7 @@
 					latestByAlgo[algo] = pred;
 				}
 			});
-			mlBadges = Object.keys(latestByAlgo).map(function (algo) {
+			mlScores = Object.keys(latestByAlgo).map(function (algo) {
 				return buildMLBadge(latestByAlgo[algo]);
 			}).join(' ');
 		}
@@ -312,7 +312,7 @@
 			'<div class="paper-card-title">' +
 				'<a href="' + escHtml(rawUrl) + '">' + escHtml(a.title) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
-				(mlBadges    ? ' ' + mlBadges    : '') +
+				(mlScores    ? ' ' + mlScores    : '') +
 			'</div>' +
 			(authors  ? '<div class="paper-card-authors">'  + escHtml(authors)  + '</div>' : '') +
 			(abstract ? '<div class="paper-card-abstract">' + escHtml(abstract) + '</div>' : '') +
