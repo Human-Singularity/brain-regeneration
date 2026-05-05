@@ -2214,6 +2214,124 @@ a:hover {
         content: '\2192';
 }
 
+.transp-quick-jump {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	padding: 16px 20px;
+	background-color: rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+}
+
+.transp-quick-jump-label {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--color-muted);
+	margin-right: 2px;
+}
+
+.transp-quick-jump-link {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--color-primary);
+	padding: 6px 10px;
+	border-radius: 999px;
+	background-color: var(--color-tint);
+	border: 1px solid transparent;
+	transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.transp-quick-jump-link:hover {
+	text-decoration: none;
+	background-color: #d7ecf0;
+	border-color: rgba(0, 0, 0, 0.08);
+}
+
+.transp-section-intro {
+	font-family: var(--font-heading);
+	font-size: 17px;
+	line-height: 1.6;
+	color: var(--color-text);
+	margin-bottom: 0.9em;
+}
+
+.transp-source-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 22px;
+	display: grid;
+	gap: 12px;
+}
+
+.transp-source-item {
+	background-color: rgba(255, 255, 255, 0.72);
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+	padding: 14px 16px;
+}
+
+.transp-source-item h3 {
+	font-family: var(--font-heading);
+	font-size: 16px;
+	margin: 0 0 6px;
+}
+
+.transp-source-item p {
+	font-size: 15px;
+	line-height: 1.55;
+	margin: 0;
+}
+
+.transp-bullet-list {
+	margin: 0 0 16px;
+	padding-left: 20px;
+}
+
+.transp-bullet-list li {
+	margin-bottom: 6px;
+	line-height: 1.5;
+}
+
+.transp-note-card {
+	background-color: var(--color-secondary);
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+	padding: 16px 18px;
+	margin-top: 20px;
+}
+
+.transp-note-card h3 {
+	font-size: 1.05rem;
+	margin: 0 0 8px;
+}
+
+.transp-note-card p {
+	margin-bottom: 0;
+}
+
+@media (max-width: 767px) {
+	.transp-quick-jump {
+		padding: 14px;
+		gap: 8px;
+	}
+
+	.transp-quick-jump-label {
+		width: 100%;
+		margin-bottom: 2px;
+	}
+
+	.transp-source-item {
+		padding: 12px 14px;
+	}
+}
+
 /* ── Donation page ── */
 .donor-stats-banner {
         display: flex;

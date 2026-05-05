@@ -330,8 +330,21 @@
 	font-family: var(--font-body);
 	font-size: 13px;
 	color: var(--color-muted);
-	margin: 0 0 18px;
+	margin: 0 0 6px;
 	line-height: 1.45;
+}
+.ml-widget__help {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--color-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	display: inline-block;
+	margin-bottom: 14px;
+}
+.ml-widget__help:hover {
+	text-decoration-thickness: 2px;
 }
 .ml-row {
 	padding: 14px 0;

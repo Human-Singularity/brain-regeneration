@@ -254,6 +254,7 @@
 				'<p class="ml-widget__title">' + icon('cpu', 12) + ' ML relevance</p>' +
 			'</div>' +
 			'<p class="ml-widget__caption">Scored by independent algorithms. Threshold 0.8.</p>' +
+			'<a class="ml-widget__help" href="/relevancy-badges/">How these scores are calculated</a>' +
 			rows +
 		'</div>';
 	}
