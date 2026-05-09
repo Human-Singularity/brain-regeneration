@@ -3,7 +3,7 @@
 {{ end }}
 
 {{ define "main" }}
-{{- $apiBase := .Site.Params.apiBase | default "https://api.gregory-ms.com" -}}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
 
 <div id="article-shell" data-api-base="{{ $apiBase }}">
 
@@ -42,7 +42,7 @@
 
 {{ define "page-scripts" }}
 <script>
-	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.gregory-ms.com" | jsonify }};
+	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};
 	// Map of normalised subject name → URL, built from Hugo content at build time.
 	{{- $map := dict -}}
 	{{- range where .Site.RegularPages "Section" "research-areas" -}}

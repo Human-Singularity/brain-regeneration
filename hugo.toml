@@ -49,7 +49,7 @@ timeZone = "Europe/Lisbon"
 [params]
 # API base URL — override with HUGO_PARAMS_APIBASE env var for local dev
 # e.g. HUGO_PARAMS_APIBASE=http://localhost:8000 make dev-local
-apiBase = "https://api.gregory-ms.com"
+apiBase = "https://api.brain-regeneration.com"
 
 # Site configuration
 author = "Brain Regeneration Observatory Team"
