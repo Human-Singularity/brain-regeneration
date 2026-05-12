@@ -16,6 +16,7 @@
 	{{- $subjectId = .subject_id | string -}}
 {{- end -}}
 {{- $categories := $page.Params.categories -}}
+{{- $categoryGroups := $page.Params.category_groups -}}
 {{- $contextTitle := .contextTitle -}}
 {{- $requireRelevant := "true" -}}
 {{- if isset . "requireRelevant" -}}{{- if not .requireRelevant -}}{{- $requireRelevant = "false" -}}{{- end -}}{{- end -}}
@@ -138,7 +139,8 @@
 			data-team-id="{{ $teamId }}"
 			data-subject-id="{{ $subjectId }}"
 			data-require-relevant="{{ $requireRelevant }}"
-			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}>
+			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}
+			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
 		</div>
 
 		<div class="pagination-controls" id="papers-pagination">

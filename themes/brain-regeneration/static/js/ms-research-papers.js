@@ -51,7 +51,8 @@
 		relevant:           requireRelevant,  // true = curated feed, false = full feed
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
 		results:            [],   // current page articles
-		categories:         [],   // fetched once
+		categories:         [],   // flat list (populated from category_groups or data-categories)
+		categoryGroups:     [],   // grouped list (populated from data-category-groups)
 	};
 
 	// ── Cache ─────────────────────────────────────────────────────────────
@@ -588,13 +589,28 @@
 		// Remove any previously added options (re-init guard)
 		while (categorySelect.options.length > 1) categorySelect.remove(1);
 
-		state.categories.forEach(function (c) {
-			if (!c.id) return; // skip entries without an id
-			var opt = document.createElement('option');
-			opt.value       = String(c.id);
-			opt.textContent = c.name;
-			categorySelect.appendChild(opt);
-		});
+		if (state.categoryGroups.length) {
+			state.categoryGroups.forEach(function (g) {
+				var group = document.createElement('optgroup');
+				group.label = g.label;
+				(g.categories || []).forEach(function (c) {
+					if (!c.id) return;
+					var opt = document.createElement('option');
+					opt.value       = String(c.id);
+					opt.textContent = c.name;
+					group.appendChild(opt);
+				});
+				categorySelect.appendChild(group);
+			});
+		} else {
+			state.categories.forEach(function (c) {
+				if (!c.id) return; // skip entries without an id
+				var opt = document.createElement('option');
+				opt.value       = String(c.id);
+				opt.textContent = c.name;
+				categorySelect.appendChild(opt);
+			});
+		}
 
 		// Restore URL state value
 		if (state.category) {
@@ -806,12 +822,25 @@
 	readURL();
 	syncUIFromState();
 
-	// Load categories from frontmatter (passed as JSON in data-categories)
+	// Load categories from frontmatter (passed as JSON in data-categories / data-category-groups)
 	try {
-		var rawCats = mount.dataset.categories;
-		if (rawCats) {
-			var parsedCats = JSON.parse(rawCats);
-			state.categories = Array.isArray(parsedCats) ? parsedCats : [];
+		var rawGroups = mount.dataset.categoryGroups;
+		if (rawGroups) {
+			var parsedGroups = JSON.parse(rawGroups);
+			if (Array.isArray(parsedGroups) && parsedGroups.length) {
+				state.categoryGroups = parsedGroups;
+				// Derive flat list from groups so renderCategoryPanel() lookup by ID keeps working
+				state.categories = parsedGroups.reduce(function (acc, g) {
+					return acc.concat(Array.isArray(g.categories) ? g.categories : []);
+				}, []);
+			}
+		}
+		if (!state.categories.length) {
+			var rawCats = mount.dataset.categories;
+			if (rawCats) {
+				var parsedCats = JSON.parse(rawCats);
+				state.categories = Array.isArray(parsedCats) ? parsedCats : [];
+			}
 		}
 	} catch (e) { /* non-fatal: select will just have no options */ }
 	populateCategorySelect();

@@ -16,41 +16,51 @@ api:
   team_id: 1
   subject_id: 1
 
-categories:
-  - id: 1
-    name: "Alemtuzumab"
-  - id: 3
-    name: "Cladribine"
-  - id: 5
-    name: "Natalizumab"
-  - id: 6
-    name: "Ocrelizumab"
-  - id: 10
-    name: "Siponimod"
-  - id: 35
-    name: "Fingolimod"
-  - id: 36
-    name: "Dimethyl Fumarate"
-  - id: 37
-    name: "Teriflunomide"
-  - id: 29
-    name: "Ofatumumab"
-  - id: 38
-    name: "Mitoxantrone"
-  - id: 39
-    name: "Ublituximab"
-  - id: 28
-    name: "Rituximab"
-  - id: 40
-    name: "Ponesimod"
-  - id: 42
-    name: "Diroximel Fumarate"
-  - id: 43
-    name: "Monomethyl Fumarate"
-  - id: 49
-    name: "CAR-T Cell Therapy"
-  - id: 9
-    name: "Stem Cells"
+category_groups:
+  - label: "Monoclonal Antibodies"
+    categories:
+      - id: 6
+        name: "Ocrelizumab"
+      - id: 29
+        name: "Ofatumumab"
+      - id: 39
+        name: "Ublituximab"
+      - id: 28
+        name: "Rituximab"
+      - id: 1
+        name: "Alemtuzumab"
+      - id: 5
+        name: "Natalizumab"
+  - label: "S1P Receptor Modulators"
+    categories:
+      - id: 35
+        name: "Fingolimod"
+      - id: 10
+        name: "Siponimod"
+      - id: 40
+        name: "Ponesimod"
+  - label: "Oral Small Molecules"
+    categories:
+      - id: 36
+        name: "Dimethyl Fumarate"
+      - id: 42
+        name: "Diroximel Fumarate"
+      - id: 43
+        name: "Monomethyl Fumarate"
+      - id: 37
+        name: "Teriflunomide"
+      - id: 3
+        name: "Cladribine"
+  - label: "Cytotoxic Immunosuppressant"
+    categories:
+      - id: 38
+        name: "Mitoxantrone"
+  - label: "Cell-Based Therapies"
+    categories:
+      - id: 49
+        name: "CAR-T Cell Therapy"
+      - id: 9
+        name: "Stem Cells"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
