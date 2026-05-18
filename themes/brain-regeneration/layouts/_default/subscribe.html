@@ -2,8 +2,8 @@
 {{ $sub := site.Params.subscriptions }}
 
 {{/* Collect pages that have subscribe: true AND a list_id set */}}
-{{ $conditionPages  := where (where site.Pages "Section" "conditions") ".Params.list_id" "ne" nil }}
-{{ $conditionPages  = where $conditionPages ".Params.subscribe" true }}
+{{ $conditionsSection := site.GetPage "/conditions" }}
+{{ $conditionPages  := where (where $conditionsSection.Sections ".Params.list_id" "ne" nil) ".Params.subscribe" true }}
 {{ $researchPages   := where (where site.RegularPages "Section" "research-areas") ".Params.list_id" "ne" nil }}
 {{ $researchPages   = where $researchPages ".Params.subscribe" true }}
 
