@@ -64,7 +64,7 @@
 		if (el) { el.classList.add('is-loading'); el.textContent = ''; }
 	});
 
-	function cachedFetch(url, cacheKey, onData) {
+	function cachedFetch(url, cacheKey, onData, onError) {
 		try {
 			var cached = JSON.parse(localStorage.getItem(cacheKey));
 			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
@@ -74,12 +74,15 @@
 		} catch (e) {}
 
 		return fetch(url)
-			.then(function (r) { return r.json(); })
+			.then(function (r) {
+				if (!r.ok) throw new Error(r.status);
+				return r.json();
+			})
 			.then(function (data) {
 				onData(data);
 				try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), payload: data })); } catch (e) {}
 			})
-			.catch(function () {});
+			.catch(function () { if (onError) onError(); });
 	}
 
 	// Hero stats via org=6 (fast, server-cached)
@@ -90,6 +93,11 @@
 			setLoaded(document.getElementById('hero-articles-count'), fmt(data.articles));
 			setLoaded(document.getElementById('hero-trials-count'),   fmt(data.trials));
 			setLoaded(document.getElementById('hero-sources-count'),  fmt(data.sources && data.sources.total));
+		},
+		function () {
+			['hero-articles-count', 'hero-trials-count', 'hero-sources-count'].forEach(function (id) {
+				setLoaded(document.getElementById(id), '—');
+			});
 		}
 	);
 
@@ -104,7 +112,8 @@
 					el.classList.remove('is-loading');
 					el.textContent = typeof data.articles === 'number' ? data.articles.toLocaleString('en') : '—';
 				}
-			}
+			},
+			function () { if (el) setLoaded(el, '—'); }
 		);
 	});
 })();
@@ -146,7 +155,7 @@
 					{{ end }}
 					<p style="flex: 1;">{{ .Description }}</p>
 					{{ if $teamID }}
-					<p class="meta" style="margin-bottom: 16px;"><span id="team-count-{{ $teamID }}">—</span> papers indexed</p>
+					<p class="meta" style="margin-bottom: 16px;"><span id="team-count-{{ $teamID }}" class="team-count">—</span> papers indexed</p>
 					{{ end }}
 					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Research Area: View Papers" data-umami-event-area="{{ .Title }}">View latest papers &rarr;</a>
 				</div>
