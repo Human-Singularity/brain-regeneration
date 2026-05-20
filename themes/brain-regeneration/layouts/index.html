@@ -33,6 +33,83 @@
 	</div>
 </section>
 
+<script>
+(function () {
+	var API_BASE  = window.__API_BASE__ || 'https://api.gregory-ms.com';
+	var CACHE_TTL = 12 * 60 * 60 * 1000;
+	var TEAMS     = [4, 5, 6];
+
+	function fmt(n) {
+		return typeof n === 'number' ? n.toLocaleString('en') : '—';
+	}
+
+	function setLoading(el) {
+		if (!el) return;
+		el.textContent = '';
+		el.classList.add('is-loading');
+	}
+
+	function setLoaded(el, text) {
+		if (!el) return;
+		el.classList.remove('is-loading');
+		el.textContent = text;
+	}
+
+	// Mark hero numbers as loading immediately
+	['hero-articles-count', 'hero-trials-count', 'hero-sources-count'].forEach(function (id) {
+		setLoading(document.getElementById(id));
+	});
+	TEAMS.forEach(function (id) {
+		var el = document.getElementById('team-count-' + id);
+		if (el) { el.classList.add('is-loading'); el.textContent = ''; }
+	});
+
+	function cachedFetch(url, cacheKey, onData) {
+		try {
+			var cached = JSON.parse(localStorage.getItem(cacheKey));
+			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+				onData(cached.payload);
+				return Promise.resolve();
+			}
+		} catch (e) {}
+
+		return fetch(url)
+			.then(function (r) { return r.json(); })
+			.then(function (data) {
+				onData(data);
+				try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), payload: data })); } catch (e) {}
+			})
+			.catch(function () {});
+	}
+
+	// Hero stats via org=6 (fast, server-cached)
+	cachedFetch(
+		API_BASE + '/stats/?format=json&org=6',
+		'brObsStatsOrg6',
+		function (data) {
+			setLoaded(document.getElementById('hero-articles-count'), fmt(data.articles));
+			setLoaded(document.getElementById('hero-trials-count'),   fmt(data.trials));
+			setLoaded(document.getElementById('hero-sources-count'),  fmt(data.sources && data.sources.total));
+		}
+	);
+
+	// Per-team counts — fire in parallel
+	TEAMS.forEach(function (teamId) {
+		var el = document.getElementById('team-count-' + teamId);
+		cachedFetch(
+			API_BASE + '/stats/?format=json&team=' + teamId,
+			'brObsStatsT' + teamId,
+			function (data) {
+				if (el) {
+					el.classList.remove('is-loading');
+					el.textContent = typeof data.articles === 'number' ? data.articles.toLocaleString('en') : '—';
+				}
+			}
+		);
+	});
+})();
+</script>
+
 <!-- ── RESEARCH FRONTS ── -->
 {{ $researchAreas := where .Site.RegularPages "Section" "research-areas" }}
 {{ if $researchAreas }}
@@ -303,77 +380,5 @@
 		</div>
 	</div>
 </section>
-
-<script>
-(function () {
-	var STATS_URL = (window.__API_BASE__ || 'https://api.gregory-ms.com') + '/stats/?format=json&team=1%2C4%2C5%2C6';
-	var CACHE_KEY = 'brObsStats';
-	var CACHE_TTL = 12 * 60 * 60 * 1000;
-
-	function fmt(n) {
-		return typeof n === 'number' ? n.toLocaleString('en') : '—';
-	}
-
-	function set(id, value) {
-		var el = document.getElementById(id);
-		if (el) el.textContent = value;
-	}
-
-	function render(data) {
-		set('hero-articles-count', fmt(data.articles));
-		set('hero-trials-count',   fmt(data.trials));
-		set('hero-sources-count',  fmt(data.sources && data.sources.total));
-	}
-
-	try {
-		var cached = JSON.parse(localStorage.getItem(CACHE_KEY));
-		if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
-			render(cached.data);
-			return;
-		}
-	} catch (e) {}
-
-	fetch(STATS_URL)
-		.then(function (r) { return r.json(); })
-		.then(function (data) {
-			render(data);
-			try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (e) {}
-		})
-		.catch(function () {});
-})();
-
-// Per-team paper counts for research fronts
-(function () {
-	var TEAMS = [4, 5, 6];
-	var CACHE_TTL = 12 * 60 * 60 * 1000;
-
-	TEAMS.forEach(function (teamId) {
-		var cacheKey = 'brObsStatsT' + teamId;
-		var elId = 'team-count-' + teamId;
-
-		function render(count) {
-			var el = document.getElementById(elId);
-			if (el) el.textContent = typeof count === 'number' ? count.toLocaleString('en') : '—';
-		}
-
-		try {
-			var cached = JSON.parse(localStorage.getItem(cacheKey));
-			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
-				render(cached.count);
-				return;
-			}
-		} catch (e) {}
-
-		fetch((window.__API_BASE__ || 'https://api.gregory-ms.com') + '/stats/?format=json&team=' + teamId)
-			.then(function (r) { return r.json(); })
-			.then(function (data) {
-				var count = data.articles;
-				render(count);
-				try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), count: count })); } catch (e) {}
-			})
-			.catch(function () {});
-	});
-})();
-</script>
 
 {{ end }}

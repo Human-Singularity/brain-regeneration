@@ -285,6 +285,23 @@ a:hover {
 	margin-bottom: 3px;
 }
 
+.hero-stat-number.is-loading,
+.team-count.is-loading {
+	display: inline-block;
+	width: 4ch;
+	height: 1em;
+	background: rgba(255, 255, 255, 0.25);
+	border-radius: 4px;
+	vertical-align: middle;
+	animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.team-count.is-loading {
+	background: rgba(0, 0, 0, 0.12);
+	width: 3ch;
+	height: 0.9em;
+}
+
 .hero-stat-label {
 	font-family: var(--font-heading);
 	font-size: 13px;
