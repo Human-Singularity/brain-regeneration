@@ -364,6 +364,10 @@ a:hover {
 .body-text a.btn-amber,
 .body-text a.btn-outline-teal,
 .body-text a.btn-outline-light { text-decoration: none; }
+.body-text img { max-width: 100%; height: auto; display: block; border-radius: var(--radius); margin: 2em auto; }
+.body-text figure { margin: 2em 0; }
+.body-text figure img { margin: 0 auto; }
+.body-text figcaption { text-align: center; font-size: 14px; color: var(--color-muted); margin-top: 8px; }
 
 /* ── Condition tags ── */
 .condition-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 0; }
