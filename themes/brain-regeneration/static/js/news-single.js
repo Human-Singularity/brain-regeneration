@@ -75,16 +75,27 @@
 		}
 
 		/* ── 3. Smooth scroll on TOC click ── */
+		function scrollToHeading(target) {
+			var nav = document.querySelector('.site-nav');
+			var offset = (nav ? nav.offsetHeight : 56) + 8;
+			var top = target.getBoundingClientRect().top + window.scrollY - offset;
+			window.scrollTo({ top: top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+			/* Correct for layout shifts from images that load during scroll */
+			if (document.readyState !== 'complete') {
+				window.addEventListener('load', function () {
+					var corrected = target.getBoundingClientRect().top + window.scrollY - offset;
+					if (Math.abs(window.scrollY - corrected) > 4) {
+						window.scrollTo({ top: corrected, behavior: 'instant' });
+					}
+				}, { once: true });
+			}
+		}
+
 		tocItems.forEach(function (item) {
 			item.addEventListener('click', function () {
 				var targetId = item.dataset.target;
 				var target = targetId ? document.getElementById(targetId) : null;
-				if (target) {
-					target.scrollIntoView({
-						behavior: prefersReducedMotion ? 'auto' : 'smooth',
-						block: 'start'
-					});
-				}
+				if (target) { scrollToHeading(target); }
 			});
 			/* Keyboard: activate on Enter/Space */
 			item.addEventListener('keydown', function (e) {

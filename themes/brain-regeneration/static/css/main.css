@@ -40,6 +40,9 @@ h2 { font-weight: 600; }
 h3 { font-weight: 600; }
 h4 { font-weight: 500; }
 
+/* Prevent anchor targets from hiding behind the sticky nav (56px nav + 16px breathing room) */
+[id] { scroll-margin-top: 72px; }
+
 p { margin-bottom: 1.5em; }
 
 a {
@@ -1885,7 +1888,9 @@ a:hover {
 .news-card h3 a { color: var(--color-primary); text-decoration: none; }
 .news-card h3 a:hover { text-decoration: underline; }
 .news-card-image { width: calc(100% + 48px); height: 200px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; margin: -24px -24px 20px -24px; }
-.news-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.news-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+.news-card-image-link { display: block; }
+.news-card-image-link:hover .news-card-image img { transform: scale(1.03); }
 .news-featured-image { width: 100%; border-radius: var(--radius); margin-bottom: 32px; }
 
 /* ── Subscribe form ── */

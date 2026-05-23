@@ -18,9 +18,10 @@
 			{{ if $pages }}
 			<div class="news-list">
 				{{ range $pages }}
+				{{ $articleURL := .RelPermalink }}
 				<article class="news-card card-brand">
 					{{ with .Resources.GetMatch (.Params.image | default "") }}
-					<div class="news-card-image"><img src="{{ .RelPermalink }}" alt=""></div>
+					<a href="{{ $articleURL }}" class="news-card-image-link"><div class="news-card-image"><img src="{{ .RelPermalink }}" alt=""></div></a>
 					{{ end }}
 					<p class="meta">{{ .Date.Format "2 January 2006" }}{{ with .Params.author }} · {{ . }}{{ end }}</p>
 					<h3 style="margin-bottom: 8px;"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
