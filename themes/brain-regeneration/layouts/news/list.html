@@ -20,7 +20,7 @@
 				{{ range $pages }}
 				<article class="news-card card-brand">
 					{{ with .Resources.GetMatch (.Params.image | default "") }}
-					<img src="{{ .RelPermalink }}" alt="" class="news-card-image">
+					<div class="news-card-image"><img src="{{ .RelPermalink }}" alt=""></div>
 					{{ end }}
 					<p class="meta">{{ .Date.Format "2 January 2006" }}{{ with .Params.author }} · {{ . }}{{ end }}</p>
 					<h3 style="margin-bottom: 8px;"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>

@@ -1873,7 +1873,8 @@ a:hover {
 .page-btn.active { background-color: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-light); }
 
 /* ── News ── */
-.news-list { display: flex; flex-direction: column; gap: 24px; }
+.news-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+@media (max-width: 575px) { .news-list { grid-template-columns: 1fr; } }
 .news-card h3 a { color: var(--color-primary); text-decoration: none; }
 .news-card h3 a:hover { text-decoration: underline; }
 .news-card-image { width: calc(100% + 48px); height: 200px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; margin: -24px -24px 20px -24px; }
