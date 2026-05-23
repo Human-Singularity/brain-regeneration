@@ -59,9 +59,13 @@
 	['hero-articles-count', 'hero-trials-count', 'hero-sources-count'].forEach(function (id) {
 		setLoading(document.getElementById(id));
 	});
-	TEAMS.forEach(function (id) {
-		var el = document.getElementById('team-count-' + id);
-		if (el) { el.classList.add('is-loading'); el.textContent = ''; }
+	// Note: team-count-* elements are rendered later in the DOM, so we
+	// set the loading state after DOMContentLoaded instead of here.
+	document.addEventListener('DOMContentLoaded', function () {
+		TEAMS.forEach(function (id) {
+			var el = document.getElementById('team-count-' + id);
+			if (el) { el.classList.add('is-loading'); el.textContent = ''; }
+		});
 	});
 
 	function cachedFetch(url, cacheKey, onData, onError) {
@@ -101,19 +105,24 @@
 		}
 	);
 
-	// Per-team counts — fire in parallel
+	// Per-team counts — fire in parallel.
+	// el is looked up inside the callbacks (not here) because the team-count-*
+	// elements are rendered later in the HTML, after this <script> tag.
 	TEAMS.forEach(function (teamId) {
-		var el = document.getElementById('team-count-' + teamId);
 		cachedFetch(
 			API_BASE + '/stats/?format=json&team=' + teamId,
 			'brObsStatsT' + teamId,
 			function (data) {
+				var el = document.getElementById('team-count-' + teamId);
 				if (el) {
 					el.classList.remove('is-loading');
 					el.textContent = typeof data.articles === 'number' ? data.articles.toLocaleString('en') : '—';
 				}
 			},
-			function () { if (el) setLoaded(el, '—'); }
+			function () {
+				var el = document.getElementById('team-count-' + teamId);
+				if (el) setLoaded(el, '—');
+			}
 		);
 	});
 })();
