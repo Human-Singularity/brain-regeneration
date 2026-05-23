@@ -65,7 +65,20 @@
 				<span class="caption__num">Fig. 01 / Hero</span>
 				<div class="caption__body">
 					{{ with $.Description }}<span class="caption__text">{{ . }}</span>{{ end }}
-					{{ with $.Params.image_credit }}<div class="caption__credit">{{ . }}</div>{{ end }}
+					{{- $creditHTML := "" -}}
+					{{- if $.Params.image_credit -}}
+						{{- $creditHTML = $.Params.image_credit -}}
+					{{- else if in $img.Name "-unsplash." -}}
+						{{- $base := replaceRE `-unsplash\.[a-zA-Z]+$` "" $img.Name -}}
+						{{- $parts := split $base "-" -}}
+						{{- $firstName := index $parts 0 | title -}}
+						{{- $lastName := index $parts 1 | title -}}
+						{{- $authorName := printf "%s %s" $firstName $lastName -}}
+						{{- $photoID := replaceRE (printf "^%s-%s-" (index $parts 0) (index $parts 1)) "" $base -}}
+						{{- $photoURL := printf "https://unsplash.com/photos/%s" $photoID -}}
+						{{- $creditHTML = printf `Photo by <a href="%s" target="_blank" rel="noopener noreferrer">%s</a> on <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>` $photoURL $authorName -}}
+					{{- end -}}
+					{{- with $creditHTML -}}<div class="caption__credit">{{ . | safeHTML }}</div>{{- end -}}
 				</div>
 			</div>
 		</div>
