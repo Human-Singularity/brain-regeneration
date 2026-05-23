@@ -17,12 +17,12 @@
 
 {{- $src       := .Get "src" -}}
 {{- $treatment := .Get "treatment" | default "inline" -}}
-{{- $alt       := .Get "alt" -}}
+{{- $decorative := eq (.Get "decorative") "true" -}}
+{{- $alt       := cond $decorative "" (.Get "alt") -}}
 {{- $fig       := .Get "fig" -}}
 {{- $caption   := .Get "caption" -}}
 {{- $credit    := .Get "credit" -}}
 {{- $uiURL     := .Get "ui_url" -}}
-{{- $decorative := .Get "decorative" -}}
 
 {{/* Resolve image: try page resource first, then site resource, then raw path */}}
 {{- $imgRes := "" -}}

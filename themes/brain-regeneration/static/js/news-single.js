@@ -85,7 +85,7 @@
 				window.addEventListener('load', function () {
 					var corrected = target.getBoundingClientRect().top + window.scrollY - offset;
 					if (Math.abs(window.scrollY - corrected) > 4) {
-						window.scrollTo({ top: corrected, behavior: 'instant' });
+						window.scrollTo({ top: corrected, behavior: 'auto' });
 					}
 				}, { once: true });
 			}
@@ -104,8 +104,6 @@
 					item.click();
 				}
 			});
-			item.setAttribute('role', 'button');
-			item.setAttribute('tabindex', '0');
 		});
 	}
 

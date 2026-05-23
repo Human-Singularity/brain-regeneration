@@ -30,9 +30,9 @@ And after all this time, it may amount to nothing. No insights, no improvements 
 
 Our goal is quality. Generative AI is only as good as the input it receives, otherwise it hallucinates and misses important information. 
 
-That's why we scan only the most reputable sources. Also, Our system is self-contained (we don't depend on Anthropic or OpenAI) and is under constant human review. The MS research page is curated manually to make sure we do not miss papers with mentions of myelin repair or brain-penetrant anti-inflamatories.
+That's why we scan only the most reputable sources. Also, our system is self-contained (we don't depend on Anthropic or OpenAI) and is under constant human review. The MS research page is curated manually to make sure we do not miss papers with mentions of myelin repair or brain-penetrant anti-inflammatories.
 
-We are working towards expading this human review to other research areas and conditions.
+We are working towards expanding this human review to other research areas and conditions.
 
 The search queries are validated by the scientists doing the work — [REGENERAR](/curators/regenerar/) at Coimbra for cell reprogramming, [LPJ Lab](/curators/lpj-lab/) at Cambridge for neuroimmunometabolism, [iMed.ULisboa](/curators/institute-cns-inflammation/) for neuroinflammation.
 
