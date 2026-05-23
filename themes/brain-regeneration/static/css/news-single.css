@@ -8,10 +8,10 @@
 	position: fixed;
 	left: 0;
 	right: 0;
-	top: 56px; /* pinned under nav */
+	top: 56px; /* pinned under sticky nav */
 	height: 3px;
 	background: rgba(0, 0, 0, .04);
-	z-index: 40;
+	z-index: 1029; /* just below the sticky nav */
 }
 .progress__bar {
 	height: 100%;
