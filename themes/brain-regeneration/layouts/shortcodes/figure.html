@@ -1,0 +1,114 @@
+{{/*
+  figure shortcode — four treatments
+  Usage:
+    {{< figure src="/images/…" treatment="hero|inline|wide|screenshot"
+        alt="…" fig="01" caption="…" credit="…" ui_url="…" >}}
+
+  Params:
+    src        — image path (page-bundle resource or site-root path)
+    treatment  — hero | inline | wide | screenshot
+    alt        — required alt text (pass alt="" for decorative images)
+    fig        — figure number, e.g. "01"
+    caption    — descriptive text
+    credit     — photo/screenshot credit line
+    ui_url     — (screenshot only) label after "⌘ Live UI ·"
+    decorative — set to "true" to suppress alt requirement
+*/}}
+
+{{- $src       := .Get "src" -}}
+{{- $treatment := .Get "treatment" | default "inline" -}}
+{{- $decorative := eq (.Get "decorative") "true" -}}
+{{- $alt       := cond $decorative "" (.Get "alt") -}}
+{{- $fig       := .Get "fig" -}}
+{{- $caption   := .Get "caption" -}}
+{{- $credit    := .Get "credit" -}}
+{{- $uiURL     := .Get "ui_url" -}}
+
+{{/* Resolve image: try page resource first, then site resource, then raw path */}}
+{{- $imgRes := "" -}}
+{{- $imgSrc := $src -}}
+{{- with $.Page.Resources.GetMatch $src -}}
+  {{- $imgRes = . -}}
+  {{- $imgSrc = .RelPermalink -}}
+{{- else -}}
+  {{- with resources.Get $src -}}
+    {{- $imgRes = . -}}
+    {{- $imgSrc = .RelPermalink -}}
+  {{- end -}}
+{{- end -}}
+
+{{ if eq $treatment "hero" }}
+{{/* ── Hero: container-wide, 21:9 ── */}}
+<div class="b-hero">
+  <figure class="b-hero-wrap zoomable" data-lightbox-src="{{ $imgSrc }}" data-lightbox-caption="{{ $caption }}">
+    <img src="{{ $imgSrc }}" alt="{{ $alt }}"{{ with $imgRes }} width="{{ .Width }}" height="{{ .Height }}"{{ end }} loading="eager" />
+    <span class="zoom-hint" aria-hidden="true">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      Click to zoom
+    </span>
+  </figure>
+</div>
+<div class="b-hero-caption">
+  <div class="caption" style="max-width:720px">
+    {{ with $fig }}<span class="caption__num">Fig. {{ . }}</span>{{ end }}
+    <div class="caption__body">
+      {{ with $caption }}<span class="caption__text">{{ . }}</span>{{ end }}
+      {{ with $credit }}<div class="caption__credit">{{ . }}</div>{{ end }}
+    </div>
+  </div>
+</div>
+
+{{ else if eq $treatment "wide" }}
+{{/* ── Wide: breaks 120px beyond column, 21:9 ── */}}
+<figure class="fig-wide zoomable" data-lightbox-src="{{ $imgSrc }}" data-lightbox-caption="{{ $caption }}">
+  <img src="{{ $imgSrc }}" alt="{{ $alt }}"{{ with $imgRes }} width="{{ .Width }}" height="{{ .Height }}"{{ end }} loading="lazy" />
+  <span class="zoom-hint" aria-hidden="true">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    Click to zoom
+  </span>
+  <figcaption class="caption" style="padding:0 120px">
+    {{ with $fig }}<span class="caption__num">Fig. {{ . }}</span>{{ end }}
+    <div class="caption__body">
+      {{ with $caption }}<span class="caption__text">{{ . }}</span>{{ end }}
+      {{ with $credit }}<div class="caption__credit">{{ . }}</div>{{ end }}
+    </div>
+  </figcaption>
+</figure>
+
+{{ else if eq $treatment "screenshot" }}
+{{/* ── Screenshot: tinted band + label ── */}}
+<div class="fig-screenshot">
+  {{ with $uiURL }}<div class="fig-screenshot__label">⌘ Live UI · {{ . }}</div>{{ end }}
+  <figure class="zoomable" data-lightbox-src="{{ $imgSrc }}" data-lightbox-caption="{{ $caption }}">
+    <img src="{{ $imgSrc }}" alt="{{ $alt }}"{{ with $imgRes }} width="{{ .Width }}" height="{{ .Height }}"{{ end }} loading="lazy" />
+    <span class="zoom-hint" aria-hidden="true">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      Click to zoom
+    </span>
+    <figcaption class="caption" style="margin-top:12px">
+      {{ with $fig }}<span class="caption__num">Fig. {{ . }}</span>{{ end }}
+      <div class="caption__body">
+        {{ with $caption }}<span class="caption__text">{{ . }}</span>{{ end }}
+        {{ with $credit }}<div class="caption__credit">{{ . }}</div>{{ end }}
+      </div>
+    </figcaption>
+  </figure>
+</div>
+
+{{ else }}
+{{/* ── Inline (default): column-width, 16:10 ── */}}
+<figure class="fig-inline zoomable" data-lightbox-src="{{ $imgSrc }}" data-lightbox-caption="{{ $caption }}">
+  <img src="{{ $imgSrc }}" alt="{{ $alt }}"{{ with $imgRes }} width="{{ .Width }}" height="{{ .Height }}"{{ end }} loading="lazy" />
+  <span class="zoom-hint" aria-hidden="true">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    Click to zoom
+  </span>
+  <figcaption class="caption">
+    {{ with $fig }}<span class="caption__num">Fig. {{ . }}</span>{{ end }}
+    <div class="caption__body">
+      {{ with $caption }}<span class="caption__text">{{ . }}</span>{{ end }}
+      {{ with $credit }}<div class="caption__credit">{{ . }}</div>{{ end }}
+    </div>
+  </figcaption>
+</figure>
+{{ end }}

@@ -11,6 +11,9 @@ author: ""
 
 # Optional image for the news card (relative path in page bundle)
 image: ""
+# Optional caption for the header image. Set to false to hide the caption entirely.
+# If omitted, falls back to the page description.
+image_caption: ""
 
 # Tags for categorisation
 tags: []
