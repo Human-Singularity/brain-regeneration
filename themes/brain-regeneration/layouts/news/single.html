@@ -62,9 +62,12 @@
 		</div>
 		<div class="b-hero-caption">
 			<div class="caption" style="max-width:720px">
-				<span class="caption__num">Fig. 01 / Hero</span>
+				<span class="caption__num">Fig. 01 / Header</span>
 				<div class="caption__body">
-					{{ with $.Description }}<span class="caption__text">{{ . }}</span>{{ end }}
+					{{- if ne $.Params.image_caption false -}}
+						{{- $captionText := $.Params.image_caption | default $.Description -}}
+						{{- with $captionText -}}<span class="caption__text">{{ . }}</span>{{- end -}}
+					{{- end -}}
 					{{- $creditHTML := "" -}}
 					{{- if $.Params.image_credit -}}
 						{{- $creditHTML = $.Params.image_credit -}}
