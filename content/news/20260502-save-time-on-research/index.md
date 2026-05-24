@@ -1,7 +1,7 @@
 ---
 title: "Time is brain, and your research shouldn't pay the price"
 date: 2026-05-23T10:00:00+01:00
-draft: true
+draft: false
 
 description: "A short tour of the features we built to save researchers time. A unified PubMed/bioRxiv/MedRxiv feed and AI relevance ranking, and weekly digests."
 
