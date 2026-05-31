@@ -14,12 +14,13 @@
 	var subjectId = listEl.dataset.subjectId || '';
 
 	// ── UI references ────────────────────────────────────────────────────────
-	var searchInput     = document.getElementById('search-input');
-	var filterPhase     = document.getElementById('filter-phase');
-	var filterStatus    = document.getElementById('filter-status');
-	var filterCountry   = document.getElementById('filter-country');
-	var sortOrder       = document.getElementById('sort-order');
-	var resetBtn        = document.getElementById('reset-filters');
+	var searchInput       = document.getElementById('search-input');
+	var filterPhase       = document.getElementById('filter-phase');
+	var filterStatus      = document.getElementById('filter-status');
+	var filterCountry     = document.getElementById('filter-country');
+	var filterHasResults  = document.getElementById('filter-has-results');
+	var sortOrder         = document.getElementById('sort-order');
+	var resetBtn          = document.getElementById('reset-filters');
 	var clearBtn        = document.getElementById('clear-filters');
 	var downloadToggle  = document.getElementById('download-toggle');
 	var resultsCountEl  = document.getElementById('results-count');
@@ -42,6 +43,7 @@
 		status:     normaliseStatus(rawDefaultStatus),
 		country:    '',
 		sort:       '-discovery_date',
+		hasResults: false,
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -96,10 +98,11 @@
 		url.searchParams.set('format', 'json');
 		if (teamId)       url.searchParams.set('team_id',    teamId);
 		if (subjectId)    url.searchParams.set('subject_id', subjectId);
-		if (state.keyword) url.searchParams.set('search',   state.keyword);
-		if (state.phase)   url.searchParams.set('phase',    state.phase);
-		if (state.status)  url.searchParams.set('recruitment_status', state.status);
-		if (state.country) url.searchParams.set('countries', state.country);
+		if (state.keyword)    url.searchParams.set('search',               state.keyword);
+		if (state.phase)      url.searchParams.set('phase',                state.phase);
+		if (state.status)     url.searchParams.set('recruitment_status',   state.status);
+		if (state.country)    url.searchParams.set('countries',            state.country);
+		if (state.hasResults) url.searchParams.set('has_results',          'true');
 		url.searchParams.set('ordering', state.sort);
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -312,11 +315,12 @@
 	var filterForm = document.getElementById('trials-filter-form');
 
 	function applyFilters() {
-		state.keyword = searchInput  ? searchInput.value.trim()  : '';
-		state.phase   = filterPhase  ? filterPhase.value         : '';
-		state.status  = filterStatus ? filterStatus.value        : '';
-		state.country = filterCountry? filterCountry.value.trim(): '';
-		state.sort    = sortOrder    ? sortOrder.value           : '-discovery_date';
+		state.keyword     = searchInput     ? searchInput.value.trim()   : '';
+		state.phase       = filterPhase     ? filterPhase.value          : '';
+		state.status      = filterStatus    ? filterStatus.value         : '';
+		state.country     = filterCountry   ? filterCountry.value.trim() : '';
+		state.sort        = sortOrder       ? sortOrder.value            : '-discovery_date';
+		state.hasResults  = filterHasResults ? filterHasResults.checked  : false;
 		fetchPage(1);
 	}
 
@@ -347,17 +351,22 @@
 	if (sortOrder) {
 		sortOrder.addEventListener('change', applyFilters);
 	}
+	if (filterHasResults) {
+		filterHasResults.addEventListener('change', applyFilters);
+	}
 	function resetAll() {
-		state.keyword = '';
-		state.phase   = '';
-		state.status  = '';
-		state.country = '';
-		state.sort    = '-discovery_date';
-		if (searchInput)   searchInput.value   = '';
-		if (filterPhase)   filterPhase.value   = '';
-		if (filterStatus)  filterStatus.value  = '';
-		if (filterCountry) filterCountry.value = '';
-		if (sortOrder)     sortOrder.value     = '-discovery_date';
+		state.keyword    = '';
+		state.phase      = '';
+		state.status     = '';
+		state.country    = '';
+		state.sort       = '-discovery_date';
+		state.hasResults = false;
+		if (searchInput)      searchInput.value     = '';
+		if (filterPhase)      filterPhase.value     = '';
+		if (filterStatus)     filterStatus.value    = '';
+		if (filterCountry)    filterCountry.value   = '';
+		if (sortOrder)        sortOrder.value       = '-discovery_date';
+		if (filterHasResults) filterHasResults.checked = false;
 		fetchPage(1);
 	}
 
@@ -387,10 +396,11 @@
 		url.searchParams.set('format', 'csv');
 		if (teamId)        url.searchParams.set('team_id',    teamId);
 		if (subjectId)     url.searchParams.set('subject_id', subjectId);
-		if (state.keyword) url.searchParams.set('search',     state.keyword);
-		if (state.phase)   url.searchParams.set('phase',      state.phase);
-		if (state.status)  url.searchParams.set('recruitment_status', state.status);
-		if (state.country) url.searchParams.set('countries',   state.country);
+		if (state.keyword)    url.searchParams.set('search',             state.keyword);
+		if (state.phase)      url.searchParams.set('phase',              state.phase);
+		if (state.status)     url.searchParams.set('recruitment_status', state.status);
+		if (state.country)    url.searchParams.set('countries',          state.country);
+		if (state.hasResults) url.searchParams.set('has_results',        'true');
 		url.searchParams.set('ordering', state.sort);
 		if (allResults) {
 			url.searchParams.set('all_results', 'true');
