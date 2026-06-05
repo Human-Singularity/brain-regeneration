@@ -483,7 +483,272 @@
 	// ── Init ──────────────────────────────────────────────────────────────────
 	if (filterStatus && state.status) filterStatus.value = state.status;
 	if (filterPhase  && state.phase)  filterPhase.value  = state.phase;
+
+	// Wire first/last page buttons added for numbered pagination
+	var trialsFirstBtn = document.getElementById('trials-first-btn');
+	var trialsLastBtn  = document.getElementById('trials-last-btn');
+	if (trialsFirstBtn) trialsFirstBtn.addEventListener('click', function () { if (state.page > 1) fetchPage(1); });
+	if (trialsLastBtn)  trialsLastBtn.addEventListener('click',  function () { if (state.page < state.totalPages) fetchPage(state.totalPages); });
+
 	fetchStats(); // always fetches unfiltered aggregate stats
 	fetchPage(1);
+
+	// ── Mobile UI module ──────────────────────────────────────────────────────
+	var trialsMobileBar    = document.getElementById('trials-mobile-bar');
+	if (!trialsMobileBar) return; // mobile elements not present — skip
+
+	var trialsMobileSearch = document.getElementById('trials-mobile-search');
+	var trialsMobileClear  = document.getElementById('trials-mobile-clear');
+	var trialsTokenStrip   = document.getElementById('trials-filter-tokens');
+	var trialsFabCount     = document.getElementById('trials-fab-count');
+	var trialsSheetEl      = document.getElementById('trials-filter-sheet');
+	var trialsSheetApply   = document.getElementById('trials-sheet-apply');
+	var trialsSheetReset   = document.getElementById('trials-sheet-reset');
+	var trialsMobileCount  = document.getElementById('trials-mobile-result-count');
+
+	// Draft edited inside sheet; committed on "Show results"
+	var trialsDraft = {};
+
+	function resetTrialsDraft() {
+		trialsDraft = {
+			phase:      state.phase,
+			status:     state.status,
+			sort:       state.sort,
+			hasResults: state.hasResults,
+		};
+	}
+
+	// ── Sheet chip helpers ────────────────────────────────────────────────────
+
+	function setTrialsActiveChip(groupId, value) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		group.querySelectorAll('.sheet-chip').forEach(function (chip) {
+			chip.classList.toggle('active', chip.dataset.value === value);
+		});
+	}
+
+	function syncTrialsSheetToDraft() {
+		setTrialsActiveChip('trials-sheet-phase',  trialsDraft.phase);
+		setTrialsActiveChip('trials-sheet-status', trialsDraft.status);
+		setTrialsActiveChip('trials-sheet-sort',   trialsDraft.sort);
+		setTrialsActiveChip('trials-sheet-show',   trialsDraft.hasResults ? 'has_results' : '');
+	}
+
+	function wireTrialsChipGroup(groupId, onChange) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.sheet-chip');
+			if (!chip) return;
+			group.querySelectorAll('.sheet-chip').forEach(function (c) { c.classList.remove('active'); });
+			chip.classList.add('active');
+			onChange(chip.dataset.value);
+		});
+	}
+
+	wireTrialsChipGroup('trials-sheet-phase',  function (v) { trialsDraft.phase = v; });
+	wireTrialsChipGroup('trials-sheet-status', function (v) { trialsDraft.status = v; });
+	wireTrialsChipGroup('trials-sheet-sort',   function (v) { trialsDraft.sort = v; });
+	wireTrialsChipGroup('trials-sheet-show',   function (v) { trialsDraft.hasResults = v === 'has_results'; });
+
+	// ── Token strip ───────────────────────────────────────────────────────────
+
+	function buildTrialsToken(label, filterKey) {
+		var token = document.createElement('span');
+		token.className = 'filter-token';
+		token.dataset.filter = filterKey;
+		var text = document.createTextNode(label + ' ');
+		var removeBtn = document.createElement('button');
+		removeBtn.type = 'button';
+		removeBtn.className = 'filter-token-remove';
+		removeBtn.setAttribute('aria-label', 'Remove ' + label + ' filter');
+		removeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+		token.appendChild(text);
+		token.appendChild(removeBtn);
+		return token;
+	}
+
+	function removeTrialsToken(filterKey) {
+		if (filterKey === 'phase')      state.phase = '';
+		if (filterKey === 'status')     state.status = '';
+		if (filterKey === 'sort')       state.sort = '-discovery_date';
+		if (filterKey === 'hasResults') state.hasResults = false;
+		// Sync desktop controls
+		if (filterPhase)      filterPhase.value      = state.phase;
+		if (filterStatus)     filterStatus.value     = state.status;
+		if (sortOrder)        sortOrder.value        = state.sort;
+		if (filterHasResults) filterHasResults.checked = state.hasResults;
+		fetchPage(1);
+		renderTrialsTokens();
+	}
+
+	function phaseLabel(v) {
+		var map = { PHASE1: 'Phase 1', PHASE2: 'Phase 2', PHASE3: 'Phase 3', PHASE4: 'Phase 4' };
+		return map[v] || v;
+	}
+
+	function statusLabel(v) {
+		var d = STATUS_MAP[v];
+		return d ? d.label : (v || '');
+	}
+
+	function renderTrialsTokens() {
+		if (!trialsTokenStrip) return;
+		var addChip = trialsTokenStrip.querySelector('.token-add-filters');
+		while (trialsTokenStrip.firstChild) trialsTokenStrip.removeChild(trialsTokenStrip.firstChild);
+
+		var hasTokens = false;
+
+		if (state.phase) {
+			trialsTokenStrip.appendChild(buildTrialsToken(phaseLabel(state.phase), 'phase'));
+			hasTokens = true;
+		}
+		if (state.status) {
+			trialsTokenStrip.appendChild(buildTrialsToken(statusLabel(state.status), 'status'));
+			hasTokens = true;
+		}
+		if (state.sort && state.sort !== '-discovery_date') {
+			var sortLabels = {
+				'discovery_date':  'Date added (oldest)',
+				'-last_updated':   'Last updated (newest)',
+				'last_updated':    'Last updated (oldest)',
+				'-published_date': 'Published (newest)',
+				'published_date':  'Published (oldest)',
+				'title':           'Title A–Z',
+				'-title':          'Title Z–A',
+			};
+			trialsTokenStrip.appendChild(buildTrialsToken(sortLabels[state.sort] || state.sort, 'sort'));
+			hasTokens = true;
+		}
+		if (state.hasResults) {
+			trialsTokenStrip.appendChild(buildTrialsToken('With results', 'hasResults'));
+			hasTokens = true;
+		}
+
+		if (addChip) trialsTokenStrip.appendChild(addChip);
+		trialsTokenStrip.hidden = !hasTokens;
+
+		updateTrialsFabCount();
+	}
+
+	function updateTrialsFabCount() {
+		var count = 0;
+		if (state.phase) count++;
+		if (state.status) count++;
+		if (state.sort && state.sort !== '-discovery_date') count++;
+		if (state.hasResults) count++;
+		if (!trialsFabCount) return;
+		trialsFabCount.textContent = String(count);
+		trialsFabCount.hidden = count === 0;
+	}
+
+	function updateTrialsMobileCount() {
+		if (!trialsMobileCount) return;
+		var desktop = document.getElementById('results-count');
+		if (desktop && desktop.innerHTML) trialsMobileCount.innerHTML = desktop.innerHTML;
+	}
+
+	// Patch updatePagination to mirror the result count on mobile
+	var origUpdatePagination = updatePagination;
+	updatePagination = function (currentPage, totalPages, total) {
+		origUpdatePagination(currentPage, totalPages, total);
+		updateTrialsMobileCount();
+	};
+
+	// ── Mobile search ─────────────────────────────────────────────────────────
+
+	if (trialsMobileSearch) {
+		trialsMobileSearch.addEventListener('input', debounce(function () {
+			state.keyword = trialsMobileSearch.value.trim();
+			if (searchInput) searchInput.value = state.keyword;
+			if (trialsMobileClear) trialsMobileClear.hidden = !state.keyword;
+			fetchPage(1);
+			renderTrialsTokens();
+		}, 200));
+	}
+
+	if (trialsMobileClear) {
+		trialsMobileClear.addEventListener('click', function () {
+			state.keyword = '';
+			if (trialsMobileSearch) trialsMobileSearch.value = '';
+			if (searchInput) searchInput.value = '';
+			trialsMobileClear.hidden = true;
+			fetchPage(1);
+			renderTrialsTokens();
+		});
+	}
+
+	// ── Token removal via delegation ──────────────────────────────────────────
+
+	if (trialsTokenStrip) {
+		trialsTokenStrip.addEventListener('click', function (e) {
+			var removeBtn = e.target.closest('.filter-token-remove');
+			if (!removeBtn) return;
+			var token = removeBtn.closest('.filter-token');
+			if (!token) return;
+			removeTrialsToken(token.dataset.filter);
+		});
+	}
+
+	// ── Sheet open: sync draft from live state ────────────────────────────────
+
+	if (trialsSheetEl) {
+		trialsSheetEl.addEventListener('show.bs.offcanvas', function () {
+			resetTrialsDraft();
+			syncTrialsSheetToDraft();
+		});
+	}
+
+	if (trialsSheetApply) {
+		trialsSheetApply.addEventListener('click', function () {
+			state.phase      = trialsDraft.phase      !== undefined ? trialsDraft.phase      : state.phase;
+			state.status     = trialsDraft.status     !== undefined ? trialsDraft.status     : state.status;
+			state.sort       = trialsDraft.sort       !== undefined ? trialsDraft.sort       : state.sort;
+			state.hasResults = trialsDraft.hasResults !== undefined ? trialsDraft.hasResults : state.hasResults;
+
+			// Keep desktop controls in sync
+			if (filterPhase)      filterPhase.value      = state.phase;
+			if (filterStatus)     filterStatus.value     = state.status;
+			if (sortOrder)        sortOrder.value        = state.sort;
+			if (filterHasResults) filterHasResults.checked = state.hasResults;
+
+			fetchPage(1);
+			renderTrialsTokens();
+
+			if (window.bootstrap && bootstrap.Offcanvas) {
+				var inst = bootstrap.Offcanvas.getInstance(trialsSheetEl);
+				if (inst) inst.hide();
+			}
+		});
+	}
+
+	if (trialsSheetReset) {
+		trialsSheetReset.addEventListener('click', function () {
+			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false };
+			syncTrialsSheetToDraft();
+		});
+	}
+
+	// Also update mobile tokens when desktop reset is clicked
+	if (resetBtn) {
+		resetBtn.addEventListener('click', function () {
+			if (trialsMobileSearch) trialsMobileSearch.value = '';
+			if (trialsMobileClear) trialsMobileClear.hidden = true;
+			renderTrialsTokens();
+		});
+	}
+	if (clearBtn) {
+		clearBtn.addEventListener('click', function () {
+			if (trialsMobileSearch) trialsMobileSearch.value = '';
+			if (trialsMobileClear) trialsMobileClear.hidden = true;
+			renderTrialsTokens();
+		});
+	}
+
+	// ── Init mobile ───────────────────────────────────────────────────────────
+	if (trialsMobileSearch) trialsMobileSearch.value = state.keyword;
+	if (trialsMobileClear) trialsMobileClear.hidden = !state.keyword;
+	renderTrialsTokens();
 
 })();

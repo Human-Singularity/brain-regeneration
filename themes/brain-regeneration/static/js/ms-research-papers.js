@@ -847,4 +847,344 @@
 
 	fetchPage(state.page, false);
 
+	// ── Mobile UI module ──────────────────────────────────────────────────
+	// Wires the mobile search bar, filter token strip, and bottom sheet.
+	// All state changes ultimately call the same fetchPage() used by the
+	// desktop controls — no business logic is duplicated.
+
+	var mobileBar        = document.getElementById('papers-mobile-bar');
+	if (!mobileBar) return; // mobile elements not present — skip
+
+	var mobileSearchInput = document.getElementById('papers-mobile-search');
+	var mobileClearBtn    = document.getElementById('papers-mobile-clear');
+	var tokenStrip        = document.getElementById('papers-filter-tokens');
+	var fabBtn            = document.getElementById('papers-filter-fab');
+	var fabCount          = document.getElementById('papers-fab-count');
+	var sheetEl           = document.getElementById('papers-filter-sheet');
+	var sheetApply        = document.getElementById('papers-sheet-apply');
+	var sheetReset        = document.getElementById('papers-sheet-reset');
+	var mobileResultCount = document.getElementById('papers-mobile-result-count');
+
+	// Draft state — edited inside the sheet, committed on "Show results"
+	var draft = {};
+
+	function resetDraft() {
+		draft = {
+			category:           state.category,
+			subjects:           state.subjects,
+			sort:               state.sort,
+			relevant:           state.relevant,
+			hasClinicalTrials:  state.hasClinicalTrials,
+		};
+	}
+
+	// ── Sheet chip helpers ────────────────────────────────────────────────
+
+	function setActiveChip(groupId, value) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		var chips = group.querySelectorAll('.sheet-chip');
+		chips.forEach(function (chip) {
+			chip.classList.toggle('active', chip.dataset.value === value);
+		});
+	}
+
+	function syncSheetToDraft() {
+		setActiveChip('papers-sheet-category', draft.category);
+		setActiveChip('papers-sheet-subjects',  draft.subjects);
+		setActiveChip('papers-sheet-sort',       draft.sort);
+		// "show" chips: derive active value string from draft fields
+		var showVal;
+		if (draft.hasClinicalTrials === true)  showVal = 'has_clinical_trials_true';
+		else if (draft.hasClinicalTrials === false) showVal = 'has_clinical_trials_false';
+		else showVal = String(draft.relevant);
+		setActiveChip('papers-sheet-show', showVal);
+	}
+
+	function wireChipGroup(groupId, onChange) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.sheet-chip');
+			if (!chip) return;
+			var chips = group.querySelectorAll('.sheet-chip');
+			chips.forEach(function (c) { c.classList.remove('active'); });
+			chip.classList.add('active');
+			onChange(chip.dataset.value);
+		});
+	}
+
+	// ── Category chips in sheet (populated from state.categories) ─────────
+
+	function populateMobileCategoryChips() {
+		var group = document.getElementById('papers-sheet-category');
+		if (!group) return;
+		// Remove anything beyond the first "All categories" chip
+		var existing = group.querySelectorAll('.sheet-chip[data-value]:not([data-value=""])');
+		existing.forEach(function (c) { c.parentNode.removeChild(c); });
+
+		var items = [];
+		if (state.categoryGroups.length) {
+			state.categoryGroups.forEach(function (g) {
+				(g.categories || []).forEach(function (c) { if (c.id) items.push(c); });
+			});
+		} else {
+			items = state.categories.filter(function (c) { return c.id; });
+		}
+
+		items.forEach(function (c) {
+			var btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'sheet-chip';
+			btn.dataset.value = String(c.id);
+			btn.textContent = c.name;
+			group.appendChild(btn);
+		});
+	}
+
+	// ── Token strip ───────────────────────────────────────────────────────
+
+	function categoryLabel(id) {
+		if (!id) return '';
+		var cat = state.categories.find(function (c) { return String(c.id) === id; });
+		return cat ? cat.name : id;
+	}
+
+	function subjectLabel(id) {
+		if (!id) return '';
+		var group = document.getElementById('papers-sheet-subjects');
+		if (!group) return id;
+		var chip = group.querySelector('.sheet-chip[data-value="' + id + '"]');
+		return chip ? chip.textContent.trim() : id;
+	}
+
+	function buildToken(label, filterKey) {
+		var token = document.createElement('span');
+		token.className = 'filter-token';
+		token.dataset.filter = filterKey;
+		var text = document.createTextNode(label + ' ');
+		var removeBtn = document.createElement('button');
+		removeBtn.type = 'button';
+		removeBtn.className = 'filter-token-remove';
+		removeBtn.setAttribute('aria-label', 'Remove ' + label + ' filter');
+		removeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+		token.appendChild(text);
+		token.appendChild(removeBtn);
+		return token;
+	}
+
+	function removeToken(filterKey) {
+		if (filterKey === 'category') {
+			state.category = '';
+			hideCategoryPanel();
+		} else if (filterKey === 'subjects') {
+			state.subjects = '';
+		} else if (filterKey === 'sort') {
+			state.sort = 'date';
+		} else if (filterKey === 'show') {
+			state.relevant = requireRelevant;
+			state.hasClinicalTrials = null;
+		}
+		state.page = 1;
+		fetchPage(1, false);
+		renderTokens();
+		updateMobileResultCount();
+	}
+
+	function renderTokens() {
+		if (!tokenStrip) return;
+		// Remove existing tokens (keep the "+ Filters" chip at the end)
+		var addChip = tokenStrip.querySelector('.token-add-filters');
+		// Clear all children then re-add the add chip
+		while (tokenStrip.firstChild) tokenStrip.removeChild(tokenStrip.firstChild);
+
+		var hasTokens = false;
+
+		if (state.category) {
+			tokenStrip.appendChild(buildToken(categoryLabel(state.category), 'category'));
+			hasTokens = true;
+		}
+		if (state.subjects) {
+			tokenStrip.appendChild(buildToken(subjectLabel(state.subjects), 'subjects'));
+			hasTokens = true;
+		}
+		if (state.sort && state.sort !== 'date') {
+			var sortLabel = state.sort === 'relevance' ? 'AI relevance' : state.sort;
+			tokenStrip.appendChild(buildToken(sortLabel, 'sort'));
+			hasTokens = true;
+		}
+		if (state.hasClinicalTrials !== null) {
+			var showLabel = state.hasClinicalTrials ? 'With clinical trials' : 'Without clinical trials';
+			tokenStrip.appendChild(buildToken(showLabel, 'show'));
+			hasTokens = true;
+		} else if (state.relevant !== requireRelevant) {
+			tokenStrip.appendChild(buildToken('Full feed', 'show'));
+			hasTokens = true;
+		}
+
+		if (addChip) tokenStrip.appendChild(addChip);
+		tokenStrip.hidden = !hasTokens;
+
+		updateFabCount();
+	}
+
+	function updateFabCount() {
+		var count = 0;
+		if (state.category) count++;
+		if (state.subjects)  count++;
+		if (state.sort && state.sort !== 'date') count++;
+		if (state.hasClinicalTrials !== null) count++;
+		else if (state.relevant !== requireRelevant) count++;
+
+		if (!fabCount) return;
+		fabCount.textContent = String(count);
+		fabCount.hidden = count === 0;
+	}
+
+	function updateMobileResultCount() {
+		if (!mobileResultCount) return;
+		var text = mobileResultCount.getAttribute('data-count') || '';
+		// The desktop counter already has the count; mirror it
+		var desktopCount = document.getElementById('papers-result-count');
+		if (desktopCount && desktopCount.textContent) {
+			mobileResultCount.innerHTML = desktopCount.innerHTML;
+		}
+	}
+
+	// Patch fetchPage to also update the mobile result count after each fetch
+	var origFetchPage = fetchPage;
+	fetchPage = function (page, push) {
+		origFetchPage(page, push);
+		// result count updates async; observe via a short MutationObserver
+		if (mobileResultCount) {
+			var desktopCount = document.getElementById('papers-result-count');
+			if (desktopCount) {
+				var obs = new MutationObserver(function () {
+					mobileResultCount.innerHTML = desktopCount.innerHTML;
+				});
+				obs.observe(desktopCount, { childList: true, characterData: true, subtree: true });
+				setTimeout(function () { obs.disconnect(); }, 5000);
+			}
+		}
+	};
+
+	// ── Mobile search wiring ──────────────────────────────────────────────
+
+	function debounce(fn, ms) {
+		var t;
+		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+	}
+
+	if (mobileSearchInput) {
+		mobileSearchInput.addEventListener('input', debounce(function () {
+			state.keyword = mobileSearchInput.value.trim();
+			state.page = 1;
+			if (mobileClearBtn) mobileClearBtn.hidden = !state.keyword;
+			fetchPage(1, false);
+			renderTokens();
+		}, 200));
+
+		// Keep desktop search input in sync (so URL state and reset work uniformly)
+		mobileSearchInput.addEventListener('input', function () {
+			if (searchInput) searchInput.value = mobileSearchInput.value;
+		});
+	}
+
+	if (mobileClearBtn) {
+		mobileClearBtn.addEventListener('click', function () {
+			state.keyword = '';
+			if (mobileSearchInput) mobileSearchInput.value = '';
+			if (searchInput) searchInput.value = '';
+			mobileClearBtn.hidden = true;
+			state.page = 1;
+			fetchPage(1, false);
+			renderTokens();
+		});
+	}
+
+	// ── Token strip: remove via delegation ───────────────────────────────
+
+	if (tokenStrip) {
+		tokenStrip.addEventListener('click', function (e) {
+			var removeBtn = e.target.closest('.filter-token-remove');
+			if (!removeBtn) return;
+			var token = removeBtn.closest('.filter-token');
+			if (!token) return;
+			removeToken(token.dataset.filter);
+		});
+	}
+
+	// ── Bottom sheet wiring ───────────────────────────────────────────────
+
+	wireChipGroup('papers-sheet-category', function (val) { draft.category = val; });
+	wireChipGroup('papers-sheet-subjects',  function (val) { draft.subjects = val; });
+	wireChipGroup('papers-sheet-sort',       function (val) { draft.sort = val; });
+	wireChipGroup('papers-sheet-show', function (val) {
+		if (val === 'has_clinical_trials_true')  { draft.hasClinicalTrials = true;  draft.relevant = requireRelevant; }
+		else if (val === 'has_clinical_trials_false') { draft.hasClinicalTrials = false; draft.relevant = requireRelevant; }
+		else { draft.hasClinicalTrials = null; draft.relevant = val !== 'false'; }
+	});
+
+	// Sync draft from live state each time the sheet opens
+	if (sheetEl) {
+		sheetEl.addEventListener('show.bs.offcanvas', function () {
+			resetDraft();
+			populateMobileCategoryChips();
+			syncSheetToDraft();
+		});
+		// Discard draft on close without apply (already handled by not committing)
+	}
+
+	if (sheetApply) {
+		sheetApply.addEventListener('click', function () {
+			// Commit draft to state
+			state.category          = draft.category          !== undefined ? draft.category          : state.category;
+			state.subjects          = draft.subjects           !== undefined ? draft.subjects           : state.subjects;
+			state.sort              = draft.sort               !== undefined ? draft.sort               : state.sort;
+			state.relevant          = draft.relevant           !== undefined ? draft.relevant           : state.relevant;
+			state.hasClinicalTrials = draft.hasClinicalTrials  !== undefined ? draft.hasClinicalTrials  : state.hasClinicalTrials;
+			state.page = 1;
+
+			// Category panel
+			if (state.category) { renderCategoryPanel(); } else { hideCategoryPanel(); }
+
+			fetchPage(1, false);
+			renderTokens();
+
+			// Close the offcanvas
+			if (window.bootstrap && bootstrap.Offcanvas) {
+				var offcanvasInstance = bootstrap.Offcanvas.getInstance(sheetEl);
+				if (offcanvasInstance) offcanvasInstance.hide();
+			}
+		});
+	}
+
+	if (sheetReset) {
+		sheetReset.addEventListener('click', function () {
+			draft = {
+				category:          '',
+				subjects:          '',
+				sort:              'date',
+				relevant:          requireRelevant,
+				hasClinicalTrials: null,
+			};
+			syncSheetToDraft();
+		});
+	}
+
+	// ── Patch desktop reset to also update mobile ─────────────────────────
+	if (resetBtn) {
+		resetBtn.addEventListener('click', function () {
+			if (mobileSearchInput) mobileSearchInput.value = '';
+			if (mobileClearBtn) mobileClearBtn.hidden = true;
+			renderTokens();
+		});
+	}
+
+	// ── Init mobile UI ─────────────────────────────────────────────────────
+	if (mobileSearchInput) mobileSearchInput.value = state.keyword;
+	if (mobileClearBtn) mobileClearBtn.hidden = !state.keyword;
+	populateMobileCategoryChips();
+	renderTokens();
+
 })();

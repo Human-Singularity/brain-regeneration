@@ -21,7 +21,8 @@
 {{- $requireRelevant := "true" -}}
 {{- if isset . "requireRelevant" -}}{{- if not .requireRelevant -}}{{- $requireRelevant = "false" -}}{{- end -}}{{- end -}}
 
-<!-- ── FILTER BAR ── -->
+<!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
+<div class="d-none d-lg-block">
 <div class="filter-bar" id="papers-filters">
 	<div class="container">
 		<form id="papers-filter-form" action="javascript:void(0)">
@@ -112,6 +113,110 @@
 		</div>
 	</div>
 </div>
+</div>{{/* end d-none d-lg-block */}}
+
+<!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
+{{- $conditionPagesMobile := slice -}}
+{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $conditionPagesMobile = $conditionPagesMobile | append . -}}
+	{{- end -}}
+{{- end -}}
+{{- $researchAreaPagesMobile := slice -}}
+{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $researchAreaPagesMobile = $researchAreaPagesMobile | append . -}}
+	{{- end -}}
+{{- end -}}
+<div class="mobile-feeds-bar d-lg-none" id="papers-mobile-bar"
+	data-require-relevant="{{ $requireRelevant }}">
+	<div class="container">
+		<div class="mobile-search-wrap">
+			<label for="papers-mobile-search" class="visually-hidden">Search papers</label>
+			<input type="text" class="form-control" id="papers-mobile-search" placeholder="Search papers…" autocomplete="off">
+			<button type="button" class="mobile-search-clear" id="papers-mobile-clear" hidden aria-label="Clear search">
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="filter-tokens" id="papers-filter-tokens" hidden>
+			<!-- active filter tokens rendered by JS -->
+			<button type="button" class="token-add-filters"
+				data-bs-toggle="offcanvas"
+				data-bs-target="#papers-filter-sheet"
+				aria-controls="papers-filter-sheet">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+				+ Filters
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── MOBILE FILTER BOTTOM SHEET ── -->
+<div class="offcanvas offcanvas-bottom filter-sheet d-lg-none"
+	tabindex="-1"
+	id="papers-filter-sheet"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Filter papers">
+	<div class="offcanvas-header">
+		<div class="title-row">
+			<h5 class="offcanvas-title">Filters</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+	</div>
+	<div class="offcanvas-body">
+		<div class="sheet-group">
+			<div class="sheet-group-label">Category</div>
+			<div class="sheet-chips" id="papers-sheet-category">
+				<button type="button" class="sheet-chip active" data-value="">All categories</button>
+				{{/* chips populated by JS from state.categories */}}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Intersect with</div>
+			<div class="sheet-chips" id="papers-sheet-subjects">
+				<button type="button" class="sheet-chip active" data-value="">All subjects</button>
+				{{- range $conditionPagesMobile }}
+				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+				{{- end }}
+				{{- range $researchAreaPagesMobile }}
+				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+				{{- end }}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Sort by</div>
+			<div class="sheet-chips" id="papers-sheet-sort">
+				<button type="button" class="sheet-chip active" data-value="date">Newest first</button>
+				<button type="button" class="sheet-chip" data-value="relevance">AI relevance</button>
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Show</div>
+			<div class="sheet-chips" id="papers-sheet-show">
+				<button type="button" class="sheet-chip active" data-value="true">Relevant papers</button>
+				<button type="button" class="sheet-chip" data-value="false">Full feed</button>
+				<button type="button" class="sheet-chip" data-value="has_clinical_trials_true">With clinical trials</button>
+				<button type="button" class="sheet-chip" data-value="has_clinical_trials_false">Without clinical trials</button>
+			</div>
+		</div>
+	</div>
+	<div class="sheet-footer">
+		<button type="button" class="btn-outline-teal" id="papers-sheet-reset">Reset</button>
+		<button type="button" class="btn-amber" id="papers-sheet-apply">Show results</button>
+	</div>
+</div>
+
+<!-- ── MOBILE FAB ── -->
+<button type="button" class="filter-fab d-lg-none" id="papers-filter-fab"
+	data-bs-toggle="offcanvas"
+	data-bs-target="#papers-filter-sheet"
+	aria-controls="papers-filter-sheet"
+	aria-label="Open filters">
+	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+	Filters
+	<span class="fab-count" id="papers-fab-count" hidden>0</span>
+</button>
 
 <!-- ── CATEGORY DESCRIPTION PANEL ── -->
 <div id="category-panel" class="category-description-panel" hidden>
@@ -132,6 +237,8 @@
 		<noscript>
 			<p>JavaScript is required to load papers. You can also browse the full research feed at <a href="https://gregory-ms.com" target="_blank" rel="noopener">gregory-ms.com</a>.</p>
 		</noscript>
+
+		<p class="mobile-result-count d-lg-none" id="papers-mobile-result-count" aria-live="polite"></p>
 
 		<div
 			id="papers-list"

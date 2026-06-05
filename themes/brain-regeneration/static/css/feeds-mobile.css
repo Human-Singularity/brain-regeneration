@@ -1,0 +1,419 @@
+/* feeds-mobile.css
+ * Mobile feed UI for research-papers and clinical-trials listings.
+ * Applies at < 992 px (Bootstrap "lg" breakpoint).
+ * All rules are scoped inside @media (max-width: 991.98px) unless
+ * they are utility classes needed at every width.
+ */
+
+/* ── Shared layout utility ── */
+/* Bootstrap's d-lg-none / d-none are already in bootstrap.min.css;
+   these rules are extra overrides for the feed chrome. */
+
+@media (max-width: 991.98px) {
+
+	/* ── 1. Hide the desktop filter bar ── */
+	.filter-bar {
+		display: none !important;
+	}
+
+	/* ── 2. Mobile search bar ── */
+	.mobile-feeds-bar {
+		background-color: var(--color-secondary);
+		border-bottom: 1px solid var(--color-border);
+		padding: 10px 0 0;
+		position: sticky;
+		top: 56px;          /* sits directly below the nav */
+		z-index: 90;
+	}
+
+	.mobile-search-wrap {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0;
+		padding: 0 16px;
+		margin-bottom: 8px;
+	}
+
+	.mobile-search-wrap .form-control {
+		font-family: var(--font-heading);
+		font-size: 15px;
+		border-color: var(--color-border);
+		background-color: #fff;
+		border-radius: var(--radius);
+		padding-right: 40px;
+		height: 44px;
+	}
+
+	.mobile-search-wrap .form-control:focus {
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 3px rgba(26, 107, 106, 0.12);
+		outline: none;
+	}
+
+	.mobile-search-clear {
+		position: absolute;
+		right: 24px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		color: var(--color-muted);
+		cursor: pointer;
+		padding: 0;
+		line-height: 1;
+		font-size: 18px;
+	}
+
+	.mobile-search-clear:hover { color: var(--color-text); }
+	.mobile-search-clear:focus-visible {
+		outline: 3px solid rgba(26, 107, 106, 0.4);
+		border-radius: 50%;
+	}
+
+	/* ── 3. Filter token strip ── */
+	.filter-tokens {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		padding: 0 16px 8px;
+		/* no wrap — single scrollable row */
+	}
+
+	.filter-tokens::-webkit-scrollbar { display: none; }
+
+	.filter-token {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		white-space: nowrap;
+		flex-shrink: 0;
+		background-color: var(--color-tint);
+		color: var(--color-primary);
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 500;
+		padding: 5px 8px 5px 12px;
+		border-radius: 100px;
+		border: none;
+		cursor: default;
+	}
+
+	.filter-token-remove {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		/* 44 × 44 minimum tap area via negative margin trick */
+		width: 22px;
+		height: 22px;
+		margin: -10px -6px -10px 0;
+		padding: 11px;
+		background: rgba(26, 107, 106, 0.14);
+		color: var(--color-primary);
+		border-radius: 50%;
+		border: none;
+		cursor: pointer;
+		font-size: 14px;
+		line-height: 0;
+		flex-shrink: 0;
+	}
+
+	.filter-token-remove:hover { background: rgba(26, 107, 106, 0.26); }
+	.filter-token-remove:focus-visible {
+		outline: 3px solid rgba(26, 107, 106, 0.4);
+	}
+
+	/* "+ Filters" chip that also opens the bottom sheet */
+	.token-add-filters {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		white-space: nowrap;
+		flex-shrink: 0;
+		background-color: #fff;
+		color: var(--color-primary);
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 500;
+		padding: 5px 14px;
+		border-radius: 100px;
+		border: 1px dashed var(--color-border);
+		cursor: pointer;
+		min-height: 44px;
+	}
+
+	.token-add-filters:hover {
+		border-color: var(--color-primary);
+		background-color: var(--color-tint);
+	}
+
+	.token-add-filters:focus-visible {
+		outline: 3px solid rgba(26, 107, 106, 0.4);
+		outline-offset: 2px;
+	}
+
+	/* ── 4. Floating FAB ── */
+	.filter-fab {
+		position: fixed;
+		bottom: 24px;
+		right: 20px;
+		z-index: 200;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		background-color: var(--color-accent);
+		color: #fff;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: 15px;
+		padding: 0 20px;
+		height: 48px;
+		border-radius: 100px;
+		border: none;
+		cursor: pointer;
+		box-shadow: 0 4px 16px rgba(232, 145, 58, 0.38);
+		transition: background-color 200ms ease, box-shadow 200ms ease, transform 150ms ease;
+	}
+
+	.filter-fab:hover {
+		background-color: var(--color-accent-hover, #D17E2F);
+		box-shadow: 0 6px 20px rgba(232, 145, 58, 0.44);
+	}
+
+	.filter-fab:active { transform: scale(0.97); }
+
+	.filter-fab:focus-visible {
+		outline: 3px solid rgba(232, 145, 58, 0.5);
+		outline-offset: 2px;
+	}
+
+	.filter-fab svg {
+		width: 18px;
+		height: 18px;
+		stroke: #fff;
+		stroke-width: 1.8;
+		fill: none;
+	}
+
+	.fab-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 4px;
+		border-radius: 10px;
+		background-color: var(--color-primary);
+		color: #fff;
+		font-size: 11px;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	/* ── 5. Bottom sheet (Bootstrap Offcanvas overrides) ── */
+	.filter-sheet.offcanvas-bottom {
+		border-radius: 20px 20px 0 0;
+		max-height: 75vh;
+		/* The offcanvas body needs to scroll */
+	}
+
+	/* Grab handle */
+	.filter-sheet .offcanvas-header::before {
+		content: '';
+		display: block;
+		width: 36px;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-border);
+		margin: 0 auto 16px;
+	}
+
+	.filter-sheet .offcanvas-header {
+		display: block;       /* stack handle + title row */
+		padding: 16px 20px 8px;
+		border-bottom: 1px solid var(--color-border);
+		position: relative;
+	}
+
+	.filter-sheet .offcanvas-title {
+		font-family: var(--font-heading);
+		font-size: 17px;
+		font-weight: 700;
+		color: var(--color-primary);
+	}
+
+	.filter-sheet .offcanvas-header .title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.filter-sheet .btn-close {
+		position: absolute;
+		top: 16px;
+		right: 20px;
+	}
+
+	.filter-sheet .offcanvas-body {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		padding: 16px 20px 0;
+	}
+
+	/* ── 6. Sheet chip groups ── */
+	.sheet-group {
+		margin-bottom: 20px;
+	}
+
+	.sheet-group-label {
+		font-family: var(--font-heading);
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-muted);
+		margin-bottom: 10px;
+	}
+
+	.sheet-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.sheet-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: 8px 16px;
+		border-radius: 100px;
+		border: 1px solid var(--color-border);
+		background-color: var(--color-tint);
+		color: var(--color-primary);
+		font-family: var(--font-heading);
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+		text-align: center;
+	}
+
+	.sheet-chip:hover {
+		border-color: var(--color-primary);
+		background-color: rgba(26, 107, 106, 0.12);
+	}
+
+	.sheet-chip.active {
+		background-color: var(--color-primary);
+		border-color: var(--color-primary);
+		color: #fff;
+	}
+
+	.sheet-chip:focus-visible {
+		outline: 3px solid rgba(26, 107, 106, 0.4);
+		outline-offset: 2px;
+	}
+
+	/* ── 7. Sheet footer ── */
+	.sheet-footer {
+		display: flex;
+		gap: 12px;
+		padding: 16px 20px;
+		border-top: 1px solid var(--color-border);
+		background-color: #fff;
+		/* stays at bottom of the offcanvas */
+	}
+
+	.sheet-footer .btn-outline-teal {
+		flex: 1;
+	}
+
+	.sheet-footer .btn-amber {
+		flex: 2;
+	}
+
+	/* ── 8. Mobile result count bar ── */
+	.mobile-result-count {
+		font-family: var(--font-heading);
+		font-size: 13px;
+		color: var(--color-muted);
+		padding: 8px 0 4px;
+		margin-bottom: 0;
+	}
+
+	.mobile-result-count strong {
+		color: var(--color-text);
+		font-weight: 600;
+	}
+
+	/* ── 9. Card padding reduction on mobile ── */
+	.paper-card {
+		padding: 16px;
+	}
+
+	.paper-card-title {
+		font-size: 16px;
+	}
+
+	.paper-card-authors {
+		font-size: 12px;
+	}
+
+	.trial-card {
+		padding: 16px;
+	}
+
+	.trial-title {
+		font-size: 15px;
+	}
+
+	/* ── 10. Pagination on mobile ── */
+	.pagination-controls {
+		gap: 4px;
+	}
+
+	/* Hide first/last page jump buttons on mobile */
+	#papers-first-btn,
+	#papers-last-btn,
+	#trials-first-btn,
+	#trials-last-btn {
+		display: none;
+	}
+
+	.pagination-btn {
+		min-width: 36px;
+		height: 36px;
+		padding: 0 8px;
+		font-size: 13px;
+	}
+
+	/* ── 11. Stats bar on mobile ── */
+	.stats-bar .stat-item {
+		padding: 12px 16px;
+	}
+
+	.stats-bar .stat-number {
+		font-size: 1.6rem;
+	}
+
+} /* end @media (max-width: 991.98px) */
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+	.offcanvas.filter-sheet {
+		transition: none !important;
+	}
+
+	.filter-fab {
+		transition: none !important;
+	}
+}

@@ -94,6 +94,10 @@ path = "search"
 
 DefaultContentLanguage = "en"
 
+[security]
+  # Allow HTML content files (content/about.html, contact.html, etc.)
+  allowContent = ['text/html', 'text/markdown', 'text/plain']
+
 [Languages.en]
 weight = 1
 label = "English"
