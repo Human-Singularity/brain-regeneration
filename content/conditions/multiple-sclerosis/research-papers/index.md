@@ -61,6 +61,10 @@ category_groups:
         name: "CAR-T Cell Therapy"
       - id: 9
         name: "Stem Cells"
+  - label: "Experimental & Repurposed"
+    categories:
+      - id: 91
+        name: "Dihydroartemisinin"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
