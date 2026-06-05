@@ -68,7 +68,13 @@
 						<span class="badge-recruiting" data-trial-slug="{{ .Slug }}" style="display:none;"></span>
 					</div>
 					<p style="flex: 1;">{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="btn-amber" style="align-self: flex-start;" data-umami-event="Observatory: View Trials" data-umami-event-condition="{{ .Title }}">View trials &rarr;</a>
+					<div class="d-flex gap-2 flex-wrap">
+						<a href="{{ .RelPermalink }}" class="btn-amber" data-umami-event="Observatory: View Trials" data-umami-event-condition="{{ .Title }}">View trials &rarr;</a>
+						{{ $researchPapersPage := .GetPage "research-papers" }}
+						{{ if $researchPapersPage }}
+						<a href="{{ $researchPapersPage.RelPermalink }}" class="btn-outline-teal" data-umami-event="Observatory: View Research Papers" data-umami-event-condition="{{ .Title }}">View research &rarr;</a>
+						{{ end }}
+					</div>
 				</div>
 			</div>
 			{{ end }}
