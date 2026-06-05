@@ -72,7 +72,11 @@
 		try {
 			var cached = JSON.parse(localStorage.getItem(cacheKey));
 			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
-				onData(cached.payload);
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', function () { onData(cached.payload); });
+				} else {
+					onData(cached.payload);
+				}
 				return Promise.resolve();
 			}
 		} catch (e) {}
