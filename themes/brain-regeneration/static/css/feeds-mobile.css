@@ -221,8 +221,20 @@
 	/* ── 5. Bottom sheet (Bootstrap Offcanvas overrides) ── */
 	.filter-sheet.offcanvas-bottom {
 		border-radius: 20px 20px 0 0;
-		max-height: 75vh;
-		/* The offcanvas body needs to scroll */
+		/* Bootstrap sets height: 30vh by default — override so the sheet
+		   grows to fit its content instead of being truncated. */
+		height: auto;
+		max-height: 82vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.filter-sheet .offcanvas-body {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		padding: 16px 20px 0;
+		flex: 1 1 auto;
+		min-height: 0;   /* allows flex child to shrink below its content size */
 	}
 
 	/* Grab handle */
@@ -260,12 +272,6 @@
 		position: absolute;
 		top: 16px;
 		right: 20px;
-	}
-
-	.filter-sheet .offcanvas-body {
-		overflow-y: auto;
-		-webkit-overflow-scrolling: touch;
-		padding: 16px 20px 0;
 	}
 
 	/* ── 6. Sheet chip groups ── */
