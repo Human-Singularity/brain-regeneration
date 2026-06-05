@@ -988,7 +988,6 @@
 		state.page = 1;
 		fetchPage(1, false);
 		renderTokens();
-		updateMobileResultCount();
 	}
 
 	function renderTokens() {
@@ -1041,30 +1040,13 @@
 		fabCount.hidden = count === 0;
 	}
 
-	function updateMobileResultCount() {
-		if (!mobileResultCount) return;
-		var text = mobileResultCount.getAttribute('data-count') || '';
-		// The desktop counter already has the count; mirror it
-		var desktopCount = document.getElementById('papers-result-count');
-		if (desktopCount && desktopCount.textContent) {
-			mobileResultCount.innerHTML = desktopCount.innerHTML;
-		}
-	}
-
-	// Patch fetchPage to also update the mobile result count after each fetch
-	var origFetchPage = fetchPage;
-	fetchPage = function (page, push) {
-		origFetchPage(page, push);
-		// result count updates async; observe via a short MutationObserver
-		if (mobileResultCount) {
-			var desktopCount = document.getElementById('papers-result-count');
-			if (desktopCount) {
-				var obs = new MutationObserver(function () {
-					mobileResultCount.innerHTML = desktopCount.innerHTML;
-				});
-				obs.observe(desktopCount, { childList: true, characterData: true, subtree: true });
-				setTimeout(function () { obs.disconnect(); }, 5000);
-			}
+	// Hook into updateCounter so the mobile result count mirrors the desktop
+	// counter synchronously — no patching of fetchPage or MutationObserver needed.
+	var _origUpdateCounter = updateCounter;
+	updateCounter = function (count) {
+		_origUpdateCounter(count);
+		if (mobileResultCount && resultCount) {
+			mobileResultCount.innerHTML = resultCount.innerHTML;
 		}
 	};
 

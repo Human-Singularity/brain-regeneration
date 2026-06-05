@@ -266,6 +266,10 @@
 
 		if (prevBtn) prevBtn.disabled = currentPage <= 1;
 		if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+		var _trialsFirst = document.getElementById('trials-first-btn');
+		var _trialsLast  = document.getElementById('trials-last-btn');
+		if (_trialsFirst) _trialsFirst.disabled = currentPage <= 1;
+		if (_trialsLast)  _trialsLast.disabled  = currentPage >= totalPages;
 
 		// Remove old numbered buttons
 		paginationEl.querySelectorAll('.page-num').forEach(function(el) { el.remove(); });
