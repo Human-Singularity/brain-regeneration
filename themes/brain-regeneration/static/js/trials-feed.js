@@ -439,8 +439,8 @@
 	function buildFilename(allResults) {
 		var parts = ['clinical-trials'];
 		if (state.keyword)     parts.push(state.keyword.replace(/\s+/g, '-').toLowerCase());
-		if (state.identifiers) parts.push(state.identifiers.replace(/[\s,]+/g, '-').toLowerCase());
-		if (state.acronym)     parts.push(state.acronym.replace(/[\s,]+/g, '-').toLowerCase());
+		if (state.identifiers) parts.push(state.identifiers.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
+		if (state.acronym)     parts.push(state.acronym.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
 		if (state.phase)       parts.push(state.phase.toLowerCase());
 		if (state.status)      parts.push(state.status.toLowerCase().replace(/_/g, '-'));
 		if (state.country)     parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
