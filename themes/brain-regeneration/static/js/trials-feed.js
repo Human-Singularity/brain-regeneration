@@ -15,6 +15,8 @@
 
 	// ── UI references ────────────────────────────────────────────────────────
 	var searchInput       = document.getElementById('search-input');
+	var filterIdentifiers = document.getElementById('filter-identifiers');
+	var filterAcronym     = document.getElementById('filter-acronym');
 	var filterPhase       = document.getElementById('filter-phase');
 	var filterStatus      = document.getElementById('filter-status');
 	var filterCountry     = document.getElementById('filter-country');
@@ -35,15 +37,17 @@
 	var normaliseStatus  = function (s) { return s ? s.toUpperCase().replace(/ /g, '_') : ''; };
 
 	var state = {
-		page:       1,
-		totalPages: 1,
-		total:      0,
-		keyword:    '',
-		phase:      listEl.dataset.defaultPhase  || '',
-		status:     normaliseStatus(rawDefaultStatus),
-		country:    '',
-		sort:       '-discovery_date',
-		hasResults: false,
+		page:        1,
+		totalPages:  1,
+		total:       0,
+		keyword:     '',
+		identifiers: '',
+		acronym:     '',
+		phase:       listEl.dataset.defaultPhase  || '',
+		status:      normaliseStatus(rawDefaultStatus),
+		country:     '',
+		sort:        '-discovery_date',
+		hasResults:  false,
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -98,11 +102,13 @@
 		url.searchParams.set('format', 'json');
 		if (teamId)       url.searchParams.set('team_id',    teamId);
 		if (subjectId)    url.searchParams.set('subject_id', subjectId);
-		if (state.keyword)    url.searchParams.set('search',               state.keyword);
-		if (state.phase)      url.searchParams.set('phase',                state.phase);
-		if (state.status)     url.searchParams.set('recruitment_status',   state.status);
-		if (state.country)    url.searchParams.set('countries',            state.country);
-		if (state.hasResults) url.searchParams.set('has_results',          'true');
+		if (state.keyword)     url.searchParams.set('search',             state.keyword);
+		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
+		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
+		if (state.phase)       url.searchParams.set('phase',              state.phase);
+		if (state.status)      url.searchParams.set('recruitment_status', state.status);
+		if (state.country)     url.searchParams.set('countries',          state.country);
+		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		url.searchParams.set('ordering', state.sort);
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -319,12 +325,14 @@
 	var filterForm = document.getElementById('trials-filter-form');
 
 	function applyFilters() {
-		state.keyword     = searchInput     ? searchInput.value.trim()   : '';
-		state.phase       = filterPhase     ? filterPhase.value          : '';
-		state.status      = filterStatus    ? filterStatus.value         : '';
-		state.country     = filterCountry   ? filterCountry.value.trim() : '';
-		state.sort        = sortOrder       ? sortOrder.value            : '-discovery_date';
-		state.hasResults  = filterHasResults ? filterHasResults.checked  : false;
+		state.keyword      = searchInput      ? searchInput.value.trim()      : '';
+		state.identifiers  = filterIdentifiers ? filterIdentifiers.value.trim() : '';
+		state.acronym      = filterAcronym     ? filterAcronym.value.trim()     : '';
+		state.phase        = filterPhase      ? filterPhase.value              : '';
+		state.status       = filterStatus     ? filterStatus.value             : '';
+		state.country      = filterCountry    ? filterCountry.value.trim()     : '';
+		state.sort         = sortOrder        ? sortOrder.value                : '-discovery_date';
+		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
 		fetchPage(1);
 	}
 
@@ -339,6 +347,14 @@
 	// Individual fields also apply immediately for a snappy feel
 	if (searchInput) {
 		searchInput.addEventListener('input', debounce(applyFilters, 400));
+	}
+
+	if (filterIdentifiers) {
+		filterIdentifiers.addEventListener('input', debounce(applyFilters, 600));
+	}
+
+	if (filterAcronym) {
+		filterAcronym.addEventListener('input', debounce(applyFilters, 600));
 	}
 
 	if (filterPhase) {
@@ -359,18 +375,22 @@
 		filterHasResults.addEventListener('change', applyFilters);
 	}
 	function resetAll() {
-		state.keyword    = '';
-		state.phase      = '';
-		state.status     = '';
-		state.country    = '';
-		state.sort       = '-discovery_date';
-		state.hasResults = false;
-		if (searchInput)      searchInput.value     = '';
-		if (filterPhase)      filterPhase.value     = '';
-		if (filterStatus)     filterStatus.value    = '';
-		if (filterCountry)    filterCountry.value   = '';
-		if (sortOrder)        sortOrder.value       = '-discovery_date';
-		if (filterHasResults) filterHasResults.checked = false;
+		state.keyword      = '';
+		state.identifiers  = '';
+		state.acronym      = '';
+		state.phase        = '';
+		state.status       = '';
+		state.country      = '';
+		state.sort         = '-discovery_date';
+		state.hasResults   = false;
+		if (searchInput)       searchInput.value        = '';
+		if (filterIdentifiers) filterIdentifiers.value  = '';
+		if (filterAcronym)     filterAcronym.value      = '';
+		if (filterPhase)       filterPhase.value        = '';
+		if (filterStatus)      filterStatus.value       = '';
+		if (filterCountry)     filterCountry.value      = '';
+		if (sortOrder)         sortOrder.value          = '-discovery_date';
+		if (filterHasResults)  filterHasResults.checked = false;
 		fetchPage(1);
 	}
 
@@ -400,11 +420,13 @@
 		url.searchParams.set('format', 'csv');
 		if (teamId)        url.searchParams.set('team_id',    teamId);
 		if (subjectId)     url.searchParams.set('subject_id', subjectId);
-		if (state.keyword)    url.searchParams.set('search',             state.keyword);
-		if (state.phase)      url.searchParams.set('phase',              state.phase);
-		if (state.status)     url.searchParams.set('recruitment_status', state.status);
-		if (state.country)    url.searchParams.set('countries',          state.country);
-		if (state.hasResults) url.searchParams.set('has_results',        'true');
+		if (state.keyword)     url.searchParams.set('search',             state.keyword);
+		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
+		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
+		if (state.phase)       url.searchParams.set('phase',              state.phase);
+		if (state.status)      url.searchParams.set('recruitment_status', state.status);
+		if (state.country)     url.searchParams.set('countries',          state.country);
+		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		url.searchParams.set('ordering', state.sort);
 		if (allResults) {
 			url.searchParams.set('all_results', 'true');
@@ -416,11 +438,13 @@
 
 	function buildFilename(allResults) {
 		var parts = ['clinical-trials'];
-		if (state.keyword) parts.push(state.keyword.replace(/\s+/g, '-').toLowerCase());
-		if (state.phase)   parts.push(state.phase.toLowerCase());
-		if (state.status)  parts.push(state.status.toLowerCase().replace(/_/g, '-'));
-		if (state.country) parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
-		if (!allResults)   parts.push('page-' + state.page);
+		if (state.keyword)     parts.push(state.keyword.replace(/\s+/g, '-').toLowerCase());
+		if (state.identifiers) parts.push(state.identifiers.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
+		if (state.acronym)     parts.push(state.acronym.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
+		if (state.phase)       parts.push(state.phase.toLowerCase());
+		if (state.status)      parts.push(state.status.toLowerCase().replace(/_/g, '-'));
+		if (state.country)     parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
+		if (!allResults)       parts.push('page-' + state.page);
 		return parts.join('_') + '.csv';
 	}
 
@@ -501,24 +525,28 @@
 	var trialsMobileBar    = document.getElementById('trials-mobile-bar');
 	if (!trialsMobileBar) return; // mobile elements not present — skip
 
-	var trialsMobileSearch = document.getElementById('trials-mobile-search');
-	var trialsMobileClear  = document.getElementById('trials-mobile-clear');
-	var trialsTokenStrip   = document.getElementById('trials-filter-tokens');
-	var trialsFabCount     = document.getElementById('trials-fab-count');
-	var trialsSheetEl      = document.getElementById('trials-filter-sheet');
-	var trialsSheetApply   = document.getElementById('trials-sheet-apply');
-	var trialsSheetReset   = document.getElementById('trials-sheet-reset');
-	var trialsMobileCount  = document.getElementById('trials-mobile-result-count');
+	var trialsMobileSearch      = document.getElementById('trials-mobile-search');
+	var trialsMobileClear       = document.getElementById('trials-mobile-clear');
+	var trialsTokenStrip        = document.getElementById('trials-filter-tokens');
+	var trialsFabCount          = document.getElementById('trials-fab-count');
+	var trialsSheetEl           = document.getElementById('trials-filter-sheet');
+	var trialsSheetApply        = document.getElementById('trials-sheet-apply');
+	var trialsSheetReset        = document.getElementById('trials-sheet-reset');
+	var trialsMobileCount       = document.getElementById('trials-mobile-result-count');
+	var trialsSheetIdentifiers  = document.getElementById('trials-sheet-identifiers-input');
+	var trialsSheetAcronym      = document.getElementById('trials-sheet-acronym-input');
 
 	// Draft edited inside sheet; committed on "Show results"
 	var trialsDraft = {};
 
 	function resetTrialsDraft() {
 		trialsDraft = {
-			phase:      state.phase,
-			status:     state.status,
-			sort:       state.sort,
-			hasResults: state.hasResults,
+			phase:       state.phase,
+			status:      state.status,
+			sort:        state.sort,
+			hasResults:  state.hasResults,
+			identifiers: state.identifiers,
+			acronym:     state.acronym,
 		};
 	}
 
@@ -537,6 +565,8 @@
 		setTrialsActiveChip('trials-sheet-status', trialsDraft.status);
 		setTrialsActiveChip('trials-sheet-sort',   trialsDraft.sort);
 		setTrialsActiveChip('trials-sheet-show',   trialsDraft.hasResults ? 'has_results' : '');
+		if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = trialsDraft.identifiers || '';
+		if (trialsSheetAcronym)     trialsSheetAcronym.value     = trialsDraft.acronym     || '';
 	}
 
 	function wireTrialsChipGroup(groupId, onChange) {
@@ -556,6 +586,17 @@
 	wireTrialsChipGroup('trials-sheet-sort',   function (v) { trialsDraft.sort = v; });
 	wireTrialsChipGroup('trials-sheet-show',   function (v) { trialsDraft.hasResults = v === 'has_results'; });
 
+	if (trialsSheetIdentifiers) {
+		trialsSheetIdentifiers.addEventListener('input', function () {
+			trialsDraft.identifiers = trialsSheetIdentifiers.value.trim();
+		});
+	}
+	if (trialsSheetAcronym) {
+		trialsSheetAcronym.addEventListener('input', function () {
+			trialsDraft.acronym = trialsSheetAcronym.value.trim();
+		});
+	}
+
 	// ── Token strip ───────────────────────────────────────────────────────────
 
 	function buildTrialsToken(label, filterKey) {
@@ -574,15 +615,19 @@
 	}
 
 	function removeTrialsToken(filterKey) {
-		if (filterKey === 'phase')      state.phase = '';
-		if (filterKey === 'status')     state.status = '';
-		if (filterKey === 'sort')       state.sort = '-discovery_date';
-		if (filterKey === 'hasResults') state.hasResults = false;
+		if (filterKey === 'phase')       state.phase = '';
+		if (filterKey === 'status')      state.status = '';
+		if (filterKey === 'sort')        state.sort = '-discovery_date';
+		if (filterKey === 'hasResults')  state.hasResults = false;
+		if (filterKey === 'identifiers') state.identifiers = '';
+		if (filterKey === 'acronym')     state.acronym = '';
 		// Sync desktop controls
-		if (filterPhase)      filterPhase.value      = state.phase;
-		if (filterStatus)     filterStatus.value     = state.status;
-		if (sortOrder)        sortOrder.value        = state.sort;
-		if (filterHasResults) filterHasResults.checked = state.hasResults;
+		if (filterPhase)       filterPhase.value        = state.phase;
+		if (filterStatus)      filterStatus.value       = state.status;
+		if (sortOrder)         sortOrder.value          = state.sort;
+		if (filterHasResults)  filterHasResults.checked = state.hasResults;
+		if (filterIdentifiers) filterIdentifiers.value  = state.identifiers;
+		if (filterAcronym)     filterAcronym.value      = state.acronym;
 		fetchPage(1);
 		renderTrialsTokens();
 	}
@@ -604,6 +649,14 @@
 
 		var hasTokens = false;
 
+		if (state.identifiers) {
+			trialsTokenStrip.appendChild(buildTrialsToken('ID: ' + state.identifiers, 'identifiers'));
+			hasTokens = true;
+		}
+		if (state.acronym) {
+			trialsTokenStrip.appendChild(buildTrialsToken(state.acronym, 'acronym'));
+			hasTokens = true;
+		}
 		if (state.phase) {
 			trialsTokenStrip.appendChild(buildTrialsToken(phaseLabel(state.phase), 'phase'));
 			hasTokens = true;
@@ -638,6 +691,8 @@
 
 	function updateTrialsFabCount() {
 		var count = 0;
+		if (state.identifiers) count++;
+		if (state.acronym) count++;
 		if (state.phase) count++;
 		if (state.status) count++;
 		if (state.sort && state.sort !== '-discovery_date') count++;
@@ -706,16 +761,20 @@
 
 	if (trialsSheetApply) {
 		trialsSheetApply.addEventListener('click', function () {
-			state.phase      = trialsDraft.phase      !== undefined ? trialsDraft.phase      : state.phase;
-			state.status     = trialsDraft.status     !== undefined ? trialsDraft.status     : state.status;
-			state.sort       = trialsDraft.sort       !== undefined ? trialsDraft.sort       : state.sort;
-			state.hasResults = trialsDraft.hasResults !== undefined ? trialsDraft.hasResults : state.hasResults;
+			state.phase        = trialsDraft.phase        !== undefined ? trialsDraft.phase        : state.phase;
+			state.status       = trialsDraft.status       !== undefined ? trialsDraft.status       : state.status;
+			state.sort         = trialsDraft.sort         !== undefined ? trialsDraft.sort         : state.sort;
+			state.hasResults   = trialsDraft.hasResults   !== undefined ? trialsDraft.hasResults   : state.hasResults;
+			state.identifiers  = trialsDraft.identifiers  !== undefined ? trialsDraft.identifiers  : state.identifiers;
+			state.acronym      = trialsDraft.acronym      !== undefined ? trialsDraft.acronym      : state.acronym;
 
 			// Keep desktop controls in sync
-			if (filterPhase)      filterPhase.value      = state.phase;
-			if (filterStatus)     filterStatus.value     = state.status;
-			if (sortOrder)        sortOrder.value        = state.sort;
-			if (filterHasResults) filterHasResults.checked = state.hasResults;
+			if (filterPhase)       filterPhase.value        = state.phase;
+			if (filterStatus)      filterStatus.value       = state.status;
+			if (sortOrder)         sortOrder.value          = state.sort;
+			if (filterHasResults)  filterHasResults.checked = state.hasResults;
+			if (filterIdentifiers) filterIdentifiers.value  = state.identifiers;
+			if (filterAcronym)     filterAcronym.value      = state.acronym;
 
 			fetchPage(1);
 			renderTrialsTokens();
@@ -729,7 +788,9 @@
 
 	if (trialsSheetReset) {
 		trialsSheetReset.addEventListener('click', function () {
-			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false };
+			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false, identifiers: '', acronym: '' };
+			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
+			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
 			syncTrialsSheetToDraft();
 		});
 	}
@@ -737,15 +798,19 @@
 	// Also update mobile tokens when desktop reset is clicked
 	if (resetBtn) {
 		resetBtn.addEventListener('click', function () {
-			if (trialsMobileSearch) trialsMobileSearch.value = '';
-			if (trialsMobileClear) trialsMobileClear.hidden = true;
+			if (trialsMobileSearch)    trialsMobileSearch.value    = '';
+			if (trialsMobileClear)     trialsMobileClear.hidden    = true;
+			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
+			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
 			renderTrialsTokens();
 		});
 	}
 	if (clearBtn) {
 		clearBtn.addEventListener('click', function () {
-			if (trialsMobileSearch) trialsMobileSearch.value = '';
-			if (trialsMobileClear) trialsMobileClear.hidden = true;
+			if (trialsMobileSearch)    trialsMobileSearch.value    = '';
+			if (trialsMobileClear)     trialsMobileClear.hidden    = true;
+			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
+			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
 			renderTrialsTokens();
 		});
 	}

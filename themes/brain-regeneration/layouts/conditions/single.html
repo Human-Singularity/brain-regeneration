@@ -71,12 +71,28 @@
 <div class="filter-bar" id="trials-filters">
 	<div class="container">
 		<form id="trials-filter-form" action="javascript:void(0)">
-			<div class="row g-2 align-items-end">
-				<div class="col-12 col-md-3">
+			<!-- Row 1: text search + identifier lookup + action buttons -->
+			<div class="row g-2 align-items-end mb-2">
+				<div class="col-12 col-md-4">
 					<label for="search-input">Search trials</label>
 					<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
 				</div>
-				<div class="col-6 col-md-1">
+				<div class="col-12 col-md-3">
+					<label for="filter-identifiers">Identifiers</label>
+					<input type="text" class="form-control" id="filter-identifiers" placeholder="e.g. NCT02521311, 2020-001234-12" autocomplete="off">
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="filter-acronym">Acronym</label>
+					<input type="text" class="form-control" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
+				</div>
+				<div class="col-12 col-md-3 d-flex gap-2 align-items-end">
+					<button type="submit" class="btn-amber flex-fill" id="search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Trials: Search" data-umami-event-condition="{{ .Title }}">Search</button>
+					<button type="button" class="btn-outline-teal flex-fill" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+			<!-- Row 2: result-set filters -->
+			<div class="row g-2 align-items-end">
+				<div class="col-6 col-md-2">
 					<label for="filter-phase">Phase</label>
 					<select class="form-select" id="filter-phase">
 						<option value="">All phases</option>
@@ -86,7 +102,7 @@
 						<option value="PHASE4">Phase 4</option>
 					</select>
 				</div>
-				<div class="col-6 col-md-2">
+				<div class="col-6 col-md-3">
 					<label for="filter-status">Status</label>
 					<select class="form-select" id="filter-status">
 						<option value="">All statuses</option>
@@ -96,7 +112,7 @@
 						<option value="COMPLETED">Completed</option>
 					</select>
 				</div>
-				<div class="col-6 col-md-2">
+				<div class="col-6 col-md-3">
 					<label for="filter-country">Country</label>
 					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
 					<datalist id="country-list">
@@ -136,7 +152,7 @@
 						<option value="United States">
 					</datalist>
 				</div>
-				<div class="col-6 col-md-2">
+				<div class="col-6 col-md-4">
 					<label for="sort-order">Sort by</label>
 					<select class="form-select" id="sort-order">
 						<option value="-discovery_date">Date added (newest first)</option>
@@ -148,12 +164,6 @@
 						<option value="title">Title (A–Z)</option>
 						<option value="-title">Title (Z–A)</option>
 					</select>
-				</div>
-				<div class="col-6 col-md-1 d-flex align-items-end">
-					<button type="submit" class="btn-amber w-100" id="search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Trials: Search" data-umami-event-condition="{{ .Title }}">Search</button>
-				</div>
-				<div class="col-6 col-md-1 d-flex align-items-end">
-					<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 				<div class="col-12">
 					<div class="form-check">
@@ -221,6 +231,14 @@
 		</div>
 	</div>
 	<div class="offcanvas-body">
+		<div class="sheet-group">
+			<label for="trials-sheet-identifiers-input" class="sheet-group-label">Identifiers</label>
+			<input type="text" class="form-control form-control-sm" id="trials-sheet-identifiers-input" placeholder="e.g. NCT02521311, 2020-001234-12" autocomplete="off">
+		</div>
+		<div class="sheet-group">
+			<label for="trials-sheet-acronym-input" class="sheet-group-label">Acronym</label>
+			<input type="text" class="form-control form-control-sm" id="trials-sheet-acronym-input" placeholder="e.g. ReCOVER, MODIF-MS" autocomplete="off">
+		</div>
 		<div class="sheet-group">
 			<div class="sheet-group-label">Phase</div>
 			<div class="sheet-chips" id="trials-sheet-phase">
