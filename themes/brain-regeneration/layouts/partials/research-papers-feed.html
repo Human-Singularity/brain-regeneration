@@ -72,8 +72,14 @@
 				<div class="col-12 col-md-2">
 					<label for="papers-sort-select">Sort by</label>
 					<select class="form-select" id="papers-sort-select">
-						<option value="date">Newest first</option>
-						<option value="relevance">AI relevance</option>
+						<option value="-published_date">Published: Newest</option>
+						<option value="published_date">Published: Oldest</option>
+						<option value="-discovery_date">Discovered: Newest</option>
+						<option value="discovery_date">Discovered: Oldest</option>
+						<option value="title">Title: A–Z</option>
+						<option value="-title">Title: Z–A</option>
+						<option value="-article_id">ID: Newest</option>
+						<option value="article_id">ID: Oldest</option>
 					</select>
 				</div>
 				<div class="col-12 col-md-2">
@@ -187,8 +193,12 @@
 		<div class="sheet-group">
 			<div class="sheet-group-label">Sort by</div>
 			<div class="sheet-chips" id="papers-sheet-sort">
-				<button type="button" class="sheet-chip active" data-value="date">Newest first</button>
-				<button type="button" class="sheet-chip" data-value="relevance">AI relevance</button>
+				<button type="button" class="sheet-chip active" data-value="-published_date">Published: Newest</button>
+				<button type="button" class="sheet-chip" data-value="published_date">Published: Oldest</button>
+				<button type="button" class="sheet-chip" data-value="-discovery_date">Discovered: Newest</button>
+				<button type="button" class="sheet-chip" data-value="discovery_date">Discovered: Oldest</button>
+				<button type="button" class="sheet-chip" data-value="title">Title: A–Z</button>
+				<button type="button" class="sheet-chip" data-value="-title">Title: Z–A</button>
 			</div>
 		</div>
 		<div class="sheet-group">

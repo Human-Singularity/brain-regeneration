@@ -47,7 +47,7 @@
 		keyword:            '',
 		category:           '',   // slug
 		subjects:           '',   // comma-separated subject IDs (AND match)
-		sort:               'date',
+		sort:               '-published_date',
 		relevant:           requireRelevant,  // true = curated feed, false = full feed
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
 		results:            [],   // current page articles
@@ -137,7 +137,7 @@
 		state.keyword            = params.get('q')        || '';
 		state.category           = params.get('category') || '';
 		state.subjects           = params.get('subjects') || '';
-		state.sort               = params.get('sort')     || 'date';
+		state.sort               = params.get('sort')     || '-published_date';
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
@@ -184,8 +184,7 @@
 	// ── API URL builders ──────────────────────────────────────────────────
 
 	function sortToOrdering(sort) {
-		// 'relevance' is client-side re-sort; server always returns by date first
-		return '-published_date';
+		return sort || '-published_date';
 	}
 
 	function buildURL(page) {
@@ -327,21 +326,9 @@
 		'</article>';
 	}
 
-	function applySort(articles) {
-		if (state.sort !== 'relevance') return articles;
-		return articles.slice().sort(function (a, b) {
-			var sa = (a.article_subject_relevances && a.article_subject_relevances[0])
-				? (a.article_subject_relevances[0].score || 0) : 0;
-			var sb = (b.article_subject_relevances && b.article_subject_relevances[0])
-				? (b.article_subject_relevances[0].score || 0) : 0;
-			return sb - sa;
-		});
-	}
-
 	function renderCards(articles) {
-		var sorted = applySort(articles);
-		if (!sorted.length) { renderEmpty(); return; }
-		mount.innerHTML = sorted.map(buildCard).join('');
+		if (!articles.length) { renderEmpty(); return; }
+		mount.innerHTML = articles.map(buildCard).join('');
 	}
 
 	// ── Sparklines ───────────────────────────────────────────────────────
@@ -723,12 +710,7 @@
 		sortSelect.addEventListener('change', function () {
 			state.sort = this.value;
 			state.page = 1;
-			// 'date' sort is server-side; 'relevance' re-sorts current page client-side
-			if (state.sort === 'relevance') {
-				renderCards(state.results);
-			} else {
-				fetchPage(1, false);
-			}
+			fetchPage(1, false);
 		});
 	}
 
@@ -764,13 +746,13 @@
 			state.category          = '';
 			state.subjects          = '';
 			state.page              = 1;
-			state.sort              = 'date';
+			state.sort              = '-published_date';
 			state.relevant          = requireRelevant;
 			state.hasClinicalTrials = null;
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
 			if (subjectsSelect)  subjectsSelect.value  = '';
-			if (sortSelect)      sortSelect.value      = 'date';
+			if (sortSelect)      sortSelect.value      = '-published_date';
 			if (relevantSelect)  relevantSelect.value  = String(requireRelevant);
 			hideCategoryPanel();
 			fetchPage(1, false);
@@ -980,7 +962,7 @@
 		} else if (filterKey === 'subjects') {
 			state.subjects = '';
 		} else if (filterKey === 'sort') {
-			state.sort = 'date';
+			state.sort = '-published_date';
 		} else if (filterKey === 'show') {
 			state.relevant = requireRelevant;
 			state.hasClinicalTrials = null;
@@ -1007,8 +989,17 @@
 			tokenStrip.appendChild(buildToken(subjectLabel(state.subjects), 'subjects'));
 			hasTokens = true;
 		}
-		if (state.sort && state.sort !== 'date') {
-			var sortLabel = state.sort === 'relevance' ? 'AI relevance' : state.sort;
+		if (state.sort && state.sort !== '-published_date') {
+			var SORT_LABELS = {
+				'published_date':   'Published: Oldest',
+				'-discovery_date':  'Discovered: Newest',
+				'discovery_date':   'Discovered: Oldest',
+				'title':            'Title: A–Z',
+				'-title':           'Title: Z–A',
+				'-article_id':      'ID: Newest',
+				'article_id':       'ID: Oldest',
+			};
+			var sortLabel = SORT_LABELS[state.sort] || state.sort;
 			tokenStrip.appendChild(buildToken(sortLabel, 'sort'));
 			hasTokens = true;
 		}
@@ -1031,7 +1022,7 @@
 		var count = 0;
 		if (state.category) count++;
 		if (state.subjects)  count++;
-		if (state.sort && state.sort !== 'date') count++;
+		if (state.sort && state.sort !== '-published_date') count++;
 		if (state.hasClinicalTrials !== null) count++;
 		else if (state.relevant !== requireRelevant) count++;
 
@@ -1146,7 +1137,7 @@
 			draft = {
 				category:          '',
 				subjects:          '',
-				sort:              'date',
+				sort:              '-published_date',
 				relevant:          requireRelevant,
 				hasClinicalTrials: null,
 			};
