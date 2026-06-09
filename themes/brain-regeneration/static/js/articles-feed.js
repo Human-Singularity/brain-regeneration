@@ -1,7 +1,7 @@
-/* ms-research-papers.js — Research papers listing for conditions pages.
- * Fetches from api.gregory-ms.com/articles/ and /articles/search/.
+/* articles-feed.js — Research papers listing for conditions and research area pages.
+ * Fetches from the GregoryAI /articles/ and /articles/search/ endpoints.
  * Supports: category filter (server-side), text search (server-side),
- * client-side sort, URL state, ML/expert scores, CSV download, pagination.
+ * server-side sort, URL state, ML/expert scores, CSV download, pagination.
  */
 (function () {
 	'use strict';
