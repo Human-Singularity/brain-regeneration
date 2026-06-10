@@ -12,7 +12,7 @@ description: "Multiple Sclerosis (MS) is a chronic disease of the central nervou
 hero_description: "A chronic autoimmune disease targeting the myelin sheath of the central nervous system. Papers below cover remyelination, immunomodulation, neuroprotection, and cell-based therapies."
 
 api:
-  endpoint: "https://api.gregory-ms.com/articles/"
+  endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 1
   subject_id: 1
 

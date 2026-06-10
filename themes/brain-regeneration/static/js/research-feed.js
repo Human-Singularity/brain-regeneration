@@ -1,5 +1,5 @@
 /* research-feed.js — Article feed for research area pages
- * Fetches from api.gregory-ms.com/articles/ and renders paper cards.
+ * Fetches from api.brain-regeneration.com/articles/ and renders paper cards.
  * Supports keyword search (server-side), client-side date filtering,
  * client-side sort, pagination, and CSV download.
  */
@@ -9,7 +9,7 @@
 	var container = document.getElementById('paper-list');
 	if (!container) return;
 
-	var endpoint  = container.dataset.endpoint || (window.__API_BASE__ || 'https://api.gregory-ms.com') + '/articles/';
+	var endpoint  = container.dataset.endpoint || (window.__API_BASE__ || 'https://api.brain-regeneration.com') + '/articles/';
 	var teamId    = container.dataset.teamId    || '';
 	var subjectId = container.dataset.subjectId || '';
 

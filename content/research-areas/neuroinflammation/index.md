@@ -12,7 +12,7 @@ curators:
   - "institute-cns-inflammation"
 
 api:
-  endpoint: "https://api.gregory-ms.com/articles/"
+  endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 6
   subject_id: 12
 

@@ -21,7 +21,7 @@ related_research_areas:
   - "neuroinflammation"
 
 api:
-  endpoint: "https://api.gregory-ms.com/trials/"
+  endpoint: "https://api.brain-regeneration.com/trials/"
   team_id: 1
   subject_id: 1
 

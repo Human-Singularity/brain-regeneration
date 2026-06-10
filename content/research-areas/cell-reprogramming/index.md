@@ -12,7 +12,7 @@ curators:
   - "regenerar"
 
 api:
-  endpoint: "https://api.gregory-ms.com/articles/"
+  endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 4
   subject_id: 10
 

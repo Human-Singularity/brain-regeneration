@@ -1,5 +1,5 @@
 /* ms-research-papers.js — Research papers listing for conditions pages.
- * Fetches from api.gregory-ms.com/articles/ and /articles/search/.
+ * Fetches from api.brain-regeneration.com/articles/ and /articles/search/.
  * Supports: category filter (server-side), text search (server-side),
  * client-side sort, URL state, ML/expert scores, CSV download, pagination.
  */
@@ -9,7 +9,7 @@
 	var mount = document.getElementById('papers-list');
 	if (!mount) return;
 
-	var apiBase          = mount.dataset.apiBase          || 'https://api.gregory-ms.com';
+	var apiBase          = mount.dataset.apiBase          || 'https://api.brain-regeneration.com';
 	var teamId           = mount.dataset.teamId           || '';
 	var subjectId        = mount.dataset.subjectId        || '';
 	var requireRelevant  = mount.dataset.requireRelevant  !== 'false';

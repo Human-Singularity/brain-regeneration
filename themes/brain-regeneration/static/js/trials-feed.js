@@ -1,5 +1,5 @@
 /* trials-feed.js — Clinical trial listing for condition pages
- * Fetches from api.gregory-ms.com/trials/, renders trial cards,
+ * Fetches from api.brain-regeneration.com/trials/, renders trial cards,
  * populates stats bar, handles search/phase/status filters,
  * pagination, and 1-hour client-side caching.
  */
@@ -9,7 +9,7 @@
 	var listEl = document.getElementById('trials-list');
 	if (!listEl) return;
 
-	var endpoint  = listEl.dataset.endpoint  || (window.__API_BASE__ || 'https://api.gregory-ms.com') + '/trials/';
+	var endpoint  = listEl.dataset.endpoint  || (window.__API_BASE__ || 'https://api.brain-regeneration.com') + '/trials/';
 	var teamId    = listEl.dataset.teamId    || '';
 	var subjectId = listEl.dataset.subjectId || '';
 

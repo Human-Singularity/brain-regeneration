@@ -12,7 +12,7 @@ curators:
   - "lpj-lab"
 
 api:
-  endpoint: "https://api.gregory-ms.com/articles/"
+  endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 5
   subject_id: 11
 

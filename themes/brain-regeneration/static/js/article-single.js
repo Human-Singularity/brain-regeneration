@@ -17,7 +17,7 @@
 	var bcSep2       = document.getElementById('article-breadcrumb-sep2');
 	var bcLabel      = document.getElementById('article-breadcrumb-label');
 
-	var apiBase      = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.gregory-ms.com').replace(/\/$/, '');
+	var apiBase      = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
 
 	// ── Extract article ID from URL ───────────────────────────────────────
 	// Supports: /articles/28491/ and /articles/28491
