@@ -111,39 +111,39 @@ deploy-frontend: ## Push to GitHub — Cloudflare Pages builds and deploys the s
 	@git push
 	@echo "✅ Pushed — Cloudflare Pages deployment is on its way"
 
-remote-pull: ## [backend 1/4] Pull latest backend code on the production server
-	@echo "🔄 [1/4] Pulling changes on the production server..."
+remote-pull: ## Pull latest backend code on the production server (no restart)
+	@echo "🔄 Pulling changes on the production server..."
+	@$(PROD_SSH) 'cd $(PROD_PROJECT_DIR) && git pull --no-edit && echo "✅ Remote repository updated"'
+
+remote-deps: ## Install Python requirements in the gregory container
+	@echo "📦 Installing dependencies on remote..."
+	@$(PROD_SSH) 'docker exec gregory pip install -q -r $(PROD_PROJECT_DIR)/requirements.txt && echo "✅ Dependencies installed"'
+
+remote-migrate: ## Run Django migrations on the production server
+	@echo "🔄 Running database migrations..."
+	@$(PROD_SSH) 'docker exec gregory python manage.py migrate && echo "✅ Database migrations complete"'
+
+remote-restart: ## Restart the gregory application container
+	@echo "🔄 Restarting application..."
+	@$(PROD_SSH) 'docker restart gregory && echo "✅ Container restarted"'
+
+deploy-backend: ## Update + restart the GregoryAI backend only if new commits were pulled
 	@$(PROD_SSH) 'cd $(PROD_PROJECT_DIR) && \
+		BEFORE=$$(git rev-parse HEAD) && \
 		echo "🔄 Pulling from GitHub..." && \
 		git pull --no-edit && \
-		echo "🔄 Updating submodules..." && \
-		git submodule update && \
-		echo "✅ Remote repository updated"'
-
-remote-deps: ## [backend 2/4] Install Python requirements in the gregory container
-	@echo "📦 [2/4] Installing dependencies on remote..."
-	@$(PROD_SSH) 'cd $(PROD_PROJECT_DIR) && \
-		echo "📦 Installing Python requirements..." && \
-		docker exec gregory pip install -q -r requirements.txt && \
-		echo "✅ Dependencies installed"'
-
-remote-migrate: ## [backend 3/4] Run Django migrations on the production server
-	@echo "🔄️  [3/4] Running database migrations..."
-	@$(PROD_SSH) 'cd $(PROD_PROJECT_DIR) && \
-		echo "🗃️  Applying database migrations..." && \
-		docker exec gregory python manage.py migrate && \
-		echo "✅ Database migrations complete"'
-
-remote-restart: ## [backend 4/4] Restart the gregory application container
-	@echo "🔄 [4/4] Restarting application..."
-	@$(PROD_SSH) 'echo "🔄 Restarting application container..." && \
-		docker restart gregory && \
-		echo "✅ Container restarted successfully"'
-
-deploy-backend: remote-pull remote-deps remote-migrate remote-restart ## Update + restart the GregoryAI backend (api.brain-regeneration.com)
-	@echo ""
-	@echo "🎉 Backend deployment completed successfully!"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+		AFTER=$$(git rev-parse HEAD) && \
+		if [ "$$BEFORE" = "$$AFTER" ]; then \
+			echo "✅ Already up to date — no restart needed"; \
+		else \
+			echo "📦 Installing dependencies..." && \
+			docker exec gregory pip install -q -r requirements.txt && \
+			echo "🗃️  Running migrations..." && \
+			docker exec gregory python manage.py migrate && \
+			echo "🔄 Restarting container..." && \
+			docker restart gregory && \
+			echo "🎉 Backend deployment complete!"; \
+		fi'
 
 remote-status: ## Show backend container status and recent logs on the production server
 	@echo "📊 Checking application status..."
