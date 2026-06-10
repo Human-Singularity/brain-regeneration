@@ -38,6 +38,19 @@
 	var lastBtn          = document.getElementById('papers-last-btn');
 	var paginationNums   = document.getElementById('papers-pagination-numbers');
 
+	// ── Sort options (whitelist + display labels) ─────────────────────────
+	var SORT_LABELS = {
+		'-published_date':  'Published: Newest',
+		'published_date':   'Published: Oldest',
+		'-discovery_date':  'Discovered: Newest',
+		'discovery_date':   'Discovered: Oldest',
+		'title':            'Title: A–Z',
+		'-title':           'Title: Z–A',
+		'-article_id':      'ID: Newest',
+		'article_id':       'ID: Oldest',
+	};
+	var DEFAULT_SORT = '-published_date';
+
 	// ── State ─────────────────────────────────────────────────────────────
 	var state = {
 		page:               1,
@@ -137,7 +150,7 @@
 		state.keyword            = params.get('q')        || '';
 		state.category           = params.get('category') || '';
 		state.subjects           = params.get('subjects') || '';
-		state.sort               = params.get('sort')     || '-published_date';
+		state.sort               = sortToOrdering(params.get('sort') || DEFAULT_SORT);
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
@@ -184,7 +197,7 @@
 	// ── API URL builders ──────────────────────────────────────────────────
 
 	function sortToOrdering(sort) {
-		return sort || '-published_date';
+		return Object.prototype.hasOwnProperty.call(SORT_LABELS, sort) ? sort : DEFAULT_SORT;
 	}
 
 	function buildURL(page) {
@@ -989,16 +1002,7 @@
 			tokenStrip.appendChild(buildToken(subjectLabel(state.subjects), 'subjects'));
 			hasTokens = true;
 		}
-		if (state.sort && state.sort !== '-published_date') {
-			var SORT_LABELS = {
-				'published_date':   'Published: Oldest',
-				'-discovery_date':  'Discovered: Newest',
-				'discovery_date':   'Discovered: Oldest',
-				'title':            'Title: A–Z',
-				'-title':           'Title: Z–A',
-				'-article_id':      'ID: Newest',
-				'article_id':       'ID: Oldest',
-			};
+		if (state.sort && state.sort !== DEFAULT_SORT) {
 			var sortLabel = SORT_LABELS[state.sort] || state.sort;
 			tokenStrip.appendChild(buildToken(sortLabel, 'sort'));
 			hasTokens = true;
@@ -1022,7 +1026,7 @@
 		var count = 0;
 		if (state.category) count++;
 		if (state.subjects)  count++;
-		if (state.sort && state.sort !== '-published_date') count++;
+		if (state.sort && state.sort !== DEFAULT_SORT) count++;
 		if (state.hasClinicalTrials !== null) count++;
 		else if (state.relevant !== requireRelevant) count++;
 
