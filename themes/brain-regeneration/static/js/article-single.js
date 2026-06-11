@@ -13,10 +13,6 @@
 	var errorEl      = document.getElementById('article-error');
 	var retryBtn     = document.getElementById('article-retry-btn');
 	var content      = document.getElementById('article-content');
-	var bcArea       = document.getElementById('article-breadcrumb-area');
-	var bcSep2       = document.getElementById('article-breadcrumb-sep2');
-	var bcLabel      = document.getElementById('article-breadcrumb-label');
-
 	var apiBase      = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
 
 	// ── Extract article ID from URL ───────────────────────────────────────
@@ -387,21 +383,6 @@
 		});
 	}
 
-	// ── Update breadcrumb ─────────────────────────────────────────────────
-
-	function updateBreadcrumb(a) {
-		var area = (a.subjects && a.subjects[0] && (a.subjects[0].subject_name || a.subjects[0].name));
-		if (area && bcArea) {
-			bcArea.textContent = area;
-			if (bcSep2) bcSep2.removeAttribute('hidden');
-		}
-		if (bcLabel) {
-			bcLabel.textContent = 'Article #' + (a.article_id || a.id || articleId);
-		}
-		// Update <title>
-		document.title = a.title + ' — Brain Regeneration Observatory';
-	}
-
 	// ── State ─────────────────────────────────────────────────────────────
 
 	function showLoading() {
@@ -435,7 +416,7 @@
 				return resp.json();
 			})
 			.then(function (article) {
-				updateBreadcrumb(article);
+				document.title = article.title + ' — Brain Regeneration Observatory';
 				showContent(renderArticle(article));
 			})
 			.catch(function () {
@@ -454,7 +435,6 @@
 	if (!articleId) {
 		// No numeric ID in URL — show error
 		showError();
-		if (bcLabel) bcLabel.textContent = 'Not found';
 	} else {
 		fetchArticle(articleId);
 	}

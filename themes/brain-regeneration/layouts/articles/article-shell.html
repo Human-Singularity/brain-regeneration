@@ -7,17 +7,6 @@
 
 <div id="article-shell" data-api-base="{{ $apiBase }}">
 
-	{{/* Breadcrumb — updated by JS once article loads */}}
-	<nav class="article-breadcrumb" id="article-breadcrumb" aria-label="Breadcrumb">
-		<div class="container">
-			<a href="{{ "/observatory/" | relURL }}">Observatory</a>
-			<span class="article-breadcrumb__sep" aria-hidden="true">›</span>
-			<span id="article-breadcrumb-area" class="article-breadcrumb__placeholder"></span>
-			<span class="article-breadcrumb__sep" id="article-breadcrumb-sep2" aria-hidden="true" hidden>›</span>
-			<span id="article-breadcrumb-label">Article</span>
-		</div>
-	</nav>
-
 	{{/* Loading skeleton */}}
 	<main id="article-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
 		<div class="container">
