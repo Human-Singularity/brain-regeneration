@@ -404,19 +404,9 @@
 	}
 
 	function buildSparklines(monthly) {
-		var articleCounts = last12Months(monthly.monthly_article_counts || []);
-		var trialCounts   = last12Months(monthly.monthly_trial_counts   || []);
-
-		var mlByMonth = {};
-		var mlByModel = monthly.monthly_ml_article_counts_by_model || {};
-		Object.keys(mlByModel).forEach(function (model) {
-			(mlByModel[model] || []).forEach(function (d) {
-				mlByMonth[d.month] = (mlByMonth[d.month] || 0) + (d.count || 0);
-			});
-		});
-		var mlCounts = last12Months(Object.keys(mlByMonth).sort().map(function (m) {
-			return { month: m, count: mlByMonth[m] };
-		}));
+		var articleCounts  = last12Months(monthly.monthly_article_counts          || []);
+		var trialCounts    = last12Months(monthly.monthly_trial_counts             || []);
+		var mlCounts       = last12Months(monthly.monthly_relevant_article_counts  || []);
 
 		var articlesChart = '<div class="sparkline-group">' +
 			'<span class="sparkline-label">Papers &amp; Relevancy</span>' +
