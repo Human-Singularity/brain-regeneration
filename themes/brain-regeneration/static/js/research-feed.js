@@ -987,15 +987,15 @@
 			hasTokens = true;
 		}
 		if (state.sort && state.sort !== 'date') {
-			var sortLabels = {
-				'date_asc':      'Oldest published',
-				'discovery':     'Recently discovered',
-				'discovery_asc': 'First discovered',
-				'title_asc':     'Title A→Z',
-				'title_desc':    'Title Z→A',
-				'relevance':     'AI relevance',
-			};
-			var sortLabel = sortLabels[state.sort] || state.sort;
+			var sortLabel = state.sort;
+			if (sortSelect) {
+				for (var i = 0; i < sortSelect.options.length; i++) {
+					if (sortSelect.options[i].value === state.sort) {
+						sortLabel = sortSelect.options[i].text;
+						break;
+					}
+				}
+			}
 			tokenStrip.appendChild(buildToken(sortLabel, 'sort'));
 			hasTokens = true;
 		}
