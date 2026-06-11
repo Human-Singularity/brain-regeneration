@@ -184,8 +184,15 @@
 	// ── API URL builders ──────────────────────────────────────────────────
 
 	function sortToOrdering(sort) {
-		// 'relevance' is client-side re-sort; server always returns by date first
-		return '-published_date';
+		var map = {
+			'date':            '-published_date',
+			'date_asc':        'published_date',
+			'discovery':       '-discovery_date',
+			'discovery_asc':   'discovery_date',
+			'title_asc':       'title',
+			'title_desc':      '-title',
+		};
+		return map[sort] || '-published_date';
 	}
 
 	function buildURL(page) {
@@ -1008,7 +1015,15 @@
 			hasTokens = true;
 		}
 		if (state.sort && state.sort !== 'date') {
-			var sortLabel = state.sort === 'relevance' ? 'AI relevance' : state.sort;
+			var sortLabels = {
+				'date_asc':      'Oldest published',
+				'discovery':     'Recently discovered',
+				'discovery_asc': 'First discovered',
+				'title_asc':     'Title A→Z',
+				'title_desc':    'Title Z→A',
+				'relevance':     'AI relevance',
+			};
+			var sortLabel = sortLabels[state.sort] || state.sort;
 			tokenStrip.appendChild(buildToken(sortLabel, 'sort'));
 			hasTokens = true;
 		}
