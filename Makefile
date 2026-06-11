@@ -19,7 +19,7 @@ POSTGRES_DB       := $(patsubst "%",%,$(patsubst '%',%,$(POSTGRES_DB)))
 
 PROD_HOST        ?= House
 PROD_SSH_USER    ?= gregory
-PROD_PROJECT_DIR ?= /home/gregory/gregory-ms-website
+PROD_PROJECT_DIR ?= /home/gregory/gregory-ai/
 PROD_SSH         := ssh $(PROD_SSH_USER)@$(PROD_HOST)
 BACKUP_DIR       := backups
 DUMP_FILE        := $(BACKUP_DIR)/db_pull_$(shell date +%Y%m%d_%H%M%S).sql
