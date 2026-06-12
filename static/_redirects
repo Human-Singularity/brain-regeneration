@@ -2,3 +2,6 @@
 # Serve the articles shell for any /articles/{id}/ path so that
 # the client-side JS can extract the article ID and fetch from the API.
 /articles/*  /articles/  200
+
+# Redirect bare condition pages to their clinical-trials subpage
+/conditions/:condition/  /conditions/:condition/clinical-trials/  301
