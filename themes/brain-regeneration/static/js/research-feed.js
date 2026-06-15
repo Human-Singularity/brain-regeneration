@@ -598,7 +598,9 @@
 			state.categoryGroups.forEach(function (g) {
 				var group = document.createElement('optgroup');
 				group.label = g.label;
-				(g.categories || []).forEach(function (c) {
+				(g.categories || []).slice().sort(function (a, b) {
+					return (a.name || '').localeCompare(b.name || '');
+				}).forEach(function (c) {
 					if (!c.id) return;
 					var opt = document.createElement('option');
 					opt.value       = String(c.id);
@@ -608,7 +610,9 @@
 				categorySelect.appendChild(group);
 			});
 		} else {
-			state.categories.forEach(function (c) {
+			state.categories.slice().sort(function (a, b) {
+				return (a.name || '').localeCompare(b.name || '');
+			}).forEach(function (c) {
 				if (!c.id) return;
 				var opt = document.createElement('option');
 				opt.value       = String(c.id);
