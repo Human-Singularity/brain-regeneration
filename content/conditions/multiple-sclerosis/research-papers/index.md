@@ -31,6 +31,8 @@ category_groups:
         name: "Alemtuzumab"
       - id: 5
         name: "Natalizumab"
+      - id: 95
+        name: "Opicinumab"
   - label: "S1P Receptor Modulators"
     categories:
       - id: 35
