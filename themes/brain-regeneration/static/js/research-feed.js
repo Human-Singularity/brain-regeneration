@@ -90,6 +90,25 @@
 			.replace(/'/g,  '&#39;');
 	}
 
+	function parseMarkdown(str) {
+		if (str == null || str === '') return '';
+		var s = String(str);
+		var links = [];
+		// Extract links before escaping so URLs survive
+		s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (_, text, url) {
+			var tag = '<a href="' + escHtml(safeLink(url.trim())) + '" target="_blank" rel="noopener noreferrer">' + escHtml(text) + '</a>';
+			links.push(tag);
+			return '\x00' + (links.length - 1) + '\x00';
+		});
+		s = escHtml(s);
+		s = s.replace(/\x00(\d+)\x00/g, function (_, i) { return links[+i]; });
+		s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+		s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+		s = s.replace(/\n\n+/g, '</p><p>');
+		s = s.replace(/\n/g, '<br>');
+		return '<p>' + s + '</p>';
+	}
+
 	function safeLink(url) {
 		if (!url) return '#';
 		try {
@@ -446,7 +465,7 @@
 		var catCacheKey = url.toString();
 		var catCached = getCached(catCacheKey);
 
-		if (categoryPanelDesc) categoryPanelDesc.textContent = '';
+		if (categoryPanelDesc) categoryPanelDesc.innerHTML = '';
 		categoryPanel.hidden = false;
 
 		function applyCategoryData(data) {
@@ -459,7 +478,7 @@
 				return;
 			}
 			if (categoryPanelDesc && match.category_description) {
-				categoryPanelDesc.textContent = match.category_description;
+				categoryPanelDesc.innerHTML = parseMarkdown(match.category_description);
 			}
 			if (categoryPanelSparkline) {
 				categoryPanelSparkline.innerHTML = match.monthly_counts ? buildSparklines(match.monthly_counts) : '';
@@ -478,7 +497,7 @@
 					applyCategoryData(data);
 				})
 				.catch(function () {
-					if (categoryPanelDesc) categoryPanelDesc.textContent = '';
+					if (categoryPanelDesc) categoryPanelDesc.innerHTML = '';
 					if (categoryPanelSparkline) categoryPanelSparkline.innerHTML = '';
 				});
 		}
