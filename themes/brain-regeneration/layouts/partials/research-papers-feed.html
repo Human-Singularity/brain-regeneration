@@ -46,59 +46,42 @@
 				{{- end -}}
 			{{- end -}}
 			{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
-			<!-- Row 1: main filter controls -->
-			<div class="row g-2 align-items-end">
-				<div class="col-12 col-md-3">
+			{{- if $advanced }}
+			<!-- Row 0: full-width search (advanced mode) -->
+			<div class="row g-2 align-items-end mb-2">
+				<div class="col-12">
 					<label for="papers-search-input">Search papers</label>
 					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
 				</div>
+			</div>
+			<!-- Row 1: filter selects + action buttons (advanced) -->
+			<div class="row g-2 align-items-end">
 				<div class="col-12 col-md-2">
 					<label for="papers-category-select">Category</label>
 					<select class="form-select" id="papers-category-select">
 						<option value="">All categories</option>
 					</select>
 				</div>
-				{{- if $advanced }}
-				<div class="col-12 col-md-3">
-					<label for="papers-subjects-multi">Intersect with</label>
-					<select class="form-select" id="papers-subjects-multi" multiple size="4" style="height: auto;">
-						{{- if $conditionPages }}
-						<optgroup label="Conditions">
-							{{- range $conditionPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
-						{{- end }}
-						{{- if $researchAreaPages }}
-						<optgroup label="Research Areas">
-							{{- range $researchAreaPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
+				{{- if $conditionPages }}
+				<div class="col-12 col-md-2">
+					<label for="papers-conditions-select">Condition</label>
+					<select class="form-select" id="papers-conditions-select" multiple size="4" style="height: auto;">
+						{{- range $conditionPages }}
+						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
 						{{- end }}
 					</select>
 					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
 				</div>
-				{{- else }}
+				{{- end }}
+				{{- if $researchAreaPages }}
 				<div class="col-12 col-md-2">
-					<label for="papers-subject-select">Intersect with ...</label>
-					<select class="form-select" id="papers-subject-select">
-						<option value="">All subjects</option>
-						{{- if $conditionPages }}
-						<optgroup label="Conditions">
-							{{- range $conditionPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
-						{{- end }}
-						{{- if $researchAreaPages }}
-						<optgroup label="Research Areas">
-							{{- range $researchAreaPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
+					<label for="papers-research-areas-select">Research area</label>
+					<select class="form-select" id="papers-research-areas-select" multiple size="4" style="height: auto;">
+						{{- range $researchAreaPages }}
+						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
 						{{- end }}
 					</select>
+					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
 				</div>
 				{{- end }}
 				<div class="col-12 col-md-2">
@@ -129,6 +112,68 @@
 					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>
+			{{- else }}
+			<!-- Row 1: main filter controls (standard) -->
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-3">
+					<label for="papers-search-input">Search papers</label>
+					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-category-select">Category</label>
+					<select class="form-select" id="papers-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-subject-select">Intersect with ...</label>
+					<select class="form-select" id="papers-subject-select">
+						<option value="">All subjects</option>
+						{{- if $conditionPages }}
+						<optgroup label="Conditions">
+							{{- range $conditionPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
+						{{- if $researchAreaPages }}
+						<optgroup label="Research Areas">
+							{{- range $researchAreaPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-sort-select">Sort by</label>
+					<select class="form-select" id="papers-sort-select">
+						<option value="date">Newest published</option>
+						<option value="date_asc">Oldest published</option>
+						<option value="discovery">Recently discovered</option>
+						<option value="discovery_asc">First discovered</option>
+						<option value="title_asc">Title A→Z</option>
+						<option value="title_desc">Title Z→A</option>
+						<option value="relevance">AI relevance</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="papers-relevant-select">Show</label>
+					<select class="form-select" id="papers-relevant-select">
+						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers</option>
+						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
+						<option value="has_clinical_trials_true">With clinical trials</option>
+						<option value="has_clinical_trials_false">Without clinical trials</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-auto d-flex align-items-end">
+					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-context="{{ $contextTitle }}">Search</button>
+				</div>
+				<div class="col-6 col-md-auto d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+			{{- end }}
 			{{- if $advanced }}
 			<!-- Row 2: advanced filters (author, open-access, date range) -->
 			<div class="row g-2 align-items-end mt-2">
@@ -244,10 +289,34 @@
 				{{/* chips populated by JS from state.categories */}}
 			</div>
 		</div>
+		{{- if $advanced }}
+		{{- if $conditionPagesMobile }}
 		<div class="sheet-group">
-			<div class="sheet-group-label">{{ if $advanced }}Condition / Research area{{ else }}Intersect with{{ end }}</div>
-			<div class="sheet-chips" id="papers-sheet-subjects"{{ if $advanced }} data-multi="true"{{ end }}>
-				<button type="button" class="sheet-chip{{ if not $advanced }} active{{ end }}" data-value="">{{ if $advanced }}Clear selection{{ else }}All subjects{{ end }}</button>
+			<div class="sheet-group-label">Condition</div>
+			<div class="sheet-chips" id="papers-sheet-conditions" data-multi="true">
+				<button type="button" class="sheet-chip" data-value="">Clear</button>
+				{{- range $conditionPagesMobile }}
+				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+				{{- end }}
+			</div>
+		</div>
+		{{- end }}
+		{{- if $researchAreaPagesMobile }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Research area</div>
+			<div class="sheet-chips" id="papers-sheet-research-areas" data-multi="true">
+				<button type="button" class="sheet-chip" data-value="">Clear</button>
+				{{- range $researchAreaPagesMobile }}
+				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+				{{- end }}
+			</div>
+		</div>
+		{{- end }}
+		{{- else }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Intersect with</div>
+			<div class="sheet-chips" id="papers-sheet-subjects">
+				<button type="button" class="sheet-chip active" data-value="">All subjects</button>
 				{{- range $conditionPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
@@ -256,6 +325,7 @@
 				{{- end }}
 			</div>
 		</div>
+		{{- end }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Sort by</div>
 			<div class="sheet-chips" id="papers-sheet-sort">

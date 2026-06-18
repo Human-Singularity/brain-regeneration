@@ -22,8 +22,10 @@
 	// ── UI references ────────────────────────────────────────────────────────
 	var searchInput      = document.getElementById('papers-search-input');
 	var categorySelect   = document.getElementById('papers-category-select');
-	var subjectsSelect   = document.getElementById('papers-subject-select');
-	var subjectsMulti    = document.getElementById('papers-subjects-multi');
+	var subjectsSelect       = document.getElementById('papers-subject-select');
+	var subjectsMulti        = document.getElementById('papers-subjects-multi');
+	var conditionsSelect     = document.getElementById('papers-conditions-select');
+	var researchAreasSelect  = document.getElementById('papers-research-areas-select');
 	var sortSelect       = document.getElementById('papers-sort-select');
 	var relevantSelect   = document.getElementById('papers-relevant-select');
 	var searchBtn        = document.getElementById('papers-search-btn');
@@ -215,12 +217,13 @@
 				relevantSelect.value = String(state.relevant);
 			}
 		}
-		// Single vs multi subject select
-		if (subjectsMulti) {
-			var ids = (state.subjects || '').split(',').filter(Boolean);
-			Array.from(subjectsMulti.options).forEach(function (opt) {
-				opt.selected = ids.indexOf(opt.value) !== -1;
-			});
+		// Subject selects: split (advanced) or combined
+		var subjectIds = (state.subjects || '').split(',').filter(Boolean);
+		if (conditionsSelect || researchAreasSelect) {
+			if (conditionsSelect)    Array.from(conditionsSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
+			if (researchAreasSelect) Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
+		} else if (subjectsMulti) {
+			Array.from(subjectsMulti.options).forEach(function (opt) { opt.selected = subjectIds.indexOf(opt.value) !== -1; });
 		} else if (subjectsSelect) {
 			subjectsSelect.value = state.subjects;
 		}
@@ -782,9 +785,14 @@
 	// ── Event listeners ────────────────────────────────────────────────────
 
 	function readSubjectsFromControls() {
+		if (conditionsSelect || researchAreasSelect) {
+			var ids = [];
+			if (conditionsSelect)    Array.from(conditionsSelect.selectedOptions    || []).forEach(function (o) { if (o.value) ids.push(o.value); });
+			if (researchAreasSelect) Array.from(researchAreasSelect.selectedOptions || []).forEach(function (o) { if (o.value) ids.push(o.value); });
+			return ids.join(',');
+		}
 		if (subjectsMulti) {
-			var sel = Array.from(subjectsMulti.selectedOptions || []).map(function (o) { return o.value; }).filter(Boolean);
-			return sel.join(',');
+			return Array.from(subjectsMulti.selectedOptions || []).map(function (o) { return o.value; }).filter(Boolean).join(',');
 		}
 		return subjectsSelect ? subjectsSelect.value : '';
 	}
@@ -856,6 +864,20 @@
 			fetchPage(1, false);
 		});
 	}
+	if (conditionsSelect) {
+		conditionsSelect.addEventListener('change', function () {
+			state.subjects = readSubjectsFromControls();
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
+	if (researchAreasSelect) {
+		researchAreasSelect.addEventListener('change', function () {
+			state.subjects = readSubjectsFromControls();
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
 
 	if (openAccessCheck) {
 		openAccessCheck.addEventListener('change', function () {
@@ -896,8 +918,10 @@
 			state.openAccess        = false;
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
-			if (subjectsSelect)  subjectsSelect.value  = '';
-			if (subjectsMulti)   Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; });
+			if (subjectsSelect)      subjectsSelect.value  = '';
+			if (subjectsMulti)       Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; });
+			if (conditionsSelect)    Array.from(conditionsSelect.options).forEach(function (o) { o.selected = false; });
+			if (researchAreasSelect) Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = false; });
 			if (sortSelect)      sortSelect.value      = 'date';
 			if (relevantSelect)  relevantSelect.value  = String(requireRelevant);
 			if (authorInput)     authorInput.value     = '';
@@ -1049,13 +1073,20 @@
 		else                                        showVal = String(draft.relevant);
 		setActiveChip('papers-sheet-show', showVal);
 
-		// Subjects: multi-select if data-multi attribute present, else single
+		// Subjects: split condition/research-area groups (advanced) or combined (standard)
+		var activeSubjectIds = (draft.subjects || '').split(',').filter(Boolean);
+		['papers-sheet-conditions', 'papers-sheet-research-areas'].forEach(function (gid) {
+			var grp = document.getElementById(gid);
+			if (!grp) return;
+			grp.querySelectorAll('.sheet-chip').forEach(function (chip) {
+				chip.classList.toggle('active', Boolean(chip.dataset.value) && activeSubjectIds.indexOf(chip.dataset.value) !== -1);
+			});
+		});
 		var subjectsGroup = document.getElementById('papers-sheet-subjects');
 		if (subjectsGroup) {
 			if (subjectsGroup.dataset.multi === 'true') {
-				var activeIds = (draft.subjects || '').split(',').filter(Boolean);
 				subjectsGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
-					chip.classList.toggle('active', Boolean(chip.dataset.value) && activeIds.indexOf(chip.dataset.value) !== -1);
+					chip.classList.toggle('active', Boolean(chip.dataset.value) && activeSubjectIds.indexOf(chip.dataset.value) !== -1);
 				});
 			} else {
 				setActiveChip('papers-sheet-subjects', draft.subjects);
@@ -1134,10 +1165,14 @@
 
 	function subjectLabel(id) {
 		if (!id) return '';
-		var group = document.getElementById('papers-sheet-subjects');
-		if (!group) return id;
-		var chip = group.querySelector('.sheet-chip[data-value="' + id + '"]');
-		return chip ? chip.textContent.trim() : id;
+		var groupIds = ['papers-sheet-conditions', 'papers-sheet-research-areas', 'papers-sheet-subjects'];
+		for (var gi = 0; gi < groupIds.length; gi++) {
+			var grp = document.getElementById(groupIds[gi]);
+			if (!grp) continue;
+			var chip = grp.querySelector('.sheet-chip[data-value="' + id + '"]');
+			if (chip) return chip.textContent.trim();
+		}
+		return id;
 	}
 
 	function buildToken(label, filterKey) {
@@ -1157,7 +1192,12 @@
 
 	function removeToken(filterKey) {
 		if (filterKey === 'category')    { state.category = ''; hideCategoryPanel(); }
-		else if (filterKey === 'subjects') { state.subjects = ''; if (subjectsMulti) Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; }); }
+		else if (filterKey === 'subjects') {
+			state.subjects = '';
+			if (conditionsSelect)    Array.from(conditionsSelect.options).forEach(function (o) { o.selected = false; });
+			if (researchAreasSelect) Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = false; });
+			if (subjectsMulti)       Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; });
+		}
 		else if (filterKey === 'sort')     state.sort = 'date';
 		else if (filterKey === 'author')   { state.authorId = ''; if (authorInput) authorInput.value = ''; if (authorHidden) authorHidden.value = ''; }
 		else if (filterKey === 'oa')       { state.openAccess = false; if (openAccessCheck) openAccessCheck.checked = false; }
@@ -1283,6 +1323,33 @@
 			removeToken(token.dataset.filter);
 		});
 	}
+
+	// Multi-chip groups that both contribute to draft.subjects (advanced mode)
+	function wireSubjectChipGroup(groupId) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		var groupVals = Array.from(group.querySelectorAll('.sheet-chip[data-value]'))
+			.map(function (c) { return c.dataset.value; }).filter(Boolean);
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.sheet-chip');
+			if (!chip) return;
+			var v = chip.dataset.value;
+			var cur = (draft.subjects || '').split(',').filter(Boolean);
+			if (!v) {
+				// Clear button: remove all IDs from this group out of draft.subjects
+				draft.subjects = cur.filter(function (id) { return groupVals.indexOf(id) === -1; }).join(',');
+				group.querySelectorAll('.sheet-chip').forEach(function (c) { c.classList.remove('active'); });
+			} else {
+				chip.classList.toggle('active');
+				var idx = cur.indexOf(v);
+				if (chip.classList.contains('active')) { if (idx === -1) cur.push(v); }
+				else                                   { if (idx !== -1) cur.splice(idx, 1); }
+				draft.subjects = cur.join(',');
+			}
+		});
+	}
+	wireSubjectChipGroup('papers-sheet-conditions');
+	wireSubjectChipGroup('papers-sheet-research-areas');
 
 	wireChipGroup('papers-sheet-category', function (val) { draft.category = val; });
 	wireChipGroup('papers-sheet-subjects',  function (val) { draft.subjects = val; });
