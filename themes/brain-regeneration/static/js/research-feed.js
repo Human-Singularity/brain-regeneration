@@ -1,5 +1,5 @@
 /* research-feed.js — Research papers feed for conditions, research-area, and advanced-search pages.
- * Fetches from api.brain-regeneration.com/articles/ and /articles/search/.
+ * Fetches from api.brain-regeneration.com/articles/ (search via ?search= param).
  * Supports: category filter (server-side), text search (server-side),
  * server-side ordering, URL state, ML/expert scores, CSV download, pagination,
  * mobile bottom-sheet filter UI, author typeahead, open-access filter,
@@ -17,7 +17,6 @@
 	var requireRelevant  = mount.dataset.requireRelevant  !== 'false';
 
 	var articlesEndpoint = apiBase.replace(/\/$/, '') + '/articles/';
-	var searchEndpoint   = apiBase.replace(/\/$/, '') + '/articles/search/';
 
 	// ── UI references ────────────────────────────────────────────────────────
 	var searchInput      = document.getElementById('papers-search-input');
@@ -257,7 +256,7 @@
 	}
 
 	function buildURL(page) {
-		var base = state.keyword ? searchEndpoint : articlesEndpoint;
+		var base = articlesEndpoint;
 		var url  = new URL(base);
 		url.searchParams.set('format',     'json');
 		if (teamId)           url.searchParams.set('team_id',       teamId);
@@ -280,7 +279,7 @@
 	}
 
 	function buildCSVAllURL() {
-		var base = state.keyword ? searchEndpoint : articlesEndpoint;
+		var base = articlesEndpoint;
 		var url  = new URL(base);
 		url.searchParams.set('format',      'csv');
 		url.searchParams.set('all_results', 'true');
