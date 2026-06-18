@@ -1157,10 +1157,10 @@
 
 	function removeToken(filterKey) {
 		if (filterKey === 'category')    { state.category = ''; hideCategoryPanel(); }
-		else if (filterKey === 'subjects') state.subjects = '';
+		else if (filterKey === 'subjects') { state.subjects = ''; if (subjectsMulti) Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; }); }
 		else if (filterKey === 'sort')     state.sort = 'date';
 		else if (filterKey === 'author')   { state.authorId = ''; if (authorInput) authorInput.value = ''; if (authorHidden) authorHidden.value = ''; }
-		else if (filterKey === 'oa')       state.openAccess = false;
+		else if (filterKey === 'oa')       { state.openAccess = false; if (openAccessCheck) openAccessCheck.checked = false; }
 		else if (filterKey === 'show') {
 			state.relevant = requireRelevant;
 			state.hasClinicalTrials = null;
@@ -1314,9 +1314,12 @@
 					.then(function (data) {
 						var authors = data.results || [];
 						if (authors.length > 0) {
-							// Auto-select first match if exact; otherwise keep for display
-							draft.authorId = String(authors[0].author_id);
-							if (sheetAuthorId) sheetAuthorId.value = draft.authorId;
+							var a0 = authors[0];
+							var fullName = (a0.full_name || ((a0.first_name || '') + ' ' + (a0.last_name || '')).trim()).trim().toLowerCase();
+							if (q.toLowerCase() === fullName) {
+								draft.authorId = String(a0.author_id);
+								if (sheetAuthorId) sheetAuthorId.value = draft.authorId;
+							}
 						}
 					})
 					.catch(function () {});
