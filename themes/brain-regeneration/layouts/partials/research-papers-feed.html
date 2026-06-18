@@ -47,14 +47,39 @@
 			{{- end -}}
 			{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
 			{{- if $advanced }}
-			<!-- Row 0: full-width search (advanced mode) -->
+			<!-- Row 0: primary scope selectors (condition / research area) -->
+			<div class="row g-2 align-items-end mb-2">
+				{{- if $conditionPages }}
+				<div class="col-12 col-md-4">
+					<label for="papers-conditions-select">Condition</label>
+					<select class="form-select" id="papers-conditions-select">
+						<option value="">All conditions</option>
+						{{- range $conditionPages }}
+						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+						{{- end }}
+					</select>
+				</div>
+				{{- end }}
+				{{- if $researchAreaPages }}
+				<div class="col-12 col-md-4">
+					<label for="papers-research-areas-select">Research area</label>
+					<select class="form-select" id="papers-research-areas-select">
+						<option value="">All research areas</option>
+						{{- range $researchAreaPages }}
+						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+						{{- end }}
+					</select>
+				</div>
+				{{- end }}
+			</div>
+			<!-- Row 1: full-width search -->
 			<div class="row g-2 align-items-end mb-2">
 				<div class="col-12">
 					<label for="papers-search-input">Search papers</label>
 					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
 				</div>
 			</div>
-			<!-- Row 1: filter selects + action buttons (advanced) -->
+			<!-- Row 2: secondary filters + action buttons -->
 			<div class="row g-2 align-items-end">
 				<div class="col-12 col-md-2">
 					<label for="papers-category-select">Category</label>
@@ -62,28 +87,6 @@
 						<option value="">All categories</option>
 					</select>
 				</div>
-				{{- if $conditionPages }}
-				<div class="col-12 col-md-2">
-					<label for="papers-conditions-select">Condition</label>
-					<select class="form-select" id="papers-conditions-select" multiple size="4" style="height: auto;">
-						{{- range $conditionPages }}
-						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-						{{- end }}
-					</select>
-					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
-				</div>
-				{{- end }}
-				{{- if $researchAreaPages }}
-				<div class="col-12 col-md-2">
-					<label for="papers-research-areas-select">Research area</label>
-					<select class="form-select" id="papers-research-areas-select" multiple size="4" style="height: auto;">
-						{{- range $researchAreaPages }}
-						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-						{{- end }}
-					</select>
-					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
-				</div>
-				{{- end }}
 				<div class="col-12 col-md-2">
 					<label for="papers-sort-select">Sort by</label>
 					<select class="form-select" id="papers-sort-select">
@@ -293,8 +296,8 @@
 		{{- if $conditionPagesMobile }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Condition</div>
-			<div class="sheet-chips" id="papers-sheet-conditions" data-multi="true">
-				<button type="button" class="sheet-chip" data-value="">Clear</button>
+			<div class="sheet-chips" id="papers-sheet-conditions">
+				<button type="button" class="sheet-chip active" data-value="">All conditions</button>
 				{{- range $conditionPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
@@ -304,8 +307,8 @@
 		{{- if $researchAreaPagesMobile }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Research area</div>
-			<div class="sheet-chips" id="papers-sheet-research-areas" data-multi="true">
-				<button type="button" class="sheet-chip" data-value="">Clear</button>
+			<div class="sheet-chips" id="papers-sheet-research-areas">
+				<button type="button" class="sheet-chip active" data-value="">All research areas</button>
 				{{- range $researchAreaPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
