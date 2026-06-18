@@ -23,10 +23,10 @@
 <div class="section-tabs">
 	<div class="container">
 		<nav class="section-tabs-nav">
-			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Clinical Trials</a>
 			{{ if $rpPage }}
 			<a href="{{ $rpPage.RelPermalink }}" class="section-tab">Research Papers</a>
 			{{ end }}
+			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Clinical Trials</a>
 		</nav>
 	</div>
 </div>
