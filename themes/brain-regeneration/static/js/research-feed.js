@@ -41,6 +41,8 @@
 	var authorHidden       = document.getElementById('papers-author-id');
 	var authorSuggestions  = document.getElementById('papers-author-suggestions');
 	var openAccessCheck    = document.getElementById('papers-open-access');
+	var dateFromInput      = document.getElementById('papers-date-from');
+	var dateToInput        = document.getElementById('papers-date-to');
 
 	var firstBtn         = document.getElementById('papers-first-btn');
 	var prevBtn          = document.getElementById('papers-prev-btn');
@@ -62,6 +64,8 @@
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
 		authorId:           '',   // author_id filter
 		openAccess:         false, // open_access=true filter
+		dateFrom:           '',
+		dateTo:             '',
 		results:            [],   // current page articles
 		categories:         [],   // flat list (populated from category_groups or data-categories)
 		categoryGroups:     [],   // grouped list (populated from data-category-groups)
@@ -178,6 +182,8 @@
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
 		state.authorId           = params.get('author_id')  || '';
 		state.openAccess         = params.get('open_access') === 'true';
+		state.dateFrom           = params.get('date_from')   || '';
+		state.dateTo             = params.get('date_to')     || '';
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
@@ -191,6 +197,8 @@
 		if (state.hasClinicalTrials !== null) params.set('has_clinical_trials',  String(state.hasClinicalTrials));
 		if (state.authorId)                   params.set('author_id',            state.authorId);
 		if (state.openAccess)                 params.set('open_access',          'true');
+		if (state.dateFrom)                   params.set('date_from',            state.dateFrom);
+		if (state.dateTo)                     params.set('date_to',              state.dateTo);
 		if (state.page > 1)                   params.set('page',                 String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
@@ -227,8 +235,10 @@
 		} else if (subjectsSelect) {
 			subjectsSelect.value = state.subjects;
 		}
-		if (authorHidden)    authorHidden.value   = state.authorId;
+		if (authorHidden)    authorHidden.value      = state.authorId;
 		if (openAccessCheck) openAccessCheck.checked = state.openAccess;
+		if (dateFromInput)   dateFromInput.value     = state.dateFrom;
+		if (dateToInput)     dateToInput.value       = state.dateTo;
 		renderCategoryPanel();
 	}
 
@@ -257,6 +267,8 @@
 		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
 		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
 		if (state.openAccess) url.searchParams.set('open_access',   'true');
+		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
+		if (state.dateTo)     url.searchParams.set('published_date_before', state.dateTo);
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -278,7 +290,9 @@
 		if (state.category)   url.searchParams.set('category_id',   state.category);
 		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
 		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
-		if (state.openAccess) url.searchParams.set('open_access',   'true');
+		if (state.openAccess) url.searchParams.set('open_access',          'true');
+		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
+		if (state.dateTo)     url.searchParams.set('published_date_before', state.dateTo);
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -803,6 +817,8 @@
 		state.category  = categorySelect ? categorySelect.value        : '';
 		state.subjects  = readSubjectsFromControls();
 		if (openAccessCheck) state.openAccess = openAccessCheck.checked;
+		if (dateFromInput) state.dateFrom = dateFromInput.value;
+		if (dateToInput)   state.dateTo   = dateToInput.value;
 		state.page      = 1;
 		renderCategoryPanel();
 		if (!state.category) hideCategoryPanel();
@@ -888,6 +904,21 @@
 		});
 	}
 
+	if (dateFromInput) {
+		dateFromInput.addEventListener('change', function () {
+			state.dateFrom = this.value;
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
+	if (dateToInput) {
+		dateToInput.addEventListener('change', function () {
+			state.dateTo = this.value;
+			state.page   = 1;
+			fetchPage(1, false);
+		});
+	}
+
 	if (relevantSelect) {
 		relevantSelect.addEventListener('change', function () {
 			var val = this.value;
@@ -917,6 +948,8 @@
 			state.hasClinicalTrials = null;
 			state.authorId          = '';
 			state.openAccess        = false;
+			state.dateFrom          = '';
+			state.dateTo            = '';
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
 			if (subjectsSelect)      subjectsSelect.value  = '';
@@ -928,6 +961,8 @@
 			if (authorInput)     authorInput.value     = '';
 			if (authorHidden)    authorHidden.value    = '';
 			if (openAccessCheck) openAccessCheck.checked = false;
+			if (dateFromInput)   dateFromInput.value   = '';
+			if (dateToInput)     dateToInput.value     = '';
 			hideAuthorSuggestions();
 			hideCategoryPanel();
 			fetchPage(1, false);
@@ -1208,6 +1243,12 @@
 		else if (filterKey === 'sort')     state.sort = 'date';
 		else if (filterKey === 'author')   { state.authorId = ''; if (authorInput) authorInput.value = ''; if (authorHidden) authorHidden.value = ''; }
 		else if (filterKey === 'oa')       { state.openAccess = false; if (openAccessCheck) openAccessCheck.checked = false; }
+		else if (filterKey === 'dateRange') {
+			state.dateFrom = '';
+			state.dateTo   = '';
+			if (dateFromInput) dateFromInput.value = '';
+			if (dateToInput)   dateToInput.value   = '';
+		}
 		else if (filterKey === 'show') {
 			state.relevant = requireRelevant;
 			state.hasClinicalTrials = null;
@@ -1265,6 +1306,11 @@
 			tokenStrip.appendChild(buildToken('Full feed', 'show'));
 			hasTokens = true;
 		}
+		if (state.dateFrom || state.dateTo) {
+			var dateLabel = 'Date: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…');
+			tokenStrip.appendChild(buildToken(dateLabel, 'dateRange'));
+			hasTokens = true;
+		}
 
 		if (addChip) tokenStrip.appendChild(addChip);
 		tokenStrip.hidden = !hasTokens;
@@ -1281,6 +1327,7 @@
 		if (state.sort && state.sort !== 'date') count++;
 		if (state.hasClinicalTrials !== null) count++;
 		else if (state.relevant !== requireRelevant) count++;
+		if (state.dateFrom || state.dateTo) count++;
 
 		if (!fabCount) return;
 		fabCount.textContent = String(count);

@@ -23,6 +23,8 @@
 	var filterHasResults  = document.getElementById('filter-has-results');
 	var filterStudyType   = document.getElementById('filter-study-type');
 	var filterSubjects    = document.getElementById('filter-subjects');
+	var filterDateFrom    = document.getElementById('filter-date-from');
+	var filterDateTo      = document.getElementById('filter-date-to');
 	var sortOrder         = document.getElementById('sort-order');
 	var resetBtn          = document.getElementById('reset-filters');
 	var clearBtn        = document.getElementById('clear-filters');
@@ -52,6 +54,8 @@
 		hasResults:  false,
 		subjects:    '',
 		studyType:   '',
+		dateFrom:    '',
+		dateTo:      '',
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -114,7 +118,9 @@
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		if (state.subjects)    url.searchParams.set('subjects',            state.subjects);
-		if (state.studyType)   url.searchParams.set('study_type',          state.studyType);
+		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
+		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
+		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
 		url.searchParams.set('ordering', state.sort);
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -341,6 +347,8 @@
 		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
 		state.subjects     = filterSubjects  ? Array.from(filterSubjects.selectedOptions).map(function (o) { return o.value; }).join(',') : '';
 		state.studyType    = filterStudyType ? filterStudyType.value : '';
+		state.dateFrom     = filterDateFrom  ? filterDateFrom.value  : '';
+		state.dateTo       = filterDateTo    ? filterDateTo.value    : '';
 		fetchPage(1);
 	}
 
@@ -388,6 +396,8 @@
 	if (filterSubjects) {
 		filterSubjects.addEventListener('change', applyFilters);
 	}
+	if (filterDateFrom) filterDateFrom.addEventListener('change', applyFilters);
+	if (filterDateTo)   filterDateTo.addEventListener('change', applyFilters);
 	function resetAll() {
 		state.keyword      = '';
 		state.identifiers  = '';
@@ -399,6 +409,8 @@
 		state.hasResults   = false;
 		state.subjects     = '';
 		state.studyType    = '';
+		state.dateFrom     = '';
+		state.dateTo       = '';
 		if (searchInput)       searchInput.value        = '';
 		if (filterIdentifiers) filterIdentifiers.value  = '';
 		if (filterAcronym)     filterAcronym.value      = '';
@@ -409,6 +421,8 @@
 		if (filterHasResults)  filterHasResults.checked = false;
 		if (filterStudyType)   filterStudyType.value    = '';
 		if (filterSubjects)    Array.from(filterSubjects.options).forEach(function (o) { o.selected = false; });
+		if (filterDateFrom)    filterDateFrom.value     = '';
+		if (filterDateTo)      filterDateTo.value       = '';
 		fetchPage(1);
 	}
 
@@ -445,8 +459,10 @@
 		if (state.status)      url.searchParams.set('recruitment_status', state.status);
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',  'true');
-		if (state.subjects)    url.searchParams.set('subjects',     state.subjects);
-		if (state.studyType)   url.searchParams.set('study_type',   state.studyType);
+		if (state.subjects)    url.searchParams.set('subjects',                state.subjects);
+		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
+		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
+		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
 		url.searchParams.set('ordering', state.sort);
 		if (allResults) {
 			url.searchParams.set('all_results', 'true');
@@ -687,6 +703,7 @@
 		if (filterKey === 'acronym')     state.acronym = '';
 		if (filterKey === 'subjects')    state.subjects = '';
 		if (filterKey === 'studyType')   state.studyType = '';
+		if (filterKey === 'dateRange')   { state.dateFrom = ''; state.dateTo = ''; }
 		// Sync desktop controls
 		if (filterPhase)       filterPhase.value        = state.phase;
 		if (filterStatus)      filterStatus.value       = state.status;
@@ -696,6 +713,8 @@
 		if (filterAcronym)     filterAcronym.value      = state.acronym;
 		if (filterStudyType)   filterStudyType.value    = state.studyType;
 		if (filterSubjects)    Array.from(filterSubjects.options).forEach(function (o) { o.selected = state.subjects && state.subjects.split(',').indexOf(o.value) !== -1; });
+		if (filterDateFrom)    filterDateFrom.value     = state.dateFrom;
+		if (filterDateTo)      filterDateTo.value       = state.dateTo;
 		fetchPage(1);
 		renderTrialsTokens();
 	}
@@ -765,6 +784,11 @@
 			trialsTokenStrip.appendChild(buildTrialsToken('With results', 'hasResults'));
 			hasTokens = true;
 		}
+		if (state.dateFrom || state.dateTo) {
+			var dateLabel = 'Date: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…');
+			trialsTokenStrip.appendChild(buildTrialsToken(dateLabel, 'dateRange'));
+			hasTokens = true;
+		}
 
 		if (addChip) trialsTokenStrip.appendChild(addChip);
 		trialsTokenStrip.hidden = !hasTokens;
@@ -782,6 +806,7 @@
 		if (state.hasResults) count++;
 		if (state.subjects)   count++;
 		if (state.studyType)  count++;
+		if (state.dateFrom || state.dateTo) count++;
 		if (!trialsFabCount) return;
 		trialsFabCount.textContent = String(count);
 		trialsFabCount.hidden = count === 0;
