@@ -5,3 +5,6 @@
 
 # Redirect bare condition pages to their clinical-trials subpage
 /conditions/:condition/  /conditions/:condition/clinical-trials/  301
+
+# Redirect old research-papers search URL to the new section root
+/search/research-papers/  /search/  301

@@ -1,7 +1,7 @@
 {{ define "main" }}
 
-{{/* Resolve the parent search section page (the Clinical Trials tab) */}}
-{{ $searchPage := .Parent }}
+{{/* Find the clinical-trials child page within this section */}}
+{{ $trialsPage := index (where .Pages "Params.layout" "single") 0 }}
 
 <!-- ── BREADCRUMB ── -->
 <div class="breadcrumb-nav-dark">
@@ -25,7 +25,9 @@
 	<div class="container">
 		<nav class="section-tabs-nav">
 			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers</a>
-			<a href="{{ $searchPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
+			{{ if $trialsPage }}
+			<a href="{{ $trialsPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
+			{{ end }}
 		</nav>
 	</div>
 </div>

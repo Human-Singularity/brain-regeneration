@@ -18,8 +18,8 @@
 </section>
 
 <!-- ── SECTION TABS ── -->
-{{/* Find the research-papers sibling within this section */}}
-{{ $rpPage := index (where .Pages "Params.layout" "research-papers") 0 }}
+{{/* The parent section page is the Research Papers page */}}
+{{ $rpPage := .Parent }}
 <div class="section-tabs">
 	<div class="container">
 		<nav class="section-tabs-nav">

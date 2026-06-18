@@ -1,14 +1,14 @@
 ---
 title: "Advanced Search"
-layout: single
+layout: research-papers
 url: /search/
 date: 2025-06-18
 draft: false
 
-description: "Search clinical trials and research papers across all conditions and research areas tracked by the Brain Regeneration Observatory."
-hero_description: "Search all clinical trials tracked across multiple sclerosis, Alzheimer's, Parkinson's, and every research area in the Observatory."
+description: "Search research papers and clinical trials across all conditions and research areas tracked by the Brain Regeneration Observatory."
+hero_description: "Search across 45,000+ research papers tracked by the Observatory — filter by category, author, access type, and more."
 
 api:
-  endpoint: "https://api.brain-regeneration.com/trials/"
+  endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 1
 ---
