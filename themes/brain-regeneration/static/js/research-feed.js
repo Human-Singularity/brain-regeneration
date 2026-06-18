@@ -1,8 +1,9 @@
-/* research-feed.js — Research papers feed for conditions and research-area pages.
+/* research-feed.js — Research papers feed for conditions, research-area, and advanced-search pages.
  * Fetches from api.brain-regeneration.com/articles/ and /articles/search/.
  * Supports: category filter (server-side), text search (server-side),
  * server-side ordering, URL state, ML/expert scores, CSV download, pagination,
- * and a mobile bottom-sheet filter UI.
+ * mobile bottom-sheet filter UI, author typeahead, open-access filter,
+ * multi-subject intersect, and site-wide category fetch.
  */
 (function () {
 	'use strict';
@@ -22,6 +23,7 @@
 	var searchInput      = document.getElementById('papers-search-input');
 	var categorySelect   = document.getElementById('papers-category-select');
 	var subjectsSelect   = document.getElementById('papers-subject-select');
+	var subjectsMulti    = document.getElementById('papers-subjects-multi');
 	var sortSelect       = document.getElementById('papers-sort-select');
 	var relevantSelect   = document.getElementById('papers-relevant-select');
 	var searchBtn        = document.getElementById('papers-search-btn');
@@ -32,6 +34,11 @@
 	var categoryPanelName = document.getElementById('category-panel-name');
 	var categoryPanelDesc = document.getElementById('category-panel-description');
 	var categoryPanelSparkline = document.getElementById('category-panel-sparkline');
+
+	var authorInput        = document.getElementById('papers-author-input');
+	var authorHidden       = document.getElementById('papers-author-id');
+	var authorSuggestions  = document.getElementById('papers-author-suggestions');
+	var openAccessCheck    = document.getElementById('papers-open-access');
 
 	var firstBtn         = document.getElementById('papers-first-btn');
 	var prevBtn          = document.getElementById('papers-prev-btn');
@@ -51,6 +58,8 @@
 		sort:               'date',
 		relevant:           requireRelevant,  // true = curated feed, false = full feed
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
+		authorId:           '',   // author_id filter
+		openAccess:         false, // open_access=true filter
 		results:            [],   // current page articles
 		categories:         [],   // flat list (populated from category_groups or data-categories)
 		categoryGroups:     [],   // grouped list (populated from data-category-groups)
@@ -150,16 +159,23 @@
 		return new Date().toISOString().slice(0, 10);
 	}
 
+	function debounce(fn, ms) {
+		var t;
+		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+	}
+
 	// ── URL state ──────────────────────────────────────────────────────────
 
 	function readURL() {
 		var params = new URLSearchParams(window.location.search);
-		state.keyword            = params.get('q')        || '';
-		state.category           = params.get('category') || '';
-		state.subjects           = params.get('subjects') || '';
-		state.sort               = params.get('sort')     || 'date';
+		state.keyword            = params.get('q')          || '';
+		state.category           = params.get('category')   || '';
+		state.subjects           = params.get('subjects')   || '';
+		state.sort               = params.get('sort')       || 'date';
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
+		state.authorId           = params.get('author_id')  || '';
+		state.openAccess         = params.get('open_access') === 'true';
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
@@ -171,6 +187,8 @@
 		params.set('sort',                    state.sort);
 		params.set('relevant',                String(state.relevant));
 		if (state.hasClinicalTrials !== null) params.set('has_clinical_trials',  String(state.hasClinicalTrials));
+		if (state.authorId)                   params.set('author_id',            state.authorId);
+		if (state.openAccess)                 params.set('open_access',          'true');
 		if (state.page > 1)                   params.set('page',                 String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
@@ -189,7 +207,6 @@
 	function syncUIFromState() {
 		if (searchInput)    searchInput.value    = state.keyword;
 		if (categorySelect) categorySelect.value = state.category;
-		if (subjectsSelect) subjectsSelect.value = state.subjects;
 		if (sortSelect)     sortSelect.value     = state.sort;
 		if (relevantSelect) {
 			if (state.hasClinicalTrials !== null) {
@@ -198,6 +215,17 @@
 				relevantSelect.value = String(state.relevant);
 			}
 		}
+		// Single vs multi subject select
+		if (subjectsMulti) {
+			var ids = (state.subjects || '').split(',').filter(Boolean);
+			Array.from(subjectsMulti.options).forEach(function (opt) {
+				opt.selected = ids.indexOf(opt.value) !== -1;
+			});
+		} else if (subjectsSelect) {
+			subjectsSelect.value = state.subjects;
+		}
+		if (authorHidden)    authorHidden.value   = state.authorId;
+		if (openAccessCheck) openAccessCheck.checked = state.openAccess;
 		renderCategoryPanel();
 	}
 
@@ -219,11 +247,13 @@
 		var base = state.keyword ? searchEndpoint : articlesEndpoint;
 		var url  = new URL(base);
 		url.searchParams.set('format',     'json');
-		if (teamId)         url.searchParams.set('team_id',       teamId);
-		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
-		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_id',   state.category);
-		if (state.subjects) url.searchParams.set('subjects',      state.subjects);
+		if (teamId)           url.searchParams.set('team_id',       teamId);
+		if (subjectId)        url.searchParams.set('subject_id',    subjectId);
+		if (state.keyword)    url.searchParams.set('search',        state.keyword);
+		if (state.category)   url.searchParams.set('category_id',   state.category);
+		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
+		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
+		if (state.openAccess) url.searchParams.set('open_access',   'true');
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -239,11 +269,13 @@
 		var url  = new URL(base);
 		url.searchParams.set('format',      'csv');
 		url.searchParams.set('all_results', 'true');
-		if (teamId)         url.searchParams.set('team_id',       teamId);
-		if (subjectId)      url.searchParams.set('subject_id',    subjectId);
-		if (state.keyword)  url.searchParams.set('search',        state.keyword);
-		if (state.category) url.searchParams.set('category_id',   state.category);
-		if (state.subjects) url.searchParams.set('subjects',      state.subjects);
+		if (teamId)           url.searchParams.set('team_id',       teamId);
+		if (subjectId)        url.searchParams.set('subject_id',    subjectId);
+		if (state.keyword)    url.searchParams.set('search',        state.keyword);
+		if (state.category)   url.searchParams.set('category_id',   state.category);
+		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
+		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
+		if (state.openAccess) url.searchParams.set('open_access',   'true');
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -288,6 +320,7 @@
 	function buildExpertBadge(relevances) {
 		if (!relevances || !relevances.length) return '';
 		var sid = parseInt(subjectId, 10);
+		if (!sid) return ''; // site-wide: no single subject to check
 		var found = relevances.some(function (r) {
 			return r.subject && r.subject.id === sid && r.is_relevant === true;
 		});
@@ -686,13 +719,82 @@
 		setTimeout(function () { document.body.removeChild(a); }, 200);
 	}
 
+	// ── Author typeahead ───────────────────────────────────────────────────
+
+	function hideAuthorSuggestions() {
+		if (authorSuggestions) authorSuggestions.hidden = true;
+	}
+
+	function showAuthorSuggestions(authors) {
+		if (!authorSuggestions) return;
+		if (!authors.length) { hideAuthorSuggestions(); return; }
+		var html = authors.map(function (a) {
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '">' +
+				escHtml(a.full_name) +
+			'</button>';
+		}).join('');
+		authorSuggestions.innerHTML = html;
+		authorSuggestions.hidden = false;
+	}
+
+	var authorDebounceTimer;
+	if (authorInput) {
+		authorInput.addEventListener('input', function () {
+			var q = authorInput.value.trim();
+			if (authorHidden) authorHidden.value = '';
+			state.authorId = '';
+			clearTimeout(authorDebounceTimer);
+			hideAuthorSuggestions();
+			if (q.length < 2) return;
+			authorDebounceTimer = setTimeout(function () {
+				var aUrl = new URL(apiBase.replace(/\/$/, '') + '/authors/');
+				aUrl.searchParams.set('search', q);
+				if (teamId) aUrl.searchParams.set('team_id', teamId);
+				aUrl.searchParams.set('format', 'json');
+				aUrl.searchParams.set('page_size', '8');
+				fetch(aUrl.toString())
+					.then(function (r) { return r.json(); })
+					.then(function (data) { showAuthorSuggestions(data.results || []); })
+					.catch(hideAuthorSuggestions);
+			}, 300);
+		});
+
+		if (authorSuggestions) {
+			authorSuggestions.addEventListener('click', function (e) {
+				var item = e.target.closest('.author-suggestion-item');
+				if (!item) return;
+				state.authorId = item.dataset.id || '';
+				if (authorHidden) authorHidden.value = state.authorId;
+				authorInput.value = item.textContent.trim();
+				hideAuthorSuggestions();
+				state.page = 1;
+				fetchPage(1, false);
+			});
+		}
+
+		document.addEventListener('click', function (e) {
+			if (authorSuggestions && !authorInput.contains(e.target) && !authorSuggestions.contains(e.target)) {
+				hideAuthorSuggestions();
+			}
+		});
+	}
+
 	// ── Event listeners ────────────────────────────────────────────────────
 
+	function readSubjectsFromControls() {
+		if (subjectsMulti) {
+			var sel = Array.from(subjectsMulti.selectedOptions || []).map(function (o) { return o.value; }).filter(Boolean);
+			return sel.join(',');
+		}
+		return subjectsSelect ? subjectsSelect.value : '';
+	}
+
 	function doSearch() {
-		state.keyword  = searchInput  ? searchInput.value.trim() : '';
-		state.category = categorySelect ? categorySelect.value  : '';
-		state.subjects = subjectsSelect ? subjectsSelect.value  : '';
-		state.page     = 1;
+		state.keyword   = searchInput    ? searchInput.value.trim()    : '';
+		state.category  = categorySelect ? categorySelect.value        : '';
+		state.subjects  = readSubjectsFromControls();
+		if (openAccessCheck) state.openAccess = openAccessCheck.checked;
+		state.page      = 1;
 		renderCategoryPanel();
 		if (!state.category) hideCategoryPanel();
 		fetchPage(1, false);
@@ -747,6 +849,22 @@
 		});
 	}
 
+	if (subjectsMulti) {
+		subjectsMulti.addEventListener('change', function () {
+			state.subjects = readSubjectsFromControls();
+			state.page     = 1;
+			fetchPage(1, false);
+		});
+	}
+
+	if (openAccessCheck) {
+		openAccessCheck.addEventListener('change', function () {
+			state.openAccess = this.checked;
+			state.page       = 1;
+			fetchPage(1, false);
+		});
+	}
+
 	if (relevantSelect) {
 		relevantSelect.addEventListener('change', function () {
 			var val = this.value;
@@ -774,11 +892,18 @@
 			state.sort              = 'date';
 			state.relevant          = requireRelevant;
 			state.hasClinicalTrials = null;
+			state.authorId          = '';
+			state.openAccess        = false;
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
 			if (subjectsSelect)  subjectsSelect.value  = '';
+			if (subjectsMulti)   Array.from(subjectsMulti.options).forEach(function (o) { o.selected = false; });
 			if (sortSelect)      sortSelect.value      = 'date';
 			if (relevantSelect)  relevantSelect.value  = String(requireRelevant);
+			if (authorInput)     authorInput.value     = '';
+			if (authorHidden)    authorHidden.value    = '';
+			if (openAccessCheck) openAccessCheck.checked = false;
+			hideAuthorSuggestions();
 			hideCategoryPanel();
 			fetchPage(1, false);
 		});
@@ -847,6 +972,26 @@
 			}
 		}
 	} catch (e) { /* non-fatal: category select will just have no options */ }
+
+	// Fetch categories from API when the mount requests it (site-wide advanced search)
+	if (mount.dataset.fetchCategories === 'true' && !state.categories.length && !state.categoryGroups.length) {
+		var catFetchUrl = new URL(apiBase.replace(/\/$/, '') + '/categories/');
+		catFetchUrl.searchParams.set('team_id', teamId);
+		catFetchUrl.searchParams.set('format', 'json');
+		fetch(catFetchUrl.toString())
+			.then(function (r) { return r.json(); })
+			.then(function (data) {
+				var cats = (data.results || []).map(function (c) {
+					return { id: c.id, name: c.category_name };
+				});
+				cats.sort(function (a, b) { return (a.name || '').localeCompare(b.name || ''); });
+				state.categories = cats;
+				populateCategorySelect();
+				populateMobileCategoryChips();
+			})
+			.catch(function () { /* non-fatal */ });
+	}
+
 	populateCategorySelect();
 
 	fetchPage(state.page, false);
@@ -868,6 +1013,10 @@
 	var sheetReset        = document.getElementById('papers-sheet-reset');
 	var mobileResultCount = document.getElementById('papers-mobile-result-count');
 
+	// Mobile-sheet author inputs (advanced page only)
+	var sheetAuthorInput = document.getElementById('papers-sheet-author-input');
+	var sheetAuthorId    = document.getElementById('papers-sheet-author-id');
+
 	var draft = {};
 
 	function resetDraft() {
@@ -877,6 +1026,8 @@
 			sort:               state.sort,
 			relevant:           state.relevant,
 			hasClinicalTrials:  state.hasClinicalTrials,
+			authorId:           state.authorId,
+			openAccess:         state.openAccess,
 		};
 	}
 
@@ -891,26 +1042,63 @@
 
 	function syncSheetToDraft() {
 		setActiveChip('papers-sheet-category', draft.category);
-		setActiveChip('papers-sheet-subjects',  draft.subjects);
-		setActiveChip('papers-sheet-sort',       draft.sort);
+		setActiveChip('papers-sheet-sort',     draft.sort);
 		var showVal;
-		if (draft.hasClinicalTrials === true)       showVal = 'has_clinical_trials_true';
-		else if (draft.hasClinicalTrials === false)  showVal = 'has_clinical_trials_false';
-		else                                         showVal = String(draft.relevant);
+		if (draft.hasClinicalTrials === true)      showVal = 'has_clinical_trials_true';
+		else if (draft.hasClinicalTrials === false) showVal = 'has_clinical_trials_false';
+		else                                        showVal = String(draft.relevant);
 		setActiveChip('papers-sheet-show', showVal);
+
+		// Subjects: multi-select if data-multi attribute present, else single
+		var subjectsGroup = document.getElementById('papers-sheet-subjects');
+		if (subjectsGroup) {
+			if (subjectsGroup.dataset.multi === 'true') {
+				var activeIds = (draft.subjects || '').split(',').filter(Boolean);
+				subjectsGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
+					chip.classList.toggle('active', Boolean(chip.dataset.value) && activeIds.indexOf(chip.dataset.value) !== -1);
+				});
+			} else {
+				setActiveChip('papers-sheet-subjects', draft.subjects);
+			}
+		}
+
+		// Open-access chip (advanced)
+		setActiveChip('papers-sheet-open-access', String(draft.openAccess));
+
+		// Author (advanced)
+		if (sheetAuthorInput) sheetAuthorInput.value = draft.authorId ? (authorInput ? authorInput.value : '') : '';
+		if (sheetAuthorId)    sheetAuthorId.value    = draft.authorId || '';
 	}
 
 	function wireChipGroup(groupId, onChange) {
 		var group = document.getElementById(groupId);
 		if (!group) return;
-		group.addEventListener('click', function (e) {
-			var chip = e.target.closest('.sheet-chip');
-			if (!chip) return;
-			var chips = group.querySelectorAll('.sheet-chip');
-			chips.forEach(function (c) { c.classList.remove('active'); });
-			chip.classList.add('active');
-			onChange(chip.dataset.value);
-		});
+		if (group.dataset.multi === 'true') {
+			// Multi-select: each chip toggles independently; "clear" chip deselects all
+			group.addEventListener('click', function (e) {
+				var chip = e.target.closest('.sheet-chip');
+				if (!chip) return;
+				if (!chip.dataset.value) {
+					// Clear button
+					group.querySelectorAll('.sheet-chip').forEach(function (c) { c.classList.remove('active'); });
+					onChange('');
+				} else {
+					chip.classList.toggle('active');
+					var active = Array.from(group.querySelectorAll('.sheet-chip[data-value].active'))
+						.map(function (c) { return c.dataset.value; }).filter(Boolean);
+					onChange(active.join(','));
+				}
+			});
+		} else {
+			group.addEventListener('click', function (e) {
+				var chip = e.target.closest('.sheet-chip');
+				if (!chip) return;
+				var chips = group.querySelectorAll('.sheet-chip');
+				chips.forEach(function (c) { c.classList.remove('active'); });
+				chip.classList.add('active');
+				onChange(chip.dataset.value);
+			});
+		}
 	}
 
 	function populateMobileCategoryChips() {
@@ -968,14 +1156,12 @@
 	}
 
 	function removeToken(filterKey) {
-		if (filterKey === 'category') {
-			state.category = '';
-			hideCategoryPanel();
-		} else if (filterKey === 'subjects') {
-			state.subjects = '';
-		} else if (filterKey === 'sort') {
-			state.sort = 'date';
-		} else if (filterKey === 'show') {
+		if (filterKey === 'category')    { state.category = ''; hideCategoryPanel(); }
+		else if (filterKey === 'subjects') state.subjects = '';
+		else if (filterKey === 'sort')     state.sort = 'date';
+		else if (filterKey === 'author')   { state.authorId = ''; if (authorInput) authorInput.value = ''; if (authorHidden) authorHidden.value = ''; }
+		else if (filterKey === 'oa')       state.openAccess = false;
+		else if (filterKey === 'show') {
 			state.relevant = requireRelevant;
 			state.hasClinicalTrials = null;
 		}
@@ -996,7 +1182,19 @@
 			hasTokens = true;
 		}
 		if (state.subjects) {
-			tokenStrip.appendChild(buildToken(subjectLabel(state.subjects), 'subjects'));
+			// Show first subject name + count if multiple
+			var ids = state.subjects.split(',').filter(Boolean);
+			var label = subjectLabel(ids[0]) + (ids.length > 1 ? ' +' + (ids.length - 1) : '');
+			tokenStrip.appendChild(buildToken(label, 'subjects'));
+			hasTokens = true;
+		}
+		if (state.authorId) {
+			var authorDisplay = (authorInput && authorInput.value) ? authorInput.value : 'Author';
+			tokenStrip.appendChild(buildToken(authorDisplay, 'author'));
+			hasTokens = true;
+		}
+		if (state.openAccess) {
+			tokenStrip.appendChild(buildToken('Open access', 'oa'));
 			hasTokens = true;
 		}
 		if (state.sort && state.sort !== 'date') {
@@ -1029,8 +1227,10 @@
 
 	function updateFabCount() {
 		var count = 0;
-		if (state.category) count++;
+		if (state.category)  count++;
 		if (state.subjects)  count++;
+		if (state.authorId)  count++;
+		if (state.openAccess) count++;
 		if (state.sort && state.sort !== 'date') count++;
 		if (state.hasClinicalTrials !== null) count++;
 		else if (state.relevant !== requireRelevant) count++;
@@ -1047,11 +1247,6 @@
 			mobileResultCount.innerHTML = resultCount.innerHTML;
 		}
 	};
-
-	function debounce(fn, ms) {
-		var t;
-		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
-	}
 
 	if (mobileSearchInput) {
 		mobileSearchInput.addEventListener('input', debounce(function () {
@@ -1097,6 +1292,37 @@
 		else if (val === 'has_clinical_trials_false') { draft.hasClinicalTrials = false; draft.relevant = requireRelevant; }
 		else                                          { draft.hasClinicalTrials = null;  draft.relevant = val !== 'false'; }
 	});
+	wireChipGroup('papers-sheet-open-access', function (val) { draft.openAccess = val === 'true'; });
+
+	// Mobile sheet author typeahead
+	if (sheetAuthorInput) {
+		var sheetAuthorTimer;
+		sheetAuthorInput.addEventListener('input', function () {
+			var q = sheetAuthorInput.value.trim();
+			if (sheetAuthorId) sheetAuthorId.value = '';
+			draft.authorId = '';
+			clearTimeout(sheetAuthorTimer);
+			if (q.length < 2) return;
+			sheetAuthorTimer = setTimeout(function () {
+				var aUrl = new URL(apiBase.replace(/\/$/, '') + '/authors/');
+				aUrl.searchParams.set('search', q);
+				if (teamId) aUrl.searchParams.set('team_id', teamId);
+				aUrl.searchParams.set('format', 'json');
+				aUrl.searchParams.set('page_size', '8');
+				fetch(aUrl.toString())
+					.then(function (r) { return r.json(); })
+					.then(function (data) {
+						var authors = data.results || [];
+						if (authors.length > 0) {
+							// Auto-select first match if exact; otherwise keep for display
+							draft.authorId = String(authors[0].author_id);
+							if (sheetAuthorId) sheetAuthorId.value = draft.authorId;
+						}
+					})
+					.catch(function () {});
+			}, 400);
+		});
+	}
 
 	if (sheetEl) {
 		sheetEl.addEventListener('show.bs.offcanvas', function () {
@@ -1113,6 +1339,13 @@
 			state.sort              = draft.sort               !== undefined ? draft.sort               : state.sort;
 			state.relevant          = draft.relevant           !== undefined ? draft.relevant           : state.relevant;
 			state.hasClinicalTrials = draft.hasClinicalTrials  !== undefined ? draft.hasClinicalTrials  : state.hasClinicalTrials;
+			state.openAccess        = draft.openAccess         !== undefined ? draft.openAccess         : state.openAccess;
+			if (draft.authorId !== undefined) {
+				state.authorId = draft.authorId;
+				// Sync desktop author display
+				if (authorInput && sheetAuthorInput) authorInput.value = sheetAuthorInput.value;
+				if (authorHidden) authorHidden.value = state.authorId;
+			}
 			state.page = 1;
 
 			if (state.category) { renderCategoryPanel(); } else { hideCategoryPanel(); }
@@ -1135,7 +1368,11 @@
 				sort:              'date',
 				relevant:          requireRelevant,
 				hasClinicalTrials: null,
+				authorId:          '',
+				openAccess:        false,
 			};
+			if (sheetAuthorInput) sheetAuthorInput.value = '';
+			if (sheetAuthorId)    sheetAuthorId.value    = '';
 			syncSheetToDraft();
 		});
 	}
@@ -1144,6 +1381,8 @@
 		resetBtn.addEventListener('click', function () {
 			if (mobileSearchInput) mobileSearchInput.value = '';
 			if (mobileClearBtn) mobileClearBtn.hidden = true;
+			if (sheetAuthorInput) sheetAuthorInput.value = '';
+			if (sheetAuthorId)    sheetAuthorId.value    = '';
 			renderTokens();
 		});
 	}

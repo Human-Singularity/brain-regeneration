@@ -6,6 +6,8 @@
     .page            — the Hugo page object
     .contextTitle    — string used for umami event context attributes (e.g. condition or research area title)
     .requireRelevant — boolean (default true); set to false to show all articles regardless of relevance flag
+    .advanced        — boolean (default false); when true renders extra power-user filters
+    .siteWide        — boolean (default false); when true fetches categories from API instead of inline front matter
 */}}
 {{- $page := .page -}}
 {{- $apiBase := $page.Site.Params.apiBase -}}
@@ -20,6 +22,10 @@
 {{- $contextTitle := .contextTitle -}}
 {{- $requireRelevant := "true" -}}
 {{- if isset . "requireRelevant" -}}{{- if not .requireRelevant -}}{{- $requireRelevant = "false" -}}{{- end -}}{{- end -}}
+{{- $advanced := false -}}
+{{- if isset . "advanced" -}}{{- if .advanced -}}{{- $advanced = true -}}{{- end -}}{{- end -}}
+{{- $siteWide := false -}}
+{{- if isset . "siteWide" -}}{{- if .siteWide -}}{{- $siteWide = true -}}{{- end -}}{{- end -}}
 
 <!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
 <div class="d-none d-lg-block">
@@ -32,12 +38,15 @@
 					{{- $conditionPages = $conditionPages | append . -}}
 				{{- end -}}
 			{{- end -}}
+			{{- $conditionPages = sort $conditionPages "Title" -}}
 			{{- $researchAreaPages := slice -}}
 			{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
 				{{- if and .Params.api .Params.api.subject_id -}}
 					{{- $researchAreaPages = $researchAreaPages | append . -}}
 				{{- end -}}
 			{{- end -}}
+			{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
+			<!-- Row 1: main filter controls -->
 			<div class="row g-2 align-items-end">
 				<div class="col-12 col-md-3">
 					<label for="papers-search-input">Search papers</label>
@@ -49,6 +58,28 @@
 						<option value="">All categories</option>
 					</select>
 				</div>
+				{{- if $advanced }}
+				<div class="col-12 col-md-3">
+					<label for="papers-subjects-multi">Intersect with</label>
+					<select class="form-select" id="papers-subjects-multi" multiple size="4" style="height: auto;">
+						{{- if $conditionPages }}
+						<optgroup label="Conditions">
+							{{- range $conditionPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
+						{{- if $researchAreaPages }}
+						<optgroup label="Research Areas">
+							{{- range $researchAreaPages }}
+							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+							{{- end }}
+						</optgroup>
+						{{- end }}
+					</select>
+					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
+				</div>
+				{{- else }}
 				<div class="col-12 col-md-2">
 					<label for="papers-subject-select">Intersect with ...</label>
 					<select class="form-select" id="papers-subject-select">
@@ -69,6 +100,7 @@
 						{{- end }}
 					</select>
 				</div>
+				{{- end }}
 				<div class="col-12 col-md-2">
 					<label for="papers-sort-select">Sort by</label>
 					<select class="form-select" id="papers-sort-select">
@@ -97,6 +129,32 @@
 					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>
+			{{- if $advanced }}
+			<!-- Row 2: advanced filters (author, open-access, date range) -->
+			<div class="row g-2 align-items-end mt-2">
+				<div class="col-12 col-md-4" style="position: relative;">
+					<label for="papers-author-input">Author</label>
+					<input type="text" class="form-control" id="papers-author-input" placeholder="Search by author name…" autocomplete="off">
+					<input type="hidden" id="papers-author-id">
+					<div id="papers-author-suggestions" class="author-suggestions" hidden></div>
+				</div>
+				<div class="col-12 col-md-4">
+					<label>Published date</label>
+					<div class="d-flex gap-2 align-items-center">
+						<input type="date" class="form-control" id="papers-date-from" disabled title="Date filtering pending API support">
+						<span style="font-size: 13px; color: var(--color-muted);">to</span>
+						<input type="date" class="form-control" id="papers-date-to" disabled title="Date filtering pending API support">
+					</div>
+					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Date filtering pending API support</div>
+				</div>
+				<div class="col-12 col-md-4 d-flex align-items-end" style="padding-bottom: 4px;">
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" id="papers-open-access">
+						<label class="form-check-label" for="papers-open-access">Open access only</label>
+					</div>
+				</div>
+			</div>
+			{{- end }}
 		</form>
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="papers-result-count"></span>
@@ -127,12 +185,14 @@
 		{{- $conditionPagesMobile = $conditionPagesMobile | append . -}}
 	{{- end -}}
 {{- end -}}
+{{- $conditionPagesMobile = sort $conditionPagesMobile "Title" -}}
 {{- $researchAreaPagesMobile := slice -}}
 {{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $researchAreaPagesMobile = $researchAreaPagesMobile | append . -}}
 	{{- end -}}
 {{- end -}}
+{{- $researchAreaPagesMobile = sort $researchAreaPagesMobile "Title" -}}
 <div class="mobile-feeds-bar d-lg-none" id="papers-mobile-bar"
 	data-require-relevant="{{ $requireRelevant }}">
 	<div class="container">
@@ -170,6 +230,13 @@
 		</div>
 	</div>
 	<div class="offcanvas-body">
+		{{- if $advanced }}
+		<div class="sheet-group">
+			<label for="papers-sheet-author-input" class="sheet-group-label">Author</label>
+			<input type="text" class="form-control form-control-sm" id="papers-sheet-author-input" placeholder="e.g. Thompson, Coles…" autocomplete="off">
+			<input type="hidden" id="papers-sheet-author-id">
+		</div>
+		{{- end }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Category</div>
 			<div class="sheet-chips" id="papers-sheet-category">
@@ -178,9 +245,9 @@
 			</div>
 		</div>
 		<div class="sheet-group">
-			<div class="sheet-group-label">Intersect with</div>
-			<div class="sheet-chips" id="papers-sheet-subjects">
-				<button type="button" class="sheet-chip active" data-value="">All subjects</button>
+			<div class="sheet-group-label">{{ if $advanced }}Condition / Research area{{ else }}Intersect with{{ end }}</div>
+			<div class="sheet-chips" id="papers-sheet-subjects"{{ if $advanced }} data-multi="true"{{ end }}>
+				<button type="button" class="sheet-chip{{ if not $advanced }} active{{ end }}" data-value="">{{ if $advanced }}Clear selection{{ else }}All subjects{{ end }}</button>
 				{{- range $conditionPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
@@ -210,6 +277,15 @@
 				<button type="button" class="sheet-chip" data-value="has_clinical_trials_false">Without clinical trials</button>
 			</div>
 		</div>
+		{{- if $advanced }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Access</div>
+			<div class="sheet-chips" id="papers-sheet-open-access">
+				<button type="button" class="sheet-chip active" data-value="false">All papers</button>
+				<button type="button" class="sheet-chip" data-value="true">Open access only</button>
+			</div>
+		</div>
+		{{- end }}
 	</div>
 	<div class="sheet-footer">
 		<button type="button" class="btn-outline-teal" id="papers-sheet-reset">Reset</button>
@@ -256,8 +332,11 @@
 			data-team-id="{{ $teamId }}"
 			data-subject-id="{{ $subjectId }}"
 			data-require-relevant="{{ $requireRelevant }}"
+			{{- if $siteWide }} data-fetch-categories="true"
+			{{- else }}
 			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}
-			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
+			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}
+			{{- end }}>
 		</div>
 
 		<div class="pagination-controls" id="papers-pagination">

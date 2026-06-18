@@ -1,0 +1,37 @@
+{{ define "main" }}
+
+{{/* Resolve the parent search section page (the Clinical Trials tab) */}}
+{{ $searchPage := .Parent }}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<strong>Advanced Search — Research Papers</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }}</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── SECTION TABS ── -->
+<div class="section-tabs">
+	<div class="container">
+		<nav class="section-tabs-nav">
+			<a href="{{ $searchPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
+			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers</a>
+		</nav>
+	</div>
+</div>
+
+{{ partial "research-papers-feed" (dict "page" . "contextTitle" "Advanced Search" "requireRelevant" false "advanced" true "siteWide" true) }}
+
+<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
+
+{{ end }}
