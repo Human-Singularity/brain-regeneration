@@ -9,7 +9,7 @@
 	var subjectId = container.dataset.subjectId;
 	if (!endpoint || !teamId || !subjectId) return;
 
-	var CACHE_KEY = 'brSpotlight:' + teamId + ':' + subjectId;
+	var CACHE_KEY = 'brSpotlight:v2:' + teamId + ':' + subjectId; // v2: ordering=-ml_score
 	var CACHE_TTL = 60 * 60 * 1000;
 
 	function getCached(key) {
@@ -86,6 +86,7 @@
 	url.searchParams.set('relevant', 'true');
 	url.searchParams.set('team_id', teamId);
 	url.searchParams.set('subject_id', subjectId);
+	url.searchParams.set('ordering', '-ml_score');
 	url.searchParams.set('page_size', '5');
 
 	fetch(url.toString())
