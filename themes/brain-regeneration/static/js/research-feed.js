@@ -177,6 +177,7 @@
 		state.category           = params.get('category')   || '';
 		state.subjects           = params.get('subjects')   || '';
 		state.sort               = params.get('sort')       || 'date';
+		if (state.sort === 'relevance') state.sort = 'ml_score'; // canonicalize old bookmarked URLs
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
 		state.authorId           = params.get('author_id')  || '';
