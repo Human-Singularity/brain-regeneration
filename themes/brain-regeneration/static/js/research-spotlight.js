@@ -86,6 +86,7 @@
 	url.searchParams.set('relevant', 'true');
 	url.searchParams.set('team_id', teamId);
 	url.searchParams.set('subject_id', subjectId);
+	url.searchParams.set('ordering', '-ml_score');
 	url.searchParams.set('page_size', '5');
 
 	fetch(url.toString())

@@ -251,6 +251,9 @@
 			'discovery_asc':   'discovery_date',
 			'title_asc':       'title',
 			'title_desc':      '-title',
+			'ml_score':        '-ml_score',
+			'ml_score_asc':    'ml_score',
+			'relevance':       '-ml_score', // backward compat for old bookmarked URLs
 		};
 		return map[sort] || '-published_date';
 	}
@@ -402,14 +405,7 @@
 	}
 
 	function applySort(articles) {
-		if (state.sort !== 'relevance') return articles;
-		return articles.slice().sort(function (a, b) {
-			var sa = (a.article_subject_relevances && a.article_subject_relevances[0])
-				? (a.article_subject_relevances[0].score || 0) : 0;
-			var sb = (b.article_subject_relevances && b.article_subject_relevances[0])
-				? (b.article_subject_relevances[0].score || 0) : 0;
-			return sb - sa;
-		});
+		return articles; // ordering is always server-side via the `ordering` param
 	}
 
 	function renderCards(articles) {
@@ -857,11 +853,7 @@
 		sortSelect.addEventListener('change', function () {
 			state.sort = this.value;
 			state.page = 1;
-			if (state.sort === 'relevance') {
-				renderCards(state.results);
-			} else {
-				fetchPage(1, false);
-			}
+			fetchPage(1, false);
 		});
 	}
 
