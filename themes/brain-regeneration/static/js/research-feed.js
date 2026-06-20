@@ -135,7 +135,7 @@
 		var params = new URLSearchParams(window.location.search);
 		state.keyword            = params.get('q')             || '';
 		state.category           = params.get('category')      || '';
-		if (params.has('conditions') || params.has('areas')) {
+		if (params.has('conditions') || params.has('areas') || params.has('conditions_mode') || params.has('areas_mode')) {
 			state.conditionSubjects = params.get('conditions')      || '';
 			state.areaSubjects      = params.get('areas')           || '';
 			state.subjectsMode      = params.get('conditions_mode') || 'all';
