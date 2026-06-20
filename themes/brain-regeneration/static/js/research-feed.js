@@ -819,6 +819,12 @@
 		searchBtn.addEventListener('click', doSearch);
 	}
 
+	if (searchInput) {
+		searchInput.addEventListener('keydown', function (e) {
+			if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+		});
+	}
+
 	var filterForm = document.getElementById('papers-filter-form');
 	if (filterForm) {
 		filterForm.addEventListener('submit', function (e) {
@@ -1005,8 +1011,10 @@
 
 		if (state.subjects) {
 			state.subjects.split(',').filter(Boolean).forEach(function (id) {
-				var chip = document.querySelector('.search-chip[data-value="' + id + '"]');
-				var label = chip ? chip.textContent.trim() : id;
+				var label = id;
+				document.querySelectorAll('.search-chip').forEach(function (c) {
+					if (c.dataset.value === id) label = c.textContent.trim();
+				});
 				items.push({ label: label, key: 'subject:' + id });
 			});
 		}
@@ -1075,8 +1083,9 @@
 			var removeId = key.slice(8);
 			var ids = (state.subjects || '').split(',').filter(Boolean);
 			state.subjects = ids.filter(function (x) { return x !== removeId; }).join(',');
-			var chip = document.querySelector('.search-chip[data-value="' + removeId + '"]');
-			if (chip) BR.feedUI.setSearchChipActive(chip, false);
+			document.querySelectorAll('.search-chip').forEach(function (c) {
+				if (c.dataset.value === removeId) BR.feedUI.setSearchChipActive(c, false);
+			});
 		} else if (key === 'author') {
 			state.authorId = '';
 			if (authorInput) authorInput.value = '';
