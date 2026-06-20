@@ -85,14 +85,22 @@
 				<h2 style="margin-bottom: 8px;">Get alerts when new trials open</h2>
 				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">Choose the conditions you want to follow. We notify you when a new recruiting trial is added.</p>
 			</div>
-			<form action="{{ "/subscribe" | relURL }}" method="POST">
+			<form
+				data-inline-subscribe
+				data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
+				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
+				data-error="{{ .Site.Params.subscriptions.error_url }}"
+				novalidate
+			>
 				<div class="mb-4">
 					<div class="checkbox-group-label">Clinical Trial Alerts</div>
 					{{ range $subscribable }}
+					{{ if .Params.list_id }}
 					<div class="form-check mb-2">
-						<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="feeds" value="trials-{{ .Slug }}">
+						<input class="form-check-input" type="checkbox" id="feed-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
 						<label class="form-check-label" for="feed-{{ .Slug }}">{{ .Title }}</label>
 					</div>
+					{{ end }}
 					{{ end }}
 				</div>
 				<div class="row g-3 align-items-end">
@@ -115,12 +123,14 @@
 				</div>
 				<div class="row g-3 align-items-end mt-1">
 					<div class="col-12 col-md-6">
-						<label for="audience" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
-						<select class="form-select" id="audience" name="audience" style="border-color: var(--color-border);">
+						<label for="profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="profile" name="profile" style="border-color: var(--color-border);">
 							<option value="">Select (optional)</option>
+							<option value="patient">Patient</option>
+							<option value="caregiver">Caregiver</option>
+							<option value="doctor">Doctor</option>
+							<option value="clinical centre">Clinical Centre</option>
 							<option value="researcher">Researcher</option>
-							<option value="clinician">Clinician</option>
-							<option value="patient">Patient or caregiver</option>
 							<option value="other">Other</option>
 						</select>
 					</div>
@@ -133,6 +143,8 @@
 	</div>
 </section>
 {{ end }}
+
+<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
 
 <script>
 (function () {

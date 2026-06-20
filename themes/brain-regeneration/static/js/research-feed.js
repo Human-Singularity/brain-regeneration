@@ -1326,6 +1326,7 @@
 		var subjectsGroup = document.getElementById('papers-sheet-subjects');
 		if (subjectsGroup) {
 			if (subjectsGroup.dataset.multi === 'true') {
+				var activeSubjectIds = (draft.subjects || '').split(',').filter(Boolean);
 				subjectsGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
 					chip.classList.toggle('active', Boolean(chip.dataset.value) && activeSubjectIds.indexOf(chip.dataset.value) !== -1);
 				});
