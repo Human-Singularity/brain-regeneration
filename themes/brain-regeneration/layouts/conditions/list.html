@@ -150,23 +150,10 @@
 (function () {
 	'use strict';
 
-	var CACHE_TTL = 60 * 60 * 1000; // 1 hour
-
-	function getCached(key) {
-		try {
-			var raw = localStorage.getItem(key);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) return null;
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(key, data) {
-		try {
-			localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) { /* quota / private mode — ignore */ }
-	}
+	// Generic cache via window.BR (js/br-utils.js); keys are passed fully-qualified.
+	var cache = BR.makeCache('', 60 * 60 * 1000); // 1 hour
+	function getCached(key) { return cache.get(key); }
+	function setCached(key, data) { cache.set(key, data); }
 
 	function updateCard(card, stats) {
 		var recruitingEl = card.querySelector('.trial-stat-num.recruiting');

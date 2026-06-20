@@ -10,35 +10,13 @@
 	if (!endpoint || !teamId || !subjectId) return;
 
 	var CACHE_KEY = 'brSpotlight:' + teamId + ':' + subjectId;
-	var CACHE_TTL = 60 * 60 * 1000;
+	var cache = BR.makeCache('', 60 * 60 * 1000);
+	function getCached(key) { return cache.get(key); }
+	function setCached(key, data) { cache.set(key, data); }
 
-	function getCached(key) {
-		try {
-			var raw = localStorage.getItem(key);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) return null;
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(key, data) {
-		try {
-			localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) {}
-	}
-
-	function escHtml(str) {
-		var el = document.createElement('span');
-		el.textContent = str;
-		return el.innerHTML;
-	}
-
-	function formatDate(iso) {
-		if (!iso) return '';
-		var d = new Date(iso);
-		return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-	}
+	// Generic helpers shared via window.BR; see js/br-utils.js
+	var escHtml    = BR.escHtml;
+	var formatDate = BR.formatDate;
 
 	function shortAuthors(authors) {
 		if (!authors || !authors.length) return '';

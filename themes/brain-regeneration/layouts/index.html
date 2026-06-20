@@ -36,7 +36,7 @@
 <script>
 (function () {
 	var API_BASE  = window.__API_BASE__ || 'https://api.brain-regeneration.com';
-	var CACHE_TTL = 12 * 60 * 60 * 1000;
+	var statsCache = BR.makeCache('', 12 * 60 * 60 * 1000); // 12 hours
 	var TEAMS     = [4, 5, 6];
 
 	function fmt(n) {
@@ -69,17 +69,15 @@
 	});
 
 	function cachedFetch(url, cacheKey, onData, onError) {
-		try {
-			var cached = JSON.parse(localStorage.getItem(cacheKey));
-			if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
-				if (document.readyState === 'loading') {
-					document.addEventListener('DOMContentLoaded', function () { onData(cached.payload); });
-				} else {
-					onData(cached.payload);
-				}
-				return Promise.resolve();
+		var cached = statsCache.get(cacheKey);
+		if (cached) {
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function () { onData(cached); });
+			} else {
+				onData(cached);
 			}
-		} catch (e) {}
+			return Promise.resolve();
+		}
 
 		return fetch(url)
 			.then(function (r) {
@@ -88,7 +86,7 @@
 			})
 			.then(function (data) {
 				onData(data);
-				try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), payload: data })); } catch (e) {}
+				statsCache.set(cacheKey, data);
 			})
 			.catch(function () { if (onError) onError(); });
 	}

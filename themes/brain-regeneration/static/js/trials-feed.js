@@ -69,50 +69,17 @@
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
-	var CACHE_TTL = 60 * 60 * 1000; // 1 hour
-
-	function getCached(key) {
-		try {
-			var raw = localStorage.getItem(key);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) return null;
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(key, data) {
-		try {
-			localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) { /* quota / private mode — ignore */ }
-	}
+	// Call sites pass fully-qualified keys (brTrialsFeed:… / brTrialsStats:…),
+	// so the factory prefix is empty.
+	var cache = BR.makeCache('', 60 * 60 * 1000); // 1 hour
+	function getCached(key) { return cache.get(key); }
+	function setCached(key, data) { cache.set(key, data); }
 
 	// ── Helpers ──────────────────────────────────────────────────────────────
-	function debounce(fn, ms) {
-		var t;
-		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
-	}
-
-	function escHtml(str) {
-		if (str == null) return '';
-		return String(str)
-			.replace(/&/g,  '&amp;')
-			.replace(/</g,  '&lt;')
-			.replace(/>/g,  '&gt;')
-			.replace(/"/g,  '&quot;')
-			.replace(/'/g,  '&#39;');
-	}
-
-	function stripHtml(str) {
-		if (!str) return '';
-		return str.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-	}
-
-	function truncate(str, limit) {
-		var plain = stripHtml(str);
-		if (!plain || plain.length <= limit) return plain;
-		return plain.slice(0, plain.lastIndexOf(' ', limit) || limit) + '\u2026';
-	}
+	var debounce  = BR.debounce;
+	var escHtml   = BR.escHtml;
+	var stripHtml = BR.stripHtml;
+	var truncate  = BR.truncate;  // pure truncate \u2014 strip HTML at the call site
 
 	// ── API URL builder ──────────────────────────────────────────────────────
 	function buildURL(page) {
@@ -178,7 +145,7 @@
 	function buildCard(t) {
 		var ids = t.identifiers || {};
 		var displayId = ids.nct || ids.euct || ids.eudract || '';
-		var summary   = truncate(t.summary, 300);
+		var summary   = truncate(stripHtml(t.summary), 300);
 		var phase     = formatPhase(t.phase);
 
 		// ── Top badge row ─────────────────────────────────────────────────

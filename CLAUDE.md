@@ -91,7 +91,8 @@ layouts/
   observatory/ list       index.html      404.html
 static/
   css/  main.css, feeds-mobile.css   (global; article-single.css + news-single.css load per-page via extra-head)
-  js/   research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
+  js/   br-utils.js             (shared helpers on window.BR: escHtml/stripHtml/truncate/debounce/formatDate/slugify/safeLink + makeCache; loaded first, synchronously, in head)
+        research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
         trials-feed.js          (conditions clinical-trials feed + stats bar)
         article-single.js       (renders /articles/{id}/ detail from the API)
         research-spotlight.js   (homepage/area "spotlight" of top relevant papers)
@@ -119,7 +120,7 @@ Single root file. Highlights:
 
 - **Client-side data, not built content.** Articles/trials/charts are fetched from the GregoryAI API in the browser. The flow: a Hugo template renders a mount element with `data-*` attributes (endpoint, `team_id`, `subject_id`, etc.) → the matching script reads them → `fetch()` → renders HTML into the mount. Responses are paginated (`results`, `count`, `current_page`, `total_pages`) and queried with params like `team_id`, `subject_id`, `relevant`, `category_id`, `subjects`, `has_clinical_trials`, `ordering`, `page`, `format=json|csv`, `all_results=true`.
 - **Article detail is a client-rendered shell.** `static/_redirects` rewrites `/articles/* → /articles/ 200`; `article-single.js` parses the numeric ID from the URL and fetches `/articles/{id}/?format=json`. (`layouts/articles/article-shell.html` is the project override of that shell.) Internal article links use `/articles/{id}/`; external links go straight to the publisher/DOI.
-- **Aggressive localStorage caching.** Feeds cache responses under keys like `brFeed:`, `brPapers:`, `brTrialsFeed:`, `brTrialsStats:`, `brSpotlight:` with TTLs (1–6h). If you're testing fresh API data and not seeing changes, clear localStorage.
+- **Aggressive localStorage caching.** All feeds/widgets cache through `BR.makeCache(prefix, ttl)` (in `br-utils.js`) under keys like `brPapers:`, `brTrialsFeed:`, `brTrialsStats:`, `brTrialStats:`, `brSpotlight:`, `brObsStats*` with TTLs (1–12h). If you're testing fresh API data and not seeing changes, clear localStorage.
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
 - **Subscribe forms** (`subscribe-form.js`, `inline-subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
 - **Donations** use a separate Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAI API. See `workers/` and `content/cloudflare-worker.md`.

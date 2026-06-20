@@ -82,38 +82,18 @@
 	};
 
 	// ── Cache ─────────────────────────────────────────────────────────────
-	var CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+	var cache = BR.makeCache('brPapers:', 6 * 60 * 60 * 1000); // 6 hours
+	function getCached(url) { return cache.get(url); }
+	function setCached(url, data) { cache.set(url, data); }
 
-	function getCached(url) {
-		try {
-			var raw = localStorage.getItem('brPapers:' + url);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) {
-				localStorage.removeItem('brPapers:' + url);
-				return null;
-			}
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(url, data) {
-		try {
-			localStorage.setItem('brPapers:' + url, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) { /* quota exceeded — ignore */ }
-	}
-
-	// ── Helpers ───────────────────────────────────────────────────────────
-
-	function escHtml(str) {
-		if (str == null) return '';
-		return String(str)
-			.replace(/&/g,  '&amp;')
-			.replace(/</g,  '&lt;')
-			.replace(/>/g,  '&gt;')
-			.replace(/"/g,  '&quot;')
-			.replace(/'/g,  '&#39;');
-	}
+	// ── Helpers (generic ones shared via window.BR; see js/br-utils.js) ─────
+	var escHtml    = BR.escHtml;
+	var stripHtml  = BR.stripHtml;
+	var truncate   = BR.truncate;
+	var safeLink   = BR.safeLink;
+	var slugify    = BR.slugify;
+	var debounce   = BR.debounce;
+	var formatDate = BR.formatDate;
 
 	function parseMarkdown(str) {
 		if (str == null || str === '') return '';
@@ -134,50 +114,14 @@
 		return '<p>' + s + '</p>';
 	}
 
-	function safeLink(url) {
-		if (!url) return '#';
-		try {
-			var parsed = new URL(String(url));
-			if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '#';
-			return parsed.href;
-		} catch (e) { return '#'; }
-	}
-
-	function stripHtml(str) {
-		if (!str) return '';
-		return str.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').trim();
-	}
-
-	function truncate(str, limit) {
-		if (!str || str.length <= limit) return str;
-		var cut = str.lastIndexOf(' ', limit);
-		return str.slice(0, cut > 0 ? cut : limit) + '…';
-	}
-
-	function formatDate(iso) {
-		if (!iso) return '';
-		return new Date(iso).toLocaleDateString('en-GB', {
-			year: 'numeric', month: 'short', day: 'numeric'
-		});
-	}
-
 	function formatAuthors(authors) {
 		if (!authors || !authors.length) return '';
 		var names = authors.map(function (a) { return a.full_name; });
 		return names.length > 3 ? names.slice(0, 3).join(', ') + ' et al.' : names.join(', ');
 	}
 
-	function slugify(str) {
-		return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
-	}
-
 	function todayISO() {
 		return new Date().toISOString().slice(0, 10);
-	}
-
-	function debounce(fn, ms) {
-		var t;
-		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
 	}
 
 	// ── URL state ──────────────────────────────────────────────────────────
