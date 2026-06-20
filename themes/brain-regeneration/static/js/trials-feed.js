@@ -35,6 +35,16 @@
 	var nextBtn         = document.getElementById('next-btn');
 	var noResults       = document.getElementById('no-results');
 
+	// Tab count badges
+	var tabPapersCount = document.getElementById('tab-papers-count');
+	var tabTrialsCount = document.getElementById('tab-trials-count');
+
+	// Desktop chip groups (advanced search page)
+	var trialsConditionChips = document.getElementById('trials-condition-chips');
+	var trialsMoreBtn        = document.getElementById('trials-more-filters-btn');
+	var trialsAdvPanel       = document.getElementById('trials-advanced-panel');
+	var trialsDesktopTokens  = document.getElementById('trials-desktop-tokens');
+
 	// ── State ────────────────────────────────────────────────────────────────
 	// Normalise the default status value to uppercase to match what the API expects.
 	var rawDefaultStatus = listEl.dataset.defaultStatus || '';
@@ -329,6 +339,7 @@
 				setCached(cacheKey, data);
 				renderCards(data.results || []);
 				updatePagination(data.current_page || page, data.total_pages || 1, data.count || 0);
+				if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (data.count || 0).toLocaleString();
 			})
 			.catch(renderError);
 	}
@@ -345,7 +356,15 @@
 		state.country      = filterCountry    ? filterCountry.value.trim()     : '';
 		state.sort         = sortOrder        ? sortOrder.value                : '-discovery_date';
 		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
-		state.subjects     = filterSubjects  ? Array.from(filterSubjects.selectedOptions).map(function (o) { return o.value; }).join(',') : '';
+		if (trialsConditionChips) {
+			var chipIds = [];
+			trialsConditionChips.querySelectorAll('.search-chip.search-chip--active').forEach(function (c) {
+				if (c.dataset.value) chipIds.push(c.dataset.value);
+			});
+			state.subjects = chipIds.join(',');
+		} else {
+			state.subjects = filterSubjects ? Array.from(filterSubjects.selectedOptions).map(function (o) { return o.value; }).join(',') : '';
+		}
 		state.studyType    = filterStudyType ? filterStudyType.value : '';
 		state.dateFrom     = filterDateFrom  ? filterDateFrom.value  : '';
 		state.dateTo       = filterDateTo    ? filterDateTo.value    : '';
@@ -423,11 +442,60 @@
 		if (filterSubjects)    Array.from(filterSubjects.options).forEach(function (o) { o.selected = false; });
 		if (filterDateFrom)    filterDateFrom.value     = '';
 		if (filterDateTo)      filterDateTo.value       = '';
+		if (trialsConditionChips) {
+			trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+		}
 		fetchPage(1);
 	}
 
 	if (resetBtn) resetBtn.addEventListener('click', resetAll);
 	if (clearBtn) clearBtn.addEventListener('click', resetAll);
+
+	// ── Desktop condition chips ──────────────────────────────────────────────
+	if (trialsConditionChips) {
+		trialsConditionChips.addEventListener('click', function (e) {
+			var chip = e.target.closest('.search-chip');
+			if (!chip) return;
+			chip.classList.toggle('search-chip--active');
+			var ids = [];
+			trialsConditionChips.querySelectorAll('.search-chip.search-chip--active').forEach(function (c) {
+				if (c.dataset.value) ids.push(c.dataset.value);
+			});
+			state.subjects = ids.join(',');
+			fetchPage(1);
+		});
+	}
+
+	// ── More filters toggle ──────────────────────────────────────────────────
+	if (trialsMoreBtn && trialsAdvPanel) {
+		trialsMoreBtn.addEventListener('click', function () {
+			var open = !trialsAdvPanel.hidden;
+			trialsAdvPanel.hidden = open;
+			var arrow = document.getElementById('trials-more-arrow');
+			var label = trialsMoreBtn.querySelector('.search-more-btn__label');
+			if (arrow) arrow.classList.toggle('search-more-btn__arrow--open', !open);
+			if (label) label.textContent = open ? 'More filters' : 'Fewer filters';
+		});
+	}
+
+	// ── Hero hint tags ───────────────────────────────────────────────────────
+	document.querySelectorAll('.search-hero__hint-tag').forEach(function (btn) {
+		btn.addEventListener('click', function () {
+			var hint = btn.dataset.hint || '';
+			if (searchInput) searchInput.value = hint;
+			state.keyword = hint;
+			fetchPage(1);
+		});
+	});
+
+	// ── Hero search button ───────────────────────────────────────────────────
+	var heroSearchBtn = document.getElementById('search-btn');
+	if (heroSearchBtn) {
+		heroSearchBtn.addEventListener('click', function () {
+			state.keyword = searchInput ? searchInput.value.trim() : '';
+			fetchPage(1);
+		});
+	}
 
 	if (prevBtn) {
 		prevBtn.addEventListener('click', function () {
@@ -556,6 +624,16 @@
 
 	fetchStats(); // always fetches unfiltered aggregate stats
 	fetchPage(1);
+
+	// Background fetch for papers tab count badge
+	if (tabPapersCount) {
+		var papersEndpoint = endpoint.replace('/trials/', '/articles/');
+		var papersCountUrl = papersEndpoint + '?format=json&page_size=1' + (teamId ? '&team_id=' + teamId : '');
+		fetch(papersCountUrl)
+			.then(function (r) { return r.json(); })
+			.then(function (d) { if (d.count) tabPapersCount.textContent = d.count.toLocaleString(); })
+			.catch(function () {});
+	}
 
 	// ── Mobile UI module ──────────────────────────────────────────────────────
 	var trialsMobileBar    = document.getElementById('trials-mobile-bar');

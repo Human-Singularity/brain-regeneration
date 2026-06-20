@@ -49,6 +49,17 @@
 	var lastBtn          = document.getElementById('papers-last-btn');
 	var paginationNums   = document.getElementById('papers-pagination-numbers');
 
+	// Tab count badges
+	var tabPapersCount = document.getElementById('tab-papers-count');
+	var tabTrialsCount = document.getElementById('tab-trials-count');
+
+	// Desktop chip groups (advanced search page)
+	var conditionChips = document.getElementById('papers-condition-chips');
+	var areaChips      = document.getElementById('papers-area-chips');
+	var moreFiltersBtn = document.getElementById('papers-more-filters-btn');
+	var advancedPanel  = document.getElementById('papers-advanced-panel');
+	var desktopTokens  = document.getElementById('papers-desktop-tokens');
+
 	// ── State ─────────────────────────────────────────────────────────────
 	var state = {
 		page:               1,
@@ -227,8 +238,8 @@
 		// Subject selects: split single-select (advanced) or combined
 		var subjectIds = (state.subjects || '').split(',').filter(Boolean);
 		if (conditionsSelect || researchAreasSelect) {
-			if (conditionsSelect)    conditionsSelect.value    = subjectIds.find(function (id) { return Array.from(conditionsSelect.options).some(function (o) { return o.value === id; }); }) || '';
-			if (researchAreasSelect) researchAreasSelect.value = subjectIds.find(function (id) { return Array.from(researchAreasSelect.options).some(function (o) { return o.value === id; }); }) || '';
+			if (conditionsSelect)    Array.from(conditionsSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
+			if (researchAreasSelect) Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
 		} else if (subjectsMulti) {
 			Array.from(subjectsMulti.options).forEach(function (opt) { opt.selected = subjectIds.indexOf(opt.value) !== -1; });
 		} else if (subjectsSelect) {
@@ -239,6 +250,15 @@
 		if (dateFromInput)   dateFromInput.value     = state.dateFrom;
 		if (dateToInput)     dateToInput.value       = state.dateTo;
 		renderCategoryPanel();
+
+		// Sync desktop chips
+		var chipSubjectIds = (state.subjects || '').split(',').filter(Boolean);
+		[conditionChips, areaChips].forEach(function (group) {
+			if (!group) return;
+			group.querySelectorAll('.search-chip').forEach(function (chip) {
+				chip.classList.toggle('search-chip--active', chipSubjectIds.indexOf(chip.dataset.value || '') !== -1);
+			});
+		});
 	}
 
 	// ── API URL builders ──────────────────────────────────────────────────
@@ -606,6 +626,7 @@
 			updatePagination(cached.current_page || page, cached.total_pages || 1);
 			updateCounter(cached.count || 0);
 			writeURL(push === true);
+			renderDesktopTokens();
 			return;
 		}
 
@@ -632,7 +653,9 @@
 				renderCards(state.results);
 				updatePagination(data.current_page || page, totalPages);
 				updateCounter(data.count || 0);
+				if (tabPapersCount && page === 1) tabPapersCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
+				renderDesktopTokens();
 			})
 			.catch(renderError);
 	}
@@ -797,12 +820,26 @@
 
 	// ── Event listeners ────────────────────────────────────────────────────
 
+	function collectDesktopSubjects() {
+		var ids = [];
+		[conditionChips, areaChips].forEach(function (group) {
+			if (!group) return;
+			group.querySelectorAll('.search-chip.search-chip--active').forEach(function (chip) {
+				var v = chip.dataset.value;
+				if (v) ids.push(v);
+			});
+		});
+		return ids.join(',');
+	}
+
 	function readSubjectsFromControls() {
+		if (conditionChips || areaChips) {
+			return collectDesktopSubjects();
+		}
 		if (conditionsSelect || researchAreasSelect) {
-			var ids = [
-				conditionsSelect    ? conditionsSelect.value    : '',
-				researchAreasSelect ? researchAreasSelect.value : '',
-			].filter(Boolean);
+			var ids = [];
+			if (conditionsSelect)    Array.from(conditionsSelect.selectedOptions    || []).forEach(function (o) { if (o.value) ids.push(o.value); });
+			if (researchAreasSelect) Array.from(researchAreasSelect.selectedOptions || []).forEach(function (o) { if (o.value) ids.push(o.value); });
 			return ids.join(',');
 		}
 		if (subjectsMulti) {
@@ -962,6 +999,9 @@
 			if (openAccessCheck) openAccessCheck.checked = false;
 			if (dateFromInput)   dateFromInput.value   = '';
 			if (dateToInput)     dateToInput.value     = '';
+			[conditionChips, areaChips].forEach(function (g) {
+				if (g) g.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+			});
 			hideAuthorSuggestions();
 			hideCategoryPanel();
 			fetchPage(1, false);
@@ -1007,6 +1047,146 @@
 			if (downloadMenu) downloadMenu.classList.remove('is-open');
 		});
 	}
+
+	// ── Desktop chip filter (advanced search) ─────────────────────────────
+
+	function renderDesktopTokens() {
+		if (!desktopTokens) return;
+		var items = [];
+
+		if (state.subjects) {
+			state.subjects.split(',').filter(Boolean).forEach(function (id) {
+				var chip = document.querySelector('.search-chip[data-value="' + id + '"]');
+				var label = chip ? chip.textContent.trim() : id;
+				items.push({ label: label, key: 'subject:' + id });
+			});
+		}
+		if (state.authorId && authorInput && authorInput.value) {
+			items.push({ label: 'Author: ' + authorInput.value, key: 'author' });
+		}
+		if (state.openAccess) {
+			items.push({ label: 'Open access only', key: 'oa' });
+		}
+		if (state.category && categorySelect) {
+			var catLabel = state.category;
+			for (var ci = 0; ci < categorySelect.options.length; ci++) {
+				if (categorySelect.options[ci].value === state.category) { catLabel = categorySelect.options[ci].text; break; }
+			}
+			items.push({ label: catLabel, key: 'category' });
+		}
+		if (state.dateFrom || state.dateTo) {
+			items.push({ label: 'Date: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…'), key: 'date' });
+		}
+		if (state.hasClinicalTrials !== null) {
+			items.push({ label: state.hasClinicalTrials ? 'With clinical trials' : 'Without clinical trials', key: 'show' });
+		}
+
+		desktopTokens.hidden = items.length === 0;
+		if (items.length === 0) return;
+
+		desktopTokens.innerHTML = '<span class="search-tokens__label">Filtering by:</span>' +
+			items.map(function (item) {
+				return '<span class="search-token">' + escHtml(item.label) +
+					'<button class="search-token__x" data-key="' + escHtml(item.key) + '" aria-label="Remove ' + escHtml(item.label) + ' filter">×</button>' +
+					'</span>';
+			}).join('') +
+			'<button class="search-clear-all" id="papers-desktop-clear-all">Clear all</button>';
+
+		desktopTokens.querySelectorAll('.search-token__x').forEach(function (btn) {
+			btn.addEventListener('click', function () { removeDesktopToken(btn.dataset.key); });
+		});
+		var clearAllBtn = document.getElementById('papers-desktop-clear-all');
+		if (clearAllBtn) {
+			clearAllBtn.addEventListener('click', function () {
+				state.subjects = '';
+				state.authorId = '';
+				state.openAccess = false;
+				state.category = '';
+				state.dateFrom = '';
+				state.dateTo = '';
+				state.hasClinicalTrials = null;
+				state.page = 1;
+				[conditionChips, areaChips].forEach(function (g) {
+					if (g) g.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+				});
+				if (authorInput)     authorInput.value = '';
+				if (authorHidden)    authorHidden.value = '';
+				if (openAccessCheck) openAccessCheck.checked = false;
+				if (categorySelect)  categorySelect.value = '';
+				if (dateFromInput)   dateFromInput.value = '';
+				if (dateToInput)     dateToInput.value = '';
+				hideCategoryPanel();
+				fetchPage(1, false);
+			});
+		}
+	}
+
+	function removeDesktopToken(key) {
+		if (key.indexOf('subject:') === 0) {
+			var removeId = key.slice(8);
+			var ids = (state.subjects || '').split(',').filter(Boolean);
+			state.subjects = ids.filter(function (x) { return x !== removeId; }).join(',');
+			var chip = document.querySelector('.search-chip[data-value="' + removeId + '"]');
+			if (chip) chip.classList.remove('search-chip--active');
+		} else if (key === 'author') {
+			state.authorId = '';
+			if (authorInput) authorInput.value = '';
+			if (authorHidden) authorHidden.value = '';
+		} else if (key === 'oa') {
+			state.openAccess = false;
+			if (openAccessCheck) openAccessCheck.checked = false;
+		} else if (key === 'category') {
+			state.category = '';
+			if (categorySelect) categorySelect.value = '';
+			hideCategoryPanel();
+		} else if (key === 'date') {
+			state.dateFrom = '';
+			state.dateTo = '';
+			if (dateFromInput) dateFromInput.value = '';
+			if (dateToInput) dateToInput.value = '';
+		} else if (key === 'show') {
+			state.hasClinicalTrials = null;
+			state.relevant = requireRelevant;
+			if (relevantSelect) relevantSelect.value = String(requireRelevant);
+		}
+		state.page = 1;
+		fetchPage(1, false);
+	}
+
+	function wireDesktopChipGroup(group) {
+		if (!group) return;
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.search-chip');
+			if (!chip) return;
+			chip.classList.toggle('search-chip--active');
+			state.subjects = collectDesktopSubjects();
+			state.page = 1;
+			fetchPage(1, false);
+		});
+	}
+	wireDesktopChipGroup(conditionChips);
+	wireDesktopChipGroup(areaChips);
+
+	if (moreFiltersBtn && advancedPanel) {
+		moreFiltersBtn.addEventListener('click', function () {
+			var open = !advancedPanel.hidden;
+			advancedPanel.hidden = open;
+			var arrow = document.getElementById('papers-more-arrow');
+			var label = moreFiltersBtn.querySelector('.search-more-btn__label');
+			if (arrow) arrow.classList.toggle('search-more-btn__arrow--open', !open);
+			if (label) label.textContent = open ? 'More filters' : 'Fewer filters';
+		});
+	}
+
+	document.querySelectorAll('.search-hero__hint-tag').forEach(function (btn) {
+		btn.addEventListener('click', function () {
+			var hint = btn.dataset.hint || '';
+			if (searchInput) searchInput.value = hint;
+			state.keyword = hint;
+			state.page = 1;
+			fetchPage(1, false);
+		});
+	});
 
 	// ── Init ───────────────────────────────────────────────────────────────
 	readURL();
@@ -1055,6 +1235,15 @@
 
 	fetchPage(state.page, false);
 
+	// Background fetch for trials tab count badge
+	if (tabTrialsCount) {
+		var trialsCountUrl = articlesEndpoint.replace('/articles/', '/trials/') + '?format=json&page_size=1' + (teamId ? '&team_id=' + teamId : '');
+		fetch(trialsCountUrl)
+			.then(function (r) { return r.json(); })
+			.then(function (d) { if (d.count) tabTrialsCount.textContent = d.count.toLocaleString(); })
+			.catch(function () {});
+	}
+
 	// ── Mobile UI ──────────────────────────────────────────────────────────
 	// Wires the mobile search bar, filter token strip, and bottom sheet.
 	// All state changes call the same fetchPage() used by desktop controls.
@@ -1078,22 +1267,21 @@
 
 	var draft = {};
 
-	function subjectIdForGroup(groupId) {
+	function activeIdsForGroup(groupId) {
 		var group = document.getElementById(groupId);
 		if (!group) return '';
-		var ids = (state.subjects || '').split(',').filter(Boolean);
-		for (var i = 0; i < ids.length; i++) {
-			if (group.querySelector('.sheet-chip[data-value="' + ids[i] + '"]')) return ids[i];
-		}
-		return '';
+		var allIds = (state.subjects || '').split(',').filter(Boolean);
+		var groupVals = Array.from(group.querySelectorAll('.sheet-chip[data-value]'))
+			.map(function (c) { return c.dataset.value; }).filter(Boolean);
+		return allIds.filter(function (id) { return groupVals.indexOf(id) !== -1; }).join(',');
 	}
 
 	function resetDraft() {
 		draft = {
 			category:              state.category,
 			subjects:              state.subjects,
-			conditionSubject:      subjectIdForGroup('papers-sheet-conditions'),
-			researchAreaSubject:   subjectIdForGroup('papers-sheet-research-areas'),
+			conditionSubject:      activeIdsForGroup('papers-sheet-conditions'),
+			researchAreaSubject:   activeIdsForGroup('papers-sheet-research-areas'),
 			sort:                  state.sort,
 			relevant:              state.relevant,
 			hasClinicalTrials:     state.hasClinicalTrials,
@@ -1120,9 +1308,21 @@
 		else                                        showVal = String(draft.relevant);
 		setActiveChip('papers-sheet-show', showVal);
 
-		// Condition / research-area: single-select chip groups (advanced) or combined (standard)
-		setActiveChip('papers-sheet-conditions',     draft.conditionSubject    || '');
-		setActiveChip('papers-sheet-research-areas', draft.researchAreaSubject || '');
+		// Condition / research-area: multi-select chip groups (advanced) or combined (standard)
+		var condGroup = document.getElementById('papers-sheet-conditions');
+		if (condGroup) {
+			var condIds = (draft.conditionSubject || '').split(',').filter(Boolean);
+			condGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
+				chip.classList.toggle('active', Boolean(chip.dataset.value) && condIds.indexOf(chip.dataset.value) !== -1);
+			});
+		}
+		var raGroup = document.getElementById('papers-sheet-research-areas');
+		if (raGroup) {
+			var raIds = (draft.researchAreaSubject || '').split(',').filter(Boolean);
+			raGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
+				chip.classList.toggle('active', Boolean(chip.dataset.value) && raIds.indexOf(chip.dataset.value) !== -1);
+			});
+		}
 		var subjectsGroup = document.getElementById('papers-sheet-subjects');
 		if (subjectsGroup) {
 			if (subjectsGroup.dataset.multi === 'true') {
@@ -1459,8 +1659,14 @@
 			state.category          = draft.category          !== undefined ? draft.category          : state.category;
 			if (draft.conditionSubject !== undefined || draft.researchAreaSubject !== undefined) {
 				state.subjects = [draft.conditionSubject || '', draft.researchAreaSubject || ''].filter(Boolean).join(',');
-				if (conditionsSelect)    conditionsSelect.value    = draft.conditionSubject    || '';
-				if (researchAreasSelect) researchAreasSelect.value = draft.researchAreaSubject || '';
+				if (conditionsSelect) {
+					var condSyncIds = (draft.conditionSubject || '').split(',').filter(Boolean);
+					Array.from(conditionsSelect.options).forEach(function (o) { o.selected = condSyncIds.indexOf(o.value) !== -1; });
+				}
+				if (researchAreasSelect) {
+					var raSyncIds = (draft.researchAreaSubject || '').split(',').filter(Boolean);
+					Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = raSyncIds.indexOf(o.value) !== -1; });
+				}
 			} else {
 				state.subjects = draft.subjects !== undefined ? draft.subjects : state.subjects;
 			}

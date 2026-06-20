@@ -27,97 +27,139 @@
 {{- $siteWide := false -}}
 {{- if isset . "siteWide" -}}{{- if .siteWide -}}{{- $siteWide = true -}}{{- end -}}{{- end -}}
 
+{{- $conditionPages := slice -}}
+{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $conditionPages = $conditionPages | append . -}}
+	{{- end -}}
+{{- end -}}
+{{- $conditionPages = sort $conditionPages "Title" -}}
+{{- $researchAreaPages := slice -}}
+{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $researchAreaPages = $researchAreaPages | append . -}}
+	{{- end -}}
+{{- end -}}
+{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
+
 <!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
 <div class="d-none d-lg-block">
+{{- if $advanced }}
+
+<!-- ── ADVANCED SEARCH: chip filter card ── -->
+<div class="search-filter-wrap" id="papers-filters">
+	<div class="container">
+
+		<div class="search-filter-card">
+			{{- if $conditionPages }}
+			<div class="search-filter-group">
+				<div class="search-filter-label">Filter by condition</div>
+				<div class="search-chips" id="papers-condition-chips">
+					{{- range $conditionPages }}
+					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					{{- end }}
+				</div>
+			</div>
+			{{- end }}
+
+			{{- if $researchAreaPages }}
+			<div class="search-filter-group">
+				<div class="search-filter-label">Research focus</div>
+				<div class="search-chips" id="papers-area-chips">
+					{{- range $researchAreaPages }}
+					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					{{- end }}
+				</div>
+			</div>
+			{{- end }}
+
+			<button type="button" class="search-more-btn" id="papers-more-filters-btn">
+				<span class="search-more-btn__arrow" id="papers-more-arrow">▼</span>
+				<span class="search-more-btn__label">More filters</span>
+			</button>
+
+			<div class="search-advanced-panel" id="papers-advanced-panel" hidden>
+				<form id="papers-filter-form" action="javascript:void(0)">
+					<div class="row g-3 align-items-end mt-1">
+						<div class="col-12 col-md-2">
+							<label for="papers-sort-select">Sort by</label>
+							<select class="form-select" id="papers-sort-select">
+								<option value="date">Newest published</option>
+								<option value="date_asc">Oldest published</option>
+								<option value="discovery">Recently discovered</option>
+								<option value="discovery_asc">First discovered</option>
+								<option value="title_asc">Title A→Z</option>
+								<option value="title_desc">Title Z→A</option>
+								<option value="relevance">AI relevance</option>
+							</select>
+						</div>
+						<div class="col-12 col-md-3" style="position:relative">
+							<label for="papers-author-input">Author name</label>
+							<input type="text" class="form-control" id="papers-author-input" placeholder="Search by author…" autocomplete="off">
+							<input type="hidden" id="papers-author-id">
+							<div id="papers-author-suggestions" class="author-suggestions" hidden></div>
+						</div>
+						<div class="col-12 col-md-4">
+							<label>Published between</label>
+							<div class="d-flex gap-2 align-items-center">
+								<input type="date" class="form-control" id="papers-date-from">
+								<span style="font-size:13px;color:var(--color-muted)">to</span>
+								<input type="date" class="form-control" id="papers-date-to">
+							</div>
+						</div>
+						<div class="col-12 col-md-3 d-flex align-items-center" style="padding-top:24px">
+							<div class="search-toggle-row">
+								<input type="checkbox" class="search-toggle-input" id="papers-open-access" role="switch">
+								<label for="papers-open-access" class="search-toggle-label">
+									Open access only <span class="search-toggle-hint">— free to read</span>
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="d-flex gap-2 mt-3 align-items-center flex-wrap">
+						<select class="form-select" id="papers-category-select" style="max-width:200px;font-size:13px">
+							<option value="">All categories</option>
+						</select>
+						<select class="form-select" id="papers-relevant-select" style="max-width:210px;font-size:13px">
+							<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers only</option>
+							<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
+							<option value="has_clinical_trials_true">With clinical trials</option>
+							<option value="has_clinical_trials_false">Without clinical trials</option>
+						</select>
+						<button type="button" class="btn-outline-teal" id="papers-reset-btn" style="padding:8px 16px;font-size:13px">Reset</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="search-tokens" id="papers-desktop-tokens" hidden></div>
+
+		<div class="mt-2 d-flex align-items-center justify-content-between">
+			<span class="results-count" id="papers-result-count"></span>
+			<div class="download-dropdown">
+				<button class="btn-download" id="papers-download-toggle" aria-haspopup="true" aria-expanded="false" data-umami-event="click--research-papers-download" data-umami-event-context="{{ $contextTitle }}">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+						<polyline points="7 10 12 15 17 10"/>
+						<line x1="12" y1="15" x2="12" y2="3"/>
+					</svg>
+					Download
+					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+				</button>
+				<ul class="download-menu" role="menu">
+					<li><button class="download-option" data-scope="page" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="page">Current page</button></li>
+					<li><button class="download-option" data-scope="all" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="all">All matching results</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
+{{- else }}
+
 <div class="filter-bar" id="papers-filters">
 	<div class="container">
 		<form id="papers-filter-form" action="javascript:void(0)">
-			{{- $conditionPages := slice -}}
-			{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
-				{{- if and .Params.api .Params.api.subject_id -}}
-					{{- $conditionPages = $conditionPages | append . -}}
-				{{- end -}}
-			{{- end -}}
-			{{- $conditionPages = sort $conditionPages "Title" -}}
-			{{- $researchAreaPages := slice -}}
-			{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
-				{{- if and .Params.api .Params.api.subject_id -}}
-					{{- $researchAreaPages = $researchAreaPages | append . -}}
-				{{- end -}}
-			{{- end -}}
-			{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
-			{{- if $advanced }}
-			<!-- Row 0: search -->
-			<div class="row g-2 align-items-end mb-2">
-				<div class="col-12">
-					<label for="papers-search-input">Search papers</label>
-					<input type="text" class="form-control" id="papers-search-input" placeholder="e.g. remyelination, stem cell…">
-				</div>
-			</div>
-			<!-- Row 1: scope selectors -->
-			{{- if or $conditionPages $researchAreaPages }}
-			<div class="row g-2 align-items-end mb-2">
-				{{- if $conditionPages }}
-				<div class="col-12 col-md-3">
-					<label for="papers-conditions-select">Condition</label>
-					<select class="form-select" id="papers-conditions-select">
-						<option value="">All conditions</option>
-						{{- range $conditionPages }}
-						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-						{{- end }}
-					</select>
-				</div>
-				{{- end }}
-				{{- if $researchAreaPages }}
-				<div class="col-12 col-md-3">
-					<label for="papers-research-areas-select">Research area</label>
-					<select class="form-select" id="papers-research-areas-select">
-						<option value="">All research areas</option>
-						{{- range $researchAreaPages }}
-						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-						{{- end }}
-					</select>
-				</div>
-				{{- end }}
-			</div>
-			{{- end }}
-			<!-- Row 2: secondary filters + action buttons -->
-			<div class="row g-2 align-items-end">
-				<div class="col-12 col-md-2">
-					<label for="papers-category-select">Category</label>
-					<select class="form-select" id="papers-category-select">
-						<option value="">All categories</option>
-					</select>
-				</div>
-				<div class="col-12 col-md-2">
-					<label for="papers-sort-select">Sort by</label>
-					<select class="form-select" id="papers-sort-select">
-						<option value="date">Newest published</option>
-						<option value="date_asc">Oldest published</option>
-						<option value="discovery">Recently discovered</option>
-						<option value="discovery_asc">First discovered</option>
-						<option value="title_asc">Title A→Z</option>
-						<option value="title_desc">Title Z→A</option>
-						<option value="relevance">AI relevance</option>
-					</select>
-				</div>
-				<div class="col-12 col-md-2">
-					<label for="papers-relevant-select">Show</label>
-					<select class="form-select" id="papers-relevant-select">
-						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers</option>
-						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
-						<option value="has_clinical_trials_true">With clinical trials</option>
-						<option value="has_clinical_trials_false">Without clinical trials</option>
-					</select>
-				</div>
-				<div class="col-6 col-md-auto d-flex align-items-end">
-					<button type="submit" class="btn-amber w-100" id="papers-search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Papers: Search" data-umami-event-context="{{ $contextTitle }}">Search</button>
-				</div>
-				<div class="col-6 col-md-auto d-flex align-items-end">
-					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
-				</div>
-			</div>
-			{{- else }}
 			<!-- Row 1: main filter controls (standard) -->
 			<div class="row g-2 align-items-end">
 				<div class="col-12 col-md-3">
@@ -178,32 +220,6 @@
 					<button type="button" class="btn-outline-teal w-100" id="papers-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>
-			{{- end }}
-			{{- if $advanced }}
-			<!-- Row 2: advanced filters (author, open-access, date range) -->
-			<div class="row g-2 align-items-end mt-2">
-				<div class="col-12 col-md-4" style="position: relative;">
-					<label for="papers-author-input">Author</label>
-					<input type="text" class="form-control" id="papers-author-input" placeholder="Search by author name…" autocomplete="off">
-					<input type="hidden" id="papers-author-id">
-					<div id="papers-author-suggestions" class="author-suggestions" hidden></div>
-				</div>
-				<div class="col-12 col-md-4">
-					<label>Published date</label>
-					<div class="d-flex gap-2 align-items-center">
-						<input type="date" class="form-control" id="papers-date-from">
-						<span style="font-size: 13px; color: var(--color-muted);">to</span>
-						<input type="date" class="form-control" id="papers-date-to">
-					</div>
-				</div>
-				<div class="col-12 col-md-4 d-flex align-items-end" style="padding-bottom: 4px;">
-					<div class="form-check">
-						<input class="form-check-input" type="checkbox" id="papers-open-access">
-						<label class="form-check-label" for="papers-open-access">Open access only</label>
-					</div>
-				</div>
-			</div>
-			{{- end }}
 		</form>
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="papers-result-count"></span>
@@ -225,6 +241,8 @@
 		</div>
 	</div>
 </div>
+
+{{- end }}
 </div>{{/* end d-none d-lg-block */}}
 
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
@@ -297,8 +315,8 @@
 		{{- if $conditionPagesMobile }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Condition</div>
-			<div class="sheet-chips" id="papers-sheet-conditions">
-				<button type="button" class="sheet-chip active" data-value="">All conditions</button>
+			<div class="sheet-chips" id="papers-sheet-conditions" data-multi="true">
+				<button type="button" class="sheet-chip" data-value="">Clear selection</button>
 				{{- range $conditionPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
@@ -308,8 +326,8 @@
 		{{- if $researchAreaPagesMobile }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Research area</div>
-			<div class="sheet-chips" id="papers-sheet-research-areas">
-				<button type="button" class="sheet-chip active" data-value="">All research areas</button>
+			<div class="sheet-chips" id="papers-sheet-research-areas" data-multi="true">
+				<button type="button" class="sheet-chip" data-value="">Clear selection</button>
 				{{- range $researchAreaPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}

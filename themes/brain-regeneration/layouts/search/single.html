@@ -1,32 +1,54 @@
 {{ define "main" }}
 
-<!-- ── BREADCRUMB ── -->
-<div class="breadcrumb-nav-dark">
-	<div class="container">
-		<a href="{{ "/" | relURL }}">Home</a>
-		<span>/</span>
-		<strong>Advanced Search — Clinical Trials</strong>
-	</div>
-</div>
+{{/* Build condition list for chip filters */}}
+{{- $conditionPages := slice -}}
+{{- range where (where .Site.AllPages "Section" "conditions") "Kind" "section" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $conditionPages = $conditionPages | append . -}}
+	{{- end -}}
+{{- end -}}
+{{- $conditionPages = sort $conditionPages "Title" -}}
 
-<!-- ── HERO ── -->
-<section class="hero" style="padding: 56px 0 64px;">
+<!-- ── SEARCH HERO ── -->
+<section class="search-hero">
 	<div class="container">
 		<h1>{{ .Title }}</h1>
-		<p>{{ .Params.hero_description | default .Description }}</p>
+		<p class="search-hero__desc">{{ .Params.hero_description | default .Description }}</p>
+		<div class="search-hero__bar">
+			<input
+				type="search"
+				class="search-hero__input"
+				id="search-input"
+				placeholder="e.g. stem cell therapy, remyelination…"
+				autocomplete="off">
+			<button
+				class="search-hero__btn"
+				type="button"
+				id="search-btn"
+				data-umami-event="Trials: Search"
+				data-umami-event-context="Advanced Search">Search</button>
+		</div>
+		<div class="search-hero__hints">
+			<span class="search-hero__hints-label">Try:</span>
+			<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="ALS">ALS</button>
+		</div>
 	</div>
 </section>
 
 <!-- ── SECTION TABS ── -->
 {{/* The parent section page is the Research Papers page */}}
 {{ $rpPage := .Parent }}
-<div class="section-tabs">
+<div class="section-tabs section-tabs--white">
 	<div class="container">
 		<nav class="section-tabs-nav">
 			{{ if $rpPage }}
-			<a href="{{ $rpPage.RelPermalink }}" class="section-tab">Research Papers</a>
+			<a href="{{ $rpPage.RelPermalink }}" class="section-tab">Research Papers<span class="section-tab__count" id="tab-papers-count"></span></a>
 			{{ end }}
-			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Clinical Trials</a>
+			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Clinical Trials<span class="section-tab__count" id="tab-trials-count"></span></a>
 		</nav>
 	</div>
 </div>
@@ -59,170 +81,125 @@
 	</div>
 </div>
 
-<!-- ── FILTER BAR (desktop only) ── -->
-{{/* Build condition and research-area lists for subject multi-select */}}
-{{- $conditionPages := slice -}}
-{{- range where (where .Site.AllPages "Section" "conditions") "Kind" "section" -}}
-	{{- if and .Params.api .Params.api.subject_id -}}
-		{{- $conditionPages = $conditionPages | append . -}}
-	{{- end -}}
-{{- end -}}
-{{- $conditionPages = sort $conditionPages "Title" -}}
-{{- $researchAreaPages := slice -}}
-{{- range where (where .Site.AllPages "Section" "research-areas") "Kind" "page" -}}
-	{{- if and .Params.api .Params.api.subject_id -}}
-		{{- $researchAreaPages = $researchAreaPages | append . -}}
-	{{- end -}}
-{{- end -}}
-{{- $researchAreaPages = sort $researchAreaPages "Title" -}}
-
-<div class="d-none d-lg-block">
-<div class="filter-bar" id="trials-filters">
+<!-- ── CHIP FILTER CARD (desktop only) ── -->
+<div class="search-filter-wrap d-none d-lg-block" id="trials-filters">
 	<div class="container">
-		<form id="trials-filter-form" action="javascript:void(0)">
-			<!-- Row 1: text search + identifier lookup + action buttons -->
-			<div class="row g-2 align-items-end mb-2">
-				<div class="col-12 col-md-4">
-					<label for="search-input">Search trials</label>
-					<input type="text" class="form-control" id="search-input" placeholder="e.g. stem cell, remyelination…">
-				</div>
-				<div class="col-12 col-md-3">
-					<label for="filter-identifiers">Identifiers</label>
-					<input type="text" class="form-control" id="filter-identifiers" placeholder="e.g. NCT02521311, 2020-001234-12" autocomplete="off">
-				</div>
-				<div class="col-12 col-md-2">
-					<label for="filter-acronym">Acronym</label>
-					<input type="text" class="form-control" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
-				</div>
-				<div class="col-12 col-md-3 d-flex gap-2 align-items-end">
-					<button type="submit" class="btn-amber flex-fill" id="search-btn" style="padding: 8px 12px; font-size: 13px;" data-umami-event="Advanced Search: Trials Search">Search</button>
-					<button type="button" class="btn-outline-teal flex-fill" id="reset-filters" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+		<div class="search-filter-card">
+			{{- if $conditionPages }}
+			<div class="search-filter-group">
+				<div class="search-filter-label">Filter by condition</div>
+				<div class="search-chips" id="trials-condition-chips">
+					{{- range $conditionPages }}
+					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					{{- end }}
 				</div>
 			</div>
-			<!-- Row 2: result-set filters -->
-			<div class="row g-2 align-items-end mb-2">
-				<div class="col-6 col-md-2">
-					<label for="filter-phase">Phase</label>
-					<select class="form-select" id="filter-phase">
-						<option value="">All phases</option>
-						<option value="PHASE1">Phase 1</option>
-						<option value="PHASE2">Phase 2</option>
-						<option value="PHASE3">Phase 3</option>
-						<option value="PHASE4">Phase 4</option>
-					</select>
-				</div>
-				<div class="col-6 col-md-3">
-					<label for="filter-status">Status</label>
-					<select class="form-select" id="filter-status">
-						<option value="">All statuses</option>
-						<option value="RECRUITING">Recruiting</option>
-						<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
-						<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
-						<option value="COMPLETED">Completed</option>
-					</select>
-				</div>
-				<div class="col-6 col-md-2">
-					<label for="filter-study-type">Study type</label>
-					<select class="form-select" id="filter-study-type">
-						<option value="">All types</option>
-						<option value="interventional">Interventional</option>
-						<option value="observational">Observational</option>
-					</select>
-				</div>
-				<div class="col-6 col-md-3">
-					<label for="filter-country">Country</label>
-					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
-					<datalist id="country-list">
-						<option value="Argentina">
-						<option value="Australia">
-						<option value="Austria">
-						<option value="Belgium">
-						<option value="Brazil">
-						<option value="Canada">
-						<option value="China">
-						<option value="Czech Republic">
-						<option value="Denmark">
-						<option value="Finland">
-						<option value="France">
-						<option value="Germany">
-						<option value="Greece">
-						<option value="Hungary">
-						<option value="India">
-						<option value="Ireland">
-						<option value="Israel">
-						<option value="Italy">
-						<option value="Japan">
-						<option value="Mexico">
-						<option value="Netherlands">
-						<option value="New Zealand">
-						<option value="Norway">
-						<option value="Poland">
-						<option value="Portugal">
-						<option value="Romania">
-						<option value="Russia">
-						<option value="South Korea">
-						<option value="Spain">
-						<option value="Sweden">
-						<option value="Switzerland">
-						<option value="Turkey">
-						<option value="United Kingdom">
-						<option value="United States">
-					</datalist>
-				</div>
-				<div class="col-6 col-md-2">
-					<label for="sort-order">Sort by</label>
-					<select class="form-select" id="sort-order">
-						<option value="-discovery_date">Date added (newest first)</option>
-						<option value="discovery_date">Date added (oldest first)</option>
-						<option value="-last_updated">Last updated (newest first)</option>
-						<option value="last_updated">Last updated (oldest first)</option>
-						<option value="-published_date">Published date (newest first)</option>
-						<option value="published_date">Published date (oldest first)</option>
-						<option value="title">Title (A–Z)</option>
-						<option value="-title">Title (Z–A)</option>
-					</select>
-				</div>
-			</div>
-			<!-- Row 3: advanced filters -->
-			<div class="row g-2 align-items-end mb-2">
-				{{ if or $conditionPages $researchAreaPages }}
-				<div class="col-12 col-md-4">
-					<label for="filter-subjects">Narrow to condition / research area</label>
-					<select class="form-select" id="filter-subjects" multiple size="4" style="height: auto;">
-						{{ if $conditionPages }}
-						<optgroup label="Conditions">
-							{{- range $conditionPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
-						{{ end }}
-						{{ if $researchAreaPages }}
-						<optgroup label="Research Areas">
-							{{- range $researchAreaPages }}
-							<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-							{{- end }}
-						</optgroup>
-						{{ end }}
-					</select>
-					<div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl / ⌘ to select multiple</div>
-				</div>
-				{{ end }}
-				<div class="col-12 col-md-4">
-					<label>Date registered</label>
-					<div class="d-flex gap-2 align-items-center">
-						<input type="date" class="form-control" id="filter-date-from">
-						<span style="font-size: 13px; color: var(--color-muted);">to</span>
-						<input type="date" class="form-control" id="filter-date-to">
+			{{- end }}
+
+			<button type="button" class="search-more-btn" id="trials-more-filters-btn">
+				<span class="search-more-btn__arrow" id="trials-more-arrow">▼</span>
+				<span class="search-more-btn__label">More filters</span>
+			</button>
+
+			<div class="search-advanced-panel" id="trials-advanced-panel" hidden>
+				<form id="trials-filter-form" action="javascript:void(0)">
+					<div class="row g-3 align-items-end mt-1">
+						<div class="col-12 col-md-2">
+							<label for="sort-order" class="form-label" style="font-size:13px;">Sort by</label>
+							<select class="form-select form-select-sm" id="sort-order">
+								<option value="-discovery_date">Newest first</option>
+								<option value="discovery_date">Oldest first</option>
+								<option value="-last_updated">Last updated</option>
+								<option value="-published_date">Published (newest)</option>
+								<option value="published_date">Published (oldest)</option>
+								<option value="title">Title A–Z</option>
+								<option value="-title">Title Z–A</option>
+							</select>
+						</div>
+						<div class="col-12 col-md-2">
+							<label for="filter-phase" class="form-label" style="font-size:13px;">Phase</label>
+							<select class="form-select form-select-sm" id="filter-phase">
+								<option value="">All phases</option>
+								<option value="PHASE1">Phase 1</option>
+								<option value="PHASE2">Phase 2</option>
+								<option value="PHASE3">Phase 3</option>
+								<option value="PHASE4">Phase 4</option>
+							</select>
+						</div>
+						<div class="col-12 col-md-2">
+							<label for="filter-status" class="form-label" style="font-size:13px;">Status</label>
+							<select class="form-select form-select-sm" id="filter-status">
+								<option value="">All statuses</option>
+								<option value="RECRUITING">Recruiting</option>
+								<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
+								<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
+								<option value="COMPLETED">Completed</option>
+							</select>
+						</div>
+						<div class="col-12 col-md-2">
+							<label for="filter-study-type" class="form-label" style="font-size:13px;">Study type</label>
+							<select class="form-select form-select-sm" id="filter-study-type">
+								<option value="">All types</option>
+								<option value="interventional">Interventional</option>
+								<option value="observational">Observational</option>
+							</select>
+						</div>
+						<div class="col-12 col-md-4">
+							<label class="form-label" style="font-size:13px;">Date registered</label>
+							<div class="d-flex gap-2 align-items-center">
+								<input type="date" class="form-control form-control-sm" id="filter-date-from">
+								<span style="font-size:13px;color:var(--color-muted);">to</span>
+								<input type="date" class="form-control form-control-sm" id="filter-date-to">
+							</div>
+						</div>
+						<div class="col-12 col-md-3">
+							<label for="filter-country" class="form-label" style="font-size:13px;">Country</label>
+							<input type="text" class="form-control form-control-sm" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
+							<datalist id="country-list">
+								<option value="Argentina"><option value="Australia"><option value="Austria">
+								<option value="Belgium"><option value="Brazil"><option value="Canada">
+								<option value="China"><option value="Czech Republic"><option value="Denmark">
+								<option value="Finland"><option value="France"><option value="Germany">
+								<option value="Greece"><option value="Hungary"><option value="India">
+								<option value="Ireland"><option value="Israel"><option value="Italy">
+								<option value="Japan"><option value="Mexico"><option value="Netherlands">
+								<option value="New Zealand"><option value="Norway"><option value="Poland">
+								<option value="Portugal"><option value="Romania"><option value="Russia">
+								<option value="South Korea"><option value="Spain"><option value="Sweden">
+								<option value="Switzerland"><option value="Turkey">
+								<option value="United Kingdom"><option value="United States">
+							</datalist>
+						</div>
+						<div class="col-12 col-md-3">
+							<label for="filter-identifiers" class="form-label" style="font-size:13px;">Identifiers</label>
+							<input type="text" class="form-control form-control-sm" id="filter-identifiers" placeholder="e.g. NCT02521311" autocomplete="off">
+						</div>
+						<div class="col-12 col-md-2">
+							<label for="filter-acronym" class="form-label" style="font-size:13px;">Acronym</label>
+							<input type="text" class="form-control form-control-sm" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
+						</div>
+						<div class="col-12 col-md-2 d-flex align-items-end gap-3">
+							<div class="search-toggle-row">
+								<input type="checkbox" class="search-toggle-input" id="filter-has-results" role="switch">
+								<label class="search-toggle-label" for="filter-has-results">Results posted</label>
+							</div>
+						</div>
+						<div class="col-12 col-md-1 d-flex align-items-end">
+							<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding:6px 12px;font-size:13px;">Reset</button>
+						</div>
 					</div>
-				</div>
-				<div class="col-12 col-md-2">
-					<div class="form-check" style="margin-top: 24px;">
-						<input class="form-check-input" type="checkbox" id="filter-has-results">
-						<label class="form-check-label" for="filter-has-results">Only trials with results posted</label>
-					</div>
-				</div>
+					{{/* Hidden filter-subjects for JS compatibility */}}
+					<select id="filter-subjects" hidden multiple aria-hidden="true">
+						{{- range $conditionPages }}
+						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+						{{- end }}
+					</select>
+				</form>
 			</div>
-		</form>
+		</div>
+
+		<div class="search-tokens" id="trials-desktop-tokens" hidden></div>
+
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="results-count"></span>
 			<div class="download-dropdown">
@@ -242,7 +219,7 @@
 			</div>
 		</div>
 	</div>
-</div></div>{{/* end d-none d-lg-block */}}
+</div>
 
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
 <div class="mobile-feeds-bar d-lg-none" id="trials-mobile-bar">
@@ -316,15 +293,12 @@
 				<button type="button" class="sheet-chip" data-value="observational">Observational</button>
 			</div>
 		</div>
-		{{ if or $conditionPages $researchAreaPages }}
+		{{ if $conditionPages }}
 		<div class="sheet-group">
-			<div class="sheet-group-label">Condition / Research area</div>
+			<div class="sheet-group-label">Condition</div>
 			<div class="sheet-chips" id="trials-sheet-subjects" data-multi="true">
 				<button type="button" class="sheet-chip" data-value="">Clear selection</button>
 				{{- range $conditionPages }}
-				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
-				{{- end }}
-				{{- range $researchAreaPages }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
 			</div>
