@@ -53,7 +53,13 @@
 		<div class="search-filter-card">
 			{{- if $conditionPages }}
 			<div class="search-filter-group">
-				<div class="search-filter-label">Filter by condition</div>
+				<div class="search-filter-label-row">
+					<span class="search-filter-label">Filter by condition</span>
+					<div class="subjects-mode" id="papers-subjects-mode">
+						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">Match all</button>
+						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Match any</button>
+					</div>
+				</div>
 				<div class="search-chips" id="papers-condition-chips">
 					{{- range $conditionPages }}
 					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
@@ -303,6 +309,15 @@
 				{{- range $researchAreaPagesMobile }}
 				<button type="button" class="sheet-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 				{{- end }}
+			</div>
+		</div>
+		{{- end }}
+		{{- if or $conditionPagesMobile $researchAreaPagesMobile }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Condition match</div>
+			<div class="sheet-chips" id="papers-sheet-subjects-mode">
+				<button type="button" class="sheet-chip active" data-value="all">Match all selected</button>
+				<button type="button" class="sheet-chip" data-value="any">Match any selected</button>
 			</div>
 		</div>
 		{{- end }}

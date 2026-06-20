@@ -50,21 +50,22 @@
 	var normaliseStatus  = function (s) { return s ? s.toUpperCase().replace(/ /g, '_') : ''; };
 
 	var state = {
-		page:        1,
-		totalPages:  1,
-		total:       0,
-		keyword:     '',
-		identifiers: '',
-		acronym:     '',
-		phase:       listEl.dataset.defaultPhase  || '',
-		status:      normaliseStatus(rawDefaultStatus),
-		country:     '',
-		sort:        '-discovery_date',
-		hasResults:  false,
-		subjects:    '',
-		studyType:   '',
-		dateFrom:    '',
-		dateTo:      '',
+		page:         1,
+		totalPages:   1,
+		total:        0,
+		keyword:      '',
+		identifiers:  '',
+		acronym:      '',
+		phase:        listEl.dataset.defaultPhase  || '',
+		status:       normaliseStatus(rawDefaultStatus),
+		country:      '',
+		sort:         '-discovery_date',
+		hasResults:   false,
+		subjects:     '',
+		subjectsMode: 'all', // 'all' = AND (?subjects=), 'any' = OR (?subjects_any=)
+		studyType:    '',
+		dateFrom:     '',
+		dateTo:       '',
 	};
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -93,7 +94,7 @@
 		if (state.status)      url.searchParams.set('recruitment_status', state.status);
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',        'true');
-		if (state.subjects)    url.searchParams.set('subjects',            state.subjects);
+		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
 		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
 		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
@@ -332,6 +333,8 @@
 		} else {
 			state.subjects = filterSubjects ? Array.from(filterSubjects.selectedOptions).map(function (o) { return o.value; }).join(',') : '';
 		}
+		var modeBtn = document.querySelector('#trials-subjects-mode .subjects-mode-btn.active');
+		if (modeBtn) state.subjectsMode = modeBtn.dataset.mode || 'all';
 		state.studyType    = filterStudyType ? filterStudyType.value : '';
 		state.dateFrom     = filterDateFrom  ? filterDateFrom.value  : '';
 		state.dateTo       = filterDateTo    ? filterDateTo.value    : '';
@@ -394,9 +397,16 @@
 		state.sort         = '-discovery_date';
 		state.hasResults   = false;
 		state.subjects     = '';
+		state.subjectsMode = 'all';
 		state.studyType    = '';
 		state.dateFrom     = '';
 		state.dateTo       = '';
+		if (trialsSubjectsModeEl) {
+			trialsSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+				b.classList.toggle('active', b.dataset.mode === 'all');
+				b.setAttribute('aria-pressed', b.dataset.mode === 'all' ? 'true' : 'false');
+			});
+		}
 		if (searchInput)       searchInput.value        = '';
 		if (filterIdentifiers) filterIdentifiers.value  = '';
 		if (filterAcronym)     filterAcronym.value      = '';
@@ -417,6 +427,23 @@
 
 	if (resetBtn) resetBtn.addEventListener('click', resetAll);
 	if (clearBtn) clearBtn.addEventListener('click', resetAll);
+
+	// ── Desktop subjects mode toggle ─────────────────────────────────────────
+	var trialsSubjectsModeEl = document.getElementById('trials-subjects-mode');
+	if (trialsSubjectsModeEl) {
+		trialsSubjectsModeEl.addEventListener('click', function (e) {
+			var btn = e.target.closest('.subjects-mode-btn');
+			if (!btn) return;
+			trialsSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+				b.classList.remove('active');
+				b.setAttribute('aria-pressed', 'false');
+			});
+			btn.classList.add('active');
+			btn.setAttribute('aria-pressed', 'true');
+			state.subjectsMode = btn.dataset.mode;
+			if (state.subjects) fetchPage(1);
+		});
+	}
 
 	// ── Desktop condition chips ──────────────────────────────────────────────
 	if (trialsConditionChips) {
@@ -481,7 +508,7 @@
 		if (state.status)      url.searchParams.set('recruitment_status', state.status);
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',  'true');
-		if (state.subjects)    url.searchParams.set('subjects',                state.subjects);
+		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
 		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
 		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
@@ -609,14 +636,15 @@
 
 	function resetTrialsDraft() {
 		trialsDraft = {
-			phase:       state.phase,
-			status:      state.status,
-			sort:        state.sort,
-			hasResults:  state.hasResults,
-			identifiers: state.identifiers,
-			acronym:     state.acronym,
-			subjects:    state.subjects,
-			studyType:   state.studyType,
+			phase:        state.phase,
+			status:       state.status,
+			sort:         state.sort,
+			hasResults:   state.hasResults,
+			identifiers:  state.identifiers,
+			acronym:      state.acronym,
+			subjects:     state.subjects,
+			subjectsMode: state.subjectsMode,
+			studyType:    state.studyType,
 		};
 	}
 
@@ -625,11 +653,12 @@
 	var setTrialsActiveChip = BR.feedUI.setActiveChip;
 
 	function syncTrialsSheetToDraft() {
-		setTrialsActiveChip('trials-sheet-phase',       trialsDraft.phase);
-		setTrialsActiveChip('trials-sheet-status',      trialsDraft.status);
-		setTrialsActiveChip('trials-sheet-sort',        trialsDraft.sort);
-		setTrialsActiveChip('trials-sheet-show',        trialsDraft.hasResults ? 'has_results' : '');
-		setTrialsActiveChip('trials-sheet-study-type',  trialsDraft.studyType || '');
+		setTrialsActiveChip('trials-sheet-phase',         trialsDraft.phase);
+		setTrialsActiveChip('trials-sheet-status',        trialsDraft.status);
+		setTrialsActiveChip('trials-sheet-sort',          trialsDraft.sort);
+		setTrialsActiveChip('trials-sheet-show',          trialsDraft.hasResults ? 'has_results' : '');
+		setTrialsActiveChip('trials-sheet-study-type',    trialsDraft.studyType || '');
+		setTrialsActiveChip('trials-sheet-subjects-mode', trialsDraft.subjectsMode || 'all');
 		if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = trialsDraft.identifiers || '';
 		if (trialsSheetAcronym)     trialsSheetAcronym.value     = trialsDraft.acronym     || '';
 		syncTrialsSubjectChips();
@@ -647,11 +676,12 @@
 		});
 	}
 
-	wireTrialsChipGroup('trials-sheet-phase',       function (v) { trialsDraft.phase = v; });
-	wireTrialsChipGroup('trials-sheet-status',      function (v) { trialsDraft.status = v; });
-	wireTrialsChipGroup('trials-sheet-sort',        function (v) { trialsDraft.sort = v; });
-	wireTrialsChipGroup('trials-sheet-show',        function (v) { trialsDraft.hasResults = v === 'has_results'; });
-	wireTrialsChipGroup('trials-sheet-study-type',  function (v) { trialsDraft.studyType = v; });
+	wireTrialsChipGroup('trials-sheet-phase',         function (v) { trialsDraft.phase = v; });
+	wireTrialsChipGroup('trials-sheet-status',        function (v) { trialsDraft.status = v; });
+	wireTrialsChipGroup('trials-sheet-sort',          function (v) { trialsDraft.sort = v; });
+	wireTrialsChipGroup('trials-sheet-show',          function (v) { trialsDraft.hasResults = v === 'has_results'; });
+	wireTrialsChipGroup('trials-sheet-study-type',    function (v) { trialsDraft.studyType = v; });
+	wireTrialsChipGroup('trials-sheet-subjects-mode', function (v) { trialsDraft.subjectsMode = v; });
 
 	// Multi-select subjects chip group
 	(function () {
@@ -872,7 +902,14 @@
 			state.identifiers  = trialsDraft.identifiers  !== undefined ? trialsDraft.identifiers  : state.identifiers;
 			state.acronym      = trialsDraft.acronym      !== undefined ? trialsDraft.acronym      : state.acronym;
 			state.subjects     = trialsDraft.subjects     !== undefined ? trialsDraft.subjects     : state.subjects;
+			state.subjectsMode = trialsDraft.subjectsMode !== undefined ? trialsDraft.subjectsMode : state.subjectsMode;
 			state.studyType    = trialsDraft.studyType    !== undefined ? trialsDraft.studyType    : state.studyType;
+			if (trialsSubjectsModeEl) {
+				trialsSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+					b.classList.toggle('active', b.dataset.mode === state.subjectsMode);
+					b.setAttribute('aria-pressed', b.dataset.mode === state.subjectsMode ? 'true' : 'false');
+				});
+			}
 
 			// Keep desktop controls in sync
 			if (filterPhase)       filterPhase.value        = state.phase;
@@ -899,7 +936,7 @@
 
 	if (trialsSheetReset) {
 		trialsSheetReset.addEventListener('click', function () {
-			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false, identifiers: '', acronym: '', subjects: '', studyType: '' };
+			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false, identifiers: '', acronym: '', subjects: '', subjectsMode: 'all', studyType: '' };
 			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
 			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
 			syncTrialsSheetToDraft();

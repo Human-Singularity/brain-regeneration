@@ -62,7 +62,13 @@
 		<div class="search-filter-card">
 			{{- if $conditionPages }}
 			<div class="search-filter-group">
-				<div class="search-filter-label">Filter by condition</div>
+				<div class="search-filter-label-row">
+					<span class="search-filter-label">Filter by condition</span>
+					<div class="subjects-mode" id="trials-subjects-mode">
+						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">Match all</button>
+						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Match any</button>
+					</div>
+				</div>
 				<div class="search-chips" id="trials-condition-chips">
 					{{- range $conditionPages }}
 					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
