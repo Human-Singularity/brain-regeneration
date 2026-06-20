@@ -15,8 +15,9 @@
 	function setCached(key, data) { cache.set(key, data); }
 
 	// Generic helpers shared via window.BR; see js/br-utils.js
-	var escHtml    = BR.escHtml;
-	var formatDate = BR.formatDate;
+	var escHtml        = BR.escHtml;
+	var decodeEntities = BR.decodeEntities;
+	var formatDate     = BR.formatDate;
 
 	function shortAuthors(authors) {
 		if (!authors || !authors.length) return '';
@@ -29,9 +30,9 @@
 
 	function renderCard(a) {
 		var link    = escHtml(a.link || '');
-		var title   = escHtml(a.title || '');
-		var journal = escHtml(a.container_title || '');
-		var authors = escHtml(shortAuthors(a.authors));
+		var title   = escHtml(decodeEntities(a.title || ''));
+		var journal = escHtml(decodeEntities(a.container_title || ''));
+		var authors = escHtml(decodeEntities(shortAuthors(a.authors)));
 		var date    = escHtml(formatDate(a.published_date));
 		var accessBadge = a.access === 'open'
 			? '<span class="access-badge open">Open Access</span>'

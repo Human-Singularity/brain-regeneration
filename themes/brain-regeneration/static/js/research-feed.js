@@ -87,13 +87,14 @@
 	function setCached(url, data) { cache.set(url, data); }
 
 	// ── Helpers (generic ones shared via window.BR; see js/br-utils.js) ─────
-	var escHtml    = BR.escHtml;
-	var stripHtml  = BR.stripHtml;
-	var truncate   = BR.truncate;
-	var safeLink   = BR.safeLink;
-	var slugify    = BR.slugify;
-	var debounce   = BR.debounce;
-	var formatDate = BR.formatDate;
+	var escHtml         = BR.escHtml;
+	var decodeEntities  = BR.decodeEntities;
+	var stripHtml       = BR.stripHtml;
+	var truncate        = BR.truncate;
+	var safeLink        = BR.safeLink;
+	var slugify         = BR.slugify;
+	var debounce        = BR.debounce;
+	var formatDate      = BR.formatDate;
 
 	function parseMarkdown(str) {
 		if (str == null || str === '') return '';
@@ -309,9 +310,9 @@
 	}
 
 	function buildCard(a) {
-		var authors  = formatAuthors(a.authors);
+		var authors  = decodeEntities(formatAuthors(a.authors));
 		var date     = formatDate(a.published_date);
-		var journal  = a.container_title || '';
+		var journal  = decodeEntities(a.container_title || '');
 		var abstract = truncate(stripHtml(a.summary || ''), 200);
 		var accessBadge = a.access === 'open'
 			? '<span class="access-badge open">Open Access</span>'
@@ -341,7 +342,7 @@
 		if (a.team_categories && a.team_categories.length) {
 			categories = '<div class="paper-card-categories">' +
 				a.team_categories.map(function (c) {
-					return '<span class="condition-tag" style="font-size:12px;padding:2px 8px;">' + escHtml(c.category_name || c.slug || c) + '</span>';
+					return '<span class="condition-tag" style="font-size:12px;padding:2px 8px;">' + escHtml(decodeEntities(c.category_name || c.slug || c)) + '</span>';
 				}).join('') +
 			'</div>';
 		}
@@ -349,7 +350,7 @@
 		var rawUrl = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		return '<article class="paper-card">' +
 			'<div class="paper-card-title">' +
-				'<a href="' + escHtml(rawUrl) + '">' + escHtml(a.title) + '</a>' +
+				'<a href="' + escHtml(rawUrl) + '">' + escHtml(decodeEntities(a.title)) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
 				(mlScores    ? ' ' + mlScores    : '') +
 			'</div>' +

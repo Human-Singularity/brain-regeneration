@@ -23,6 +23,19 @@
 			.replace(/'/g, '&#39;');
 	}
 
+	// Decode HTML entities in API-provided text (the API returns e.g. journal
+	// names as "Leukemia &amp; Lymphoma"). Run this BEFORE escHtml at the
+	// insertion point — escaping a raw API value directly would double-encode it
+	// and render the literal "&amp;". Uses a detached <textarea>, which is safe:
+	// it is never inserted into the document and the result is always re-escaped.
+	var _decodeEl;
+	function decodeEntities(str) {
+		if (str == null || str === '') return '';
+		if (!_decodeEl) _decodeEl = document.createElement('textarea');
+		_decodeEl.innerHTML = String(str);
+		return _decodeEl.value;
+	}
+
 	// Strip HTML tags, decode the handful of entities our API returns, collapse whitespace.
 	function stripHtml(str) {
 		if (!str) return '';
@@ -107,6 +120,7 @@
 
 	window.BR = {
 		escHtml: escHtml,
+		decodeEntities: decodeEntities,
 		stripHtml: stripHtml,
 		truncate: truncate,
 		debounce: debounce,

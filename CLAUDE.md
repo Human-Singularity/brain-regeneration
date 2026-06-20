@@ -93,7 +93,7 @@ layouts/
   observatory/ list       index.html      404.html
 static/
   css/  main.css, feeds-mobile.css   (global; article-single.css + news-single.css load per-page via extra-head)
-  js/   br-utils.js             (shared helpers on window.BR: escHtml/stripHtml/truncate/debounce/formatDate/slugify/safeLink + makeCache; loaded first, synchronously, in head)
+  js/   br-utils.js             (shared helpers on window.BR: escHtml/decodeEntities/stripHtml/truncate/debounce/formatDate/slugify/safeLink + makeCache; loaded first, synchronously, in head)
         research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
         trials-feed.js          (conditions clinical-trials feed + stats bar)
         article-single.js       (renders /articles/{id}/ detail from the API)
