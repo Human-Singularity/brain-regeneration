@@ -95,7 +95,9 @@
 	// prefix + key; entries carry a timestamp and expire after ttl. Tolerant of
 	// quota errors / private mode (set is a no-op, get returns null).
 	function makeCache(prefix, ttl) {
-		prefix = prefix || 'br:';
+		// Only null/undefined gets the default prefix; '' means "no prefix"
+		// (call sites that pass fully-qualified keys rely on this).
+		prefix = (prefix == null) ? 'br:' : prefix;
 		ttl = ttl || (60 * 60 * 1000);
 		return {
 			get: function (key) {

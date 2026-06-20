@@ -29,6 +29,13 @@
 		return token;
 	}
 
+	// Set a desktop search-chip's active state and its ARIA pressed state together,
+	// so assistive tech always sees the toggle's on/off state.
+	function setSearchChipActive(chip, on) {
+		chip.classList.toggle('search-chip--active', on);
+		chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+	}
+
 	// Single-select: mark the chip in a group whose data-value === value as active.
 	function setActiveChip(groupId, value) {
 		var group = document.getElementById(groupId);
@@ -90,6 +97,7 @@
 	window.BR = window.BR || {};
 	window.BR.feedUI = {
 		buildToken: buildToken,
+		setSearchChipActive: setSearchChipActive,
 		setActiveChip: setActiveChip,
 		wireDownloadDropdown: wireDownloadDropdown,
 		wireMoreFilters: wireMoreFilters,

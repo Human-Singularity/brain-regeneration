@@ -410,7 +410,7 @@
 		if (filterDateFrom)    filterDateFrom.value     = '';
 		if (filterDateTo)      filterDateTo.value       = '';
 		if (trialsConditionChips) {
-			trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+			trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 		}
 		fetchPage(1);
 	}
@@ -423,7 +423,7 @@
 		trialsConditionChips.addEventListener('click', function (e) {
 			var chip = e.target.closest('.search-chip');
 			if (!chip) return;
-			chip.classList.toggle('search-chip--active');
+			BR.feedUI.setSearchChipActive(chip, !chip.classList.contains('search-chip--active'));
 			var ids = [];
 			trialsConditionChips.querySelectorAll('.search-chip.search-chip--active').forEach(function (c) {
 				if (c.dataset.value) ids.push(c.dataset.value);
@@ -445,7 +445,10 @@
 
 	// ── Hero search button ───────────────────────────────────────────────────
 	var heroSearchBtn = document.getElementById('search-btn');
-	if (heroSearchBtn) {
+	// Only the advanced-search hero button (type="button"); on condition pages
+	// #search-btn is the form's submit button and is handled by the form submit
+	// listener — binding here too would fire a second, stale-state fetch.
+	if (heroSearchBtn && heroSearchBtn.type !== 'submit') {
 		heroSearchBtn.addEventListener('click', function () {
 			state.keyword = searchInput ? searchInput.value.trim() : '';
 			fetchPage(1);

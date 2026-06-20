@@ -202,7 +202,7 @@
 		[conditionChips, areaChips].forEach(function (group) {
 			if (!group) return;
 			group.querySelectorAll('.search-chip').forEach(function (chip) {
-				chip.classList.toggle('search-chip--active', chipSubjectIds.indexOf(chip.dataset.value || '') !== -1);
+				BR.feedUI.setSearchChipActive(chip, chipSubjectIds.indexOf(chip.dataset.value || '') !== -1);
 			});
 		});
 	}
@@ -938,7 +938,7 @@
 			if (dateFromInput)   dateFromInput.value   = '';
 			if (dateToInput)     dateToInput.value     = '';
 			[conditionChips, areaChips].forEach(function (g) {
-				if (g) g.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+				if (g) g.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 			});
 			hideAuthorSuggestions();
 			hideCategoryPanel();
@@ -1020,7 +1020,7 @@
 				state.hasClinicalTrials = null;
 				state.page = 1;
 				[conditionChips, areaChips].forEach(function (g) {
-					if (g) g.querySelectorAll('.search-chip').forEach(function (c) { c.classList.remove('search-chip--active'); });
+					if (g) g.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 				});
 				if (authorInput)     authorInput.value = '';
 				if (authorHidden)    authorHidden.value = '';
@@ -1040,7 +1040,7 @@
 			var ids = (state.subjects || '').split(',').filter(Boolean);
 			state.subjects = ids.filter(function (x) { return x !== removeId; }).join(',');
 			var chip = document.querySelector('.search-chip[data-value="' + removeId + '"]');
-			if (chip) chip.classList.remove('search-chip--active');
+			if (chip) BR.feedUI.setSearchChipActive(chip, false);
 		} else if (key === 'author') {
 			state.authorId = '';
 			if (authorInput) authorInput.value = '';
@@ -1071,7 +1071,7 @@
 		group.addEventListener('click', function (e) {
 			var chip = e.target.closest('.search-chip');
 			if (!chip) return;
-			chip.classList.toggle('search-chip--active');
+			BR.feedUI.setSearchChipActive(chip, !chip.classList.contains('search-chip--active'));
 			state.subjects = collectDesktopSubjects();
 			state.page = 1;
 			fetchPage(1, false);

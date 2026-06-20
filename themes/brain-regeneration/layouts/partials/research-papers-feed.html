@@ -56,7 +56,7 @@
 				<div class="search-filter-label">Filter by condition</div>
 				<div class="search-chips" id="papers-condition-chips">
 					{{- range $conditionPages }}
-					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 					{{- end }}
 				</div>
 			</div>
@@ -67,7 +67,7 @@
 				<div class="search-filter-label">Research focus</div>
 				<div class="search-chips" id="papers-area-chips">
 					{{- range $researchAreaPages }}
-					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 					{{- end }}
 				</div>
 			</div>

@@ -15,8 +15,17 @@
 
 	var PROFILE_KEY = 'br_subscriber_profile';
 
+	// localStorage can throw in privacy modes; subscribe.js loads on many pages,
+	// so guard reads/writes to avoid breaking every form on the page.
+	function getProfile() {
+		try { return localStorage.getItem(PROFILE_KEY); } catch (e) { return null; }
+	}
+	function saveProfile(value) {
+		try { localStorage.setItem(PROFILE_KEY, value); } catch (e) { /* private mode — ignore */ }
+	}
+
 	// ── Restore saved profile across every subscribe form on the page ─────────
-	var savedProfile = localStorage.getItem(PROFILE_KEY);
+	var savedProfile = getProfile();
 	if (savedProfile) {
 		document.querySelectorAll('select[name="profile"]').forEach(function (sel) {
 			sel.value = savedProfile;
@@ -26,8 +35,35 @@
 	function persistProfile(form) {
 		var profileField = form.querySelector('select[name="profile"]');
 		if (profileField && profileField.value) {
-			localStorage.setItem(PROFILE_KEY, profileField.value);
+			saveProfile(profileField.value);
 		}
+	}
+
+	// True if the form will submit at least one mailing list — a checked
+	// checkbox/radio, or a hidden/primary list input that carries a value.
+	function hasSelectedList(form) {
+		var inputs = form.querySelectorAll('input[name="list"]');
+		if (!inputs.length) return true;
+		return Array.prototype.some.call(inputs, function (el) {
+			return (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value.trim() !== '';
+		});
+	}
+
+	function showListError(form, show) {
+		var err = form.querySelector('.subscribe-list-required');
+		if (show && !err) {
+			err = document.createElement('div');
+			err.className = 'subscribe-list-required';
+			err.setAttribute('role', 'alert');
+			err.textContent = 'Please select at least one list to subscribe to.';
+			err.style.color = 'var(--color-error)';
+			err.style.fontSize = '14px';
+			err.style.marginTop = '4px';
+			var anchor = form.querySelector('.checkbox-group-label');
+			if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(err, anchor.nextSibling);
+			else form.insertBefore(err, form.firstChild);
+		}
+		if (err) err.hidden = !show;
 	}
 
 	// ── Shared submit ─────────────────────────────────────────────────────────
@@ -71,6 +107,12 @@
 				form.querySelectorAll(':invalid').forEach(function (el) { el.classList.add('is-invalid'); });
 				return;
 			}
+			// Forms with a checkbox list (e.g. the conditions trial-alerts form)
+			// must have at least one selected; checkValidity() can't enforce that.
+			if (!hasSelectedList(form)) {
+				showListError(form, true);
+				return;
+			}
 			if (submitBtn) {
 				submitBtn.disabled = true;
 				submitBtn.textContent = 'Subscribing…';
@@ -80,6 +122,11 @@
 
 		form.querySelectorAll('input, select').forEach(function (el) {
 			el.addEventListener('input', function () { el.classList.remove('is-invalid'); });
+		});
+		form.querySelectorAll('input[name="list"]').forEach(function (cb) {
+			cb.addEventListener('change', function () {
+				if (hasSelectedList(form)) showListError(form, false);
+			});
 		});
 	});
 

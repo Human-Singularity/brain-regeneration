@@ -65,7 +65,7 @@
 				<div class="search-filter-label">Filter by condition</div>
 				<div class="search-chips" id="trials-condition-chips">
 					{{- range $conditionPages }}
-					<button type="button" class="search-chip" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 					{{- end }}
 				</div>
 			</div>
