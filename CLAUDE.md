@@ -99,8 +99,7 @@ static/
         article-single.js       (renders /articles/{id}/ detail from the API)
         research-spotlight.js   (homepage/area "spotlight" of top relevant papers)
         news-single.js          (news article UX: reading progress, TOC, lightbox — no API)
-        subscribe-form.js       (full subscribe page form → POST to data-api)
-        inline-subscribe.js     (contextual subscribe widgets [data-inline-subscribe])
+        subscribe.js            (all subscribe forms — full page #subscribe-form, inline [data-inline-subscribe] widgets, homepage digest — one POST→redirect flow + profile persistence)
         donor-transparency.js   (donate page → Stripe transparency Cloudflare Worker)
 ```
 
@@ -124,7 +123,7 @@ Single root file. Highlights:
 - **Article detail is a client-rendered shell.** `static/_redirects` rewrites `/articles/* → /articles/ 200`; `article-single.js` parses the numeric ID from the URL and fetches `/articles/{id}/?format=json`. (`layouts/articles/article-shell.html` is the project override of that shell.) Internal article links use `/articles/{id}/`; external links go straight to the publisher/DOI.
 - **Aggressive localStorage caching.** All feeds/widgets cache through `BR.makeCache(prefix, ttl)` (in `br-utils.js`) under keys like `brPapers:`, `brTrialsFeed:`, `brTrialsStats:`, `brTrialStats:`, `brSpotlight:`, `brObsStats*` with TTLs (1–12h). If you're testing fresh API data and not seeing changes, clear localStorage.
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
-- **Subscribe forms** (`subscribe-form.js`, `inline-subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
+- **Subscribe forms** (all handled by `subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
 - **Donations** use a separate Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAI API. See `workers/` and `content/cloudflare-worker.md`.
 - **Styling** is plain CSS in `themes/.../static/css/` (`main.css` + `feeds-mobile.css` site-wide, plus per-page `article-single.css` / `news-single.css`) — not SCSS/Hugo Pipes. Edit there.
 

@@ -303,53 +303,7 @@
 				</div>
 			</form>
 
-			<script>
-			(function () {
-				var form = document.getElementById('homepage-subscribe-form');
-				if (!form) return;
-
-				var btn = document.getElementById('homepage-subscribe-btn');
-				var alert = document.getElementById('homepage-form-alert');
-
-				form.addEventListener('submit', function (e) {
-					e.preventDefault();
-					alert.style.display = 'none';
-
-					// Validate required fields
-					var valid = true;
-					form.querySelectorAll('[required]').forEach(function (field) {
-						if (!field.value.trim()) { valid = false; }
-					});
-					if (!valid) {
-						alert.textContent = 'Please fill in all required fields.';
-						alert.style.display = 'block';
-						return;
-					}
-
-					btn.disabled = true;
-					btn.textContent = 'Submitting…';
-
-					fetch(form.dataset.api, {
-						method: 'POST',
-						body: new FormData(form),
-						redirect: 'manual'
-					})
-					.then(function (r) {
-						if (r.type === 'opaqueredirect' || r.ok) {
-							window.location.href = form.dataset.thankYou;
-						} else {
-							window.location.href = form.dataset.error;
-						}
-					})
-					.catch(function () {
-						alert.textContent = 'Unable to submit. Please check your connection and try again.';
-						alert.style.display = 'block';
-						btn.disabled = false;
-						btn.textContent = 'Subscribe';
-					});
-				});
-			})();
-			</script>
+			<script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 		</div>
 	</div>
 </section>
