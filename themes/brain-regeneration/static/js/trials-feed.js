@@ -434,25 +434,13 @@
 	}
 
 	// ── More filters toggle ──────────────────────────────────────────────────
-	if (trialsMoreBtn && trialsAdvPanel) {
-		trialsMoreBtn.addEventListener('click', function () {
-			var open = !trialsAdvPanel.hidden;
-			trialsAdvPanel.hidden = open;
-			var arrow = document.getElementById('trials-more-arrow');
-			var label = trialsMoreBtn.querySelector('.search-more-btn__label');
-			if (arrow) arrow.classList.toggle('search-more-btn__arrow--open', !open);
-			if (label) label.textContent = open ? 'More filters' : 'Fewer filters';
-		});
-	}
+	BR.feedUI.wireMoreFilters(trialsMoreBtn, trialsAdvPanel, 'trials-more-arrow');
 
 	// ── Hero hint tags ───────────────────────────────────────────────────────
-	document.querySelectorAll('.search-hero__hint-tag').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			var hint = btn.dataset.hint || '';
-			if (searchInput) searchInput.value = hint;
-			state.keyword = hint;
-			fetchPage(1);
-		});
+	BR.feedUI.wireHintTags(function (hint) {
+		if (searchInput) searchInput.value = hint;
+		state.keyword = hint;
+		fetchPage(1);
 	});
 
 	// ── Hero search button ───────────────────────────────────────────────────
@@ -555,29 +543,10 @@
 			});
 	}
 
-	if (downloadToggle) {
-		var downloadMenu = downloadToggle.parentElement.querySelector('.download-menu');
-
-		downloadToggle.addEventListener('click', function (e) {
-			e.stopPropagation();
-			var open = downloadToggle.getAttribute('aria-expanded') === 'true';
-			downloadToggle.setAttribute('aria-expanded', String(!open));
-			downloadMenu.classList.toggle('is-open', !open);
-		});
-
-		downloadMenu.addEventListener('click', function (e) {
-			var btn = e.target.closest('.download-option');
-			if (!btn) return;
-			triggerDownload(btn.dataset.scope === 'all');
-			downloadToggle.setAttribute('aria-expanded', 'false');
-			downloadMenu.classList.remove('is-open');
-		});
-
-		document.addEventListener('click', function () {
-			downloadToggle.setAttribute('aria-expanded', 'false');
-			downloadMenu.classList.remove('is-open');
-		});
-	}
+	BR.feedUI.wireDownloadDropdown(downloadToggle, {
+		onPage: function () { triggerDownload(false); },
+		onAll:  function () { triggerDownload(true); }
+	});
 
 	// ── Init ──────────────────────────────────────────────────────────────────
 	if (filterStatus && state.status) filterStatus.value = state.status;
@@ -654,13 +623,7 @@
 
 	// ── Sheet chip helpers ────────────────────────────────────────────────────
 
-	function setTrialsActiveChip(groupId, value) {
-		var group = document.getElementById(groupId);
-		if (!group) return;
-		group.querySelectorAll('.sheet-chip').forEach(function (chip) {
-			chip.classList.toggle('active', chip.dataset.value === value);
-		});
-	}
+	var setTrialsActiveChip = BR.feedUI.setActiveChip;
 
 	function syncTrialsSheetToDraft() {
 		setTrialsActiveChip('trials-sheet-phase',       trialsDraft.phase);
@@ -724,20 +687,7 @@
 
 	// ── Token strip ───────────────────────────────────────────────────────────
 
-	function buildTrialsToken(label, filterKey) {
-		var token = document.createElement('span');
-		token.className = 'filter-token';
-		token.dataset.filter = filterKey;
-		var text = document.createTextNode(label + ' ');
-		var removeBtn = document.createElement('button');
-		removeBtn.type = 'button';
-		removeBtn.className = 'filter-token-remove';
-		removeBtn.setAttribute('aria-label', 'Remove ' + label + ' filter');
-		removeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-		token.appendChild(text);
-		token.appendChild(removeBtn);
-		return token;
-	}
+	var buildTrialsToken = BR.feedUI.buildToken;
 
 	function removeTrialsToken(filterKey) {
 		if (filterKey === 'phase')       state.phase = '';

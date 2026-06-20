@@ -963,35 +963,10 @@
 		if (btn && !btn.disabled) fetchPage(parseInt(btn.dataset.page, 10), true);
 	});
 
-	if (downloadToggle) {
-		var downloadMenu = downloadToggle.parentElement.querySelector('.download-menu');
-
-		downloadToggle.addEventListener('click', function (e) {
-			e.stopPropagation();
-			var open = downloadToggle.getAttribute('aria-expanded') === 'true';
-			downloadToggle.setAttribute('aria-expanded', String(!open));
-			if (downloadMenu) downloadMenu.classList.toggle('is-open', !open);
-		});
-
-		if (downloadMenu) {
-			downloadMenu.addEventListener('click', function (e) {
-				var btn = e.target.closest('.download-option');
-				if (!btn) return;
-				if (btn.dataset.scope === 'all') {
-					downloadAllCSV();
-				} else {
-					downloadPageCSV();
-				}
-				downloadToggle.setAttribute('aria-expanded', 'false');
-				downloadMenu.classList.remove('is-open');
-			});
-		}
-
-		document.addEventListener('click', function () {
-			downloadToggle.setAttribute('aria-expanded', 'false');
-			if (downloadMenu) downloadMenu.classList.remove('is-open');
-		});
-	}
+	BR.feedUI.wireDownloadDropdown(downloadToggle, {
+		onPage: downloadPageCSV,
+		onAll:  downloadAllCSV
+	});
 
 	// ── Desktop chip filter (advanced search) ─────────────────────────────
 
@@ -1112,25 +1087,13 @@
 	wireDesktopChipGroup(conditionChips);
 	wireDesktopChipGroup(areaChips);
 
-	if (moreFiltersBtn && advancedPanel) {
-		moreFiltersBtn.addEventListener('click', function () {
-			var open = !advancedPanel.hidden;
-			advancedPanel.hidden = open;
-			var arrow = document.getElementById('papers-more-arrow');
-			var label = moreFiltersBtn.querySelector('.search-more-btn__label');
-			if (arrow) arrow.classList.toggle('search-more-btn__arrow--open', !open);
-			if (label) label.textContent = open ? 'More filters' : 'Fewer filters';
-		});
-	}
+	BR.feedUI.wireMoreFilters(moreFiltersBtn, advancedPanel, 'papers-more-arrow');
 
-	document.querySelectorAll('.search-hero__hint-tag').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			var hint = btn.dataset.hint || '';
-			if (searchInput) searchInput.value = hint;
-			state.keyword = hint;
-			state.page = 1;
-			fetchPage(1, false);
-		});
+	BR.feedUI.wireHintTags(function (hint) {
+		if (searchInput) searchInput.value = hint;
+		state.keyword = hint;
+		state.page = 1;
+		fetchPage(1, false);
 	});
 
 	// ── Init ───────────────────────────────────────────────────────────────
@@ -1235,14 +1198,7 @@
 		};
 	}
 
-	function setActiveChip(groupId, value) {
-		var group = document.getElementById(groupId);
-		if (!group) return;
-		var chips = group.querySelectorAll('.sheet-chip');
-		chips.forEach(function (chip) {
-			chip.classList.toggle('active', chip.dataset.value === value);
-		});
-	}
+	var setActiveChip = BR.feedUI.setActiveChip;
 
 	function syncSheetToDraft() {
 		setActiveChip('papers-sheet-category', draft.category);
@@ -1362,20 +1318,7 @@
 		return id;
 	}
 
-	function buildToken(label, filterKey) {
-		var token = document.createElement('span');
-		token.className = 'filter-token';
-		token.dataset.filter = filterKey;
-		var text = document.createTextNode(label + ' ');
-		var removeBtn = document.createElement('button');
-		removeBtn.type = 'button';
-		removeBtn.className = 'filter-token-remove';
-		removeBtn.setAttribute('aria-label', 'Remove ' + label + ' filter');
-		removeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-		token.appendChild(text);
-		token.appendChild(removeBtn);
-		return token;
-	}
+	var buildToken = BR.feedUI.buildToken;
 
 	function removeToken(filterKey) {
 		if (filterKey === 'category')    { state.category = ''; hideCategoryPanel(); }
