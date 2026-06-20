@@ -1,0 +1,31 @@
+{{- /*
+  feeds/download-dropdown.html — CSV download split button + menu.
+
+  Params (dict):
+    toggleId     — id for the toggle button (research-feed.js / trials-feed.js
+                   look it up; the menu is found via the toggle's parent)
+    pageLabel    — label for the "current page" option (default "Current page")
+    allLabel     — label for the "all results" option (default "All results")
+    umamiEvent   — optional umami event name; when set, emits umami attributes
+    umamiContext — optional umami context value (paired with umamiEvent)
+*/ -}}
+{{- $toggleId := .toggleId -}}
+{{- $pageLabel := .pageLabel | default "Current page" -}}
+{{- $allLabel := .allLabel | default "All results" -}}
+{{- $umami := .umamiEvent -}}
+{{- $umamiContext := .umamiContext -}}
+<div class="download-dropdown">
+	<button class="btn-download" id="{{ $toggleId }}" aria-haspopup="true" aria-expanded="false"{{ with $umami }} data-umami-event="{{ . }}"{{ end }}{{ with $umamiContext }} data-umami-event-context="{{ . }}"{{ end }}>
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+			<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+			<polyline points="7 10 12 15 17 10"/>
+			<line x1="12" y1="15" x2="12" y2="3"/>
+		</svg>
+		Download
+		<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+	</button>
+	<ul class="download-menu" role="menu">
+		<li><button class="download-option" data-scope="page" role="menuitem"{{ with $umami }} data-umami-event="{{ . }}" data-umami-event-scope="page"{{ end }}>{{ $pageLabel }}</button></li>
+		<li><button class="download-option" data-scope="all" role="menuitem"{{ with $umami }} data-umami-event="{{ . }}" data-umami-event-scope="all"{{ end }}>{{ $allLabel }}</button></li>
+	</ul>
+</div>

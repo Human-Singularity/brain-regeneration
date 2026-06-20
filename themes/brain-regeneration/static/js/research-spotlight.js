@@ -10,35 +10,14 @@
 	if (!endpoint || !teamId || !subjectId) return;
 
 	var CACHE_KEY = 'brSpotlight:v2:' + teamId + ':' + subjectId; // v2: ordering=-ml_score
-	var CACHE_TTL = 60 * 60 * 1000;
+	var cache = BR.makeCache('', 60 * 60 * 1000);
+	function getCached(key) { return cache.get(key); }
+	function setCached(key, data) { cache.set(key, data); }
 
-	function getCached(key) {
-		try {
-			var raw = localStorage.getItem(key);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) return null;
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(key, data) {
-		try {
-			localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) {}
-	}
-
-	function escHtml(str) {
-		var el = document.createElement('span');
-		el.textContent = str;
-		return el.innerHTML;
-	}
-
-	function formatDate(iso) {
-		if (!iso) return '';
-		var d = new Date(iso);
-		return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-	}
+	// Generic helpers shared via window.BR; see js/br-utils.js
+	var escHtml        = BR.escHtml;
+	var decodeEntities = BR.decodeEntities;
+	var formatDate     = BR.formatDate;
 
 	function shortAuthors(authors) {
 		if (!authors || !authors.length) return '';
@@ -51,9 +30,9 @@
 
 	function renderCard(a) {
 		var link    = escHtml(a.link || '');
-		var title   = escHtml(a.title || '');
-		var journal = escHtml(a.container_title || '');
-		var authors = escHtml(shortAuthors(a.authors));
+		var title   = escHtml(decodeEntities(a.title || ''));
+		var journal = escHtml(decodeEntities(a.container_title || ''));
+		var authors = escHtml(decodeEntities(shortAuthors(a.authors)));
 		var date    = escHtml(formatDate(a.published_date));
 		var accessBadge = a.access === 'open'
 			? '<span class="access-badge open">Open Access</span>'

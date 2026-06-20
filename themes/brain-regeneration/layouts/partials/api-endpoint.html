@@ -1,0 +1,11 @@
+{{- /*
+  api-endpoint.html — resolve a front-matter API endpoint against the
+  configured apiBase, replacing the baked-in production host so local/staging
+  builds hit the right backend.
+
+  Params (dict):
+    api     — the page's .Params.api map (may be nil)
+    apiBase — .Site.Params.apiBase
+*/ -}}
+{{- $apiBase := .apiBase -}}
+{{- with .api -}}{{- replace .endpoint "https://api.brain-regeneration.com" $apiBase -}}{{- end -}}

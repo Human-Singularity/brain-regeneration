@@ -1,0 +1,69 @@
+{{- /*
+  forms/newsletter-inline.html — inline subscribe form (one primary list +
+  the global lists) used by the condition trial-alert and research-paper
+  digest sections. Submits via subscribe.js.
+
+  Params (dict):
+    site       — site object (.Site) for apiBase + subscriptions params
+    anchorId   — section anchor id (e.g. "ct-alerts")
+    idPrefix   — unique prefix for field ids (e.g. "ct", "rp")
+    heading    — <h2> text
+    subhead    — paragraph text under the heading
+    listId     — the primary mailing list id (hidden input)
+    umamiEvent — submit button umami event name
+    umamiTitle — value for data-umami-event-condition
+*/ -}}
+{{- $site := .site -}}
+{{- $p := .idPrefix -}}
+<section id="{{ .anchorId }}" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
+	<div class="container">
+		<div class="newsletter-card">
+			<div class="text-center mb-4">
+				<h2 style="margin-bottom: 8px;">{{ .heading }}</h2>
+				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">{{ .subhead }}</p>
+			</div>
+			<form
+				data-inline-subscribe
+				data-api="{{ $site.Params.apiBase }}/subscriptions/new/"
+				data-thank-you="{{ $site.Params.subscriptions.thank_you_url }}"
+				data-error="{{ $site.Params.subscriptions.error_url }}"
+				novalidate
+			>
+				<input type="hidden" name="list" value="{{ .listId }}">
+				<div class="row g-3 align-items-end">
+					<div class="col-12 col-md-3">
+						<label for="{{ $p }}-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
+						<input type="text" class="form-control" id="{{ $p }}-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-3">
+						<label for="{{ $p }}-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
+						<input type="email" class="form-control" id="{{ $p }}-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
+					</div>
+					<div class="col-12 col-md-3">
+						<label for="{{ $p }}-profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
+						<select class="form-select" id="{{ $p }}-profile" name="profile" required style="border-color: var(--color-border);">
+							<option value="" disabled selected>Select…</option>
+							<option value="patient">Patient</option>
+							<option value="caregiver">Caregiver</option>
+							<option value="doctor">Doctor</option>
+							<option value="clinical centre">Clinical Centre</option>
+							<option value="researcher">Researcher</option>
+							<option value="other">Other</option>
+						</select>
+					</div>
+					<div class="col-12 col-md-3 d-flex align-items-end">
+						<button type="submit" class="btn-amber w-100" data-umami-event="{{ .umamiEvent }}" data-umami-event-condition="{{ .umamiTitle }}">Subscribe</button>
+					</div>
+					{{ range $site.Params.subscriptions.global_lists }}
+					<div class="col-12">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-{{ $p }}-{{ .list_id }}">
+							<label class="form-check-label" for="global-list-{{ $p }}-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
+						</div>
+					</div>
+					{{ end }}
+				</div>
+			</form>
+		</div>
+	</div>
+</section>

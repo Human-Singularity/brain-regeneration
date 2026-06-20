@@ -3,30 +3,43 @@
 {{/* Find the clinical-trials child page within this section */}}
 {{ $trialsPage := index (where .Pages "Params.layout" "single") 0 }}
 
-<!-- ── BREADCRUMB ── -->
-<div class="breadcrumb-nav-dark">
-	<div class="container">
-		<a href="{{ "/" | relURL }}">Home</a>
-		<span>/</span>
-		<strong>Advanced Search — Research Papers</strong>
-	</div>
-</div>
-
-<!-- ── HERO ── -->
-<section class="hero" style="padding: 56px 0 64px;">
+<!-- ── SEARCH HERO ── -->
+<section class="search-hero">
 	<div class="container">
 		<h1>{{ .Title }}</h1>
-		<p>{{ .Params.hero_description | default .Description }}</p>
+		<p class="search-hero__desc">{{ .Params.hero_description | default .Description }}</p>
+		<div class="search-hero__bar">
+			<input
+				type="search"
+				class="search-hero__input"
+				id="papers-search-input"
+				placeholder="e.g. remyelination, stem cells, Parkinson's treatment…"
+				autocomplete="off">
+			<button
+				class="search-hero__btn"
+				type="button"
+				id="papers-search-btn"
+				data-umami-event="Papers: Search"
+				data-umami-event-context="Advanced Search">Search</button>
+		</div>
+		<div class="search-hero__hints">
+			<span class="search-hero__hints-label">Try:</span>
+			<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
+			<button class="search-hero__hint-tag" type="button" data-hint="ALS clinical trial">ALS clinical trial</button>
+		</div>
 	</div>
 </section>
 
 <!-- ── SECTION TABS ── -->
-<div class="section-tabs">
+<div class="section-tabs section-tabs--white">
 	<div class="container">
 		<nav class="section-tabs-nav">
-			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers</a>
+			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers<span class="section-tab__count" id="tab-papers-count"></span></a>
 			{{ if $trialsPage }}
-			<a href="{{ $trialsPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
+			<a href="{{ $trialsPage.RelPermalink }}" class="section-tab">Clinical Trials<span class="section-tab__count" id="tab-trials-count"></span></a>
 			{{ end }}
 		</nav>
 	</div>
@@ -34,6 +47,6 @@
 
 {{ partial "research-papers-feed" (dict "page" . "contextTitle" "Advanced Search" "requireRelevant" false "advanced" true "siteWide" true) }}
 
-<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
+<script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 
 {{ end }}

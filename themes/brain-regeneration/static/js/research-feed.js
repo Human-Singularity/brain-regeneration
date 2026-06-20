@@ -49,6 +49,17 @@
 	var lastBtn          = document.getElementById('papers-last-btn');
 	var paginationNums   = document.getElementById('papers-pagination-numbers');
 
+	// Tab count badges
+	var tabPapersCount = document.getElementById('tab-papers-count');
+	var tabTrialsCount = document.getElementById('tab-trials-count');
+
+	// Desktop chip groups (advanced search page)
+	var conditionChips = document.getElementById('papers-condition-chips');
+	var areaChips      = document.getElementById('papers-area-chips');
+	var moreFiltersBtn = document.getElementById('papers-more-filters-btn');
+	var advancedPanel  = document.getElementById('papers-advanced-panel');
+	var desktopTokens  = document.getElementById('papers-desktop-tokens');
+
 	// ── State ─────────────────────────────────────────────────────────────
 	var state = {
 		page:               1,
@@ -57,7 +68,8 @@
 		pageSize:           10,
 		keyword:            '',
 		category:           '',   // slug
-		subjects:           '',   // comma-separated subject IDs (AND match)
+		subjects:           '',   // comma-separated subject IDs
+		subjectsMode:       'all', // 'all' = AND (?subjects=), 'any' = OR (?subjects_any=)
 		sort:               'date',
 		relevant:           requireRelevant,  // true = curated feed, false = full feed
 		hasClinicalTrials:  null, // null = no filter, true/false = has_clinical_trials param
@@ -71,38 +83,19 @@
 	};
 
 	// ── Cache ─────────────────────────────────────────────────────────────
-	var CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+	var cache = BR.makeCache('brPapers:', 6 * 60 * 60 * 1000); // 6 hours
+	function getCached(url) { return cache.get(url); }
+	function setCached(url, data) { cache.set(url, data); }
 
-	function getCached(url) {
-		try {
-			var raw = localStorage.getItem('brPapers:' + url);
-			if (!raw) return null;
-			var entry = JSON.parse(raw);
-			if (Date.now() - entry.ts > CACHE_TTL) {
-				localStorage.removeItem('brPapers:' + url);
-				return null;
-			}
-			return entry.data;
-		} catch (e) { return null; }
-	}
-
-	function setCached(url, data) {
-		try {
-			localStorage.setItem('brPapers:' + url, JSON.stringify({ ts: Date.now(), data: data }));
-		} catch (e) { /* quota exceeded — ignore */ }
-	}
-
-	// ── Helpers ───────────────────────────────────────────────────────────
-
-	function escHtml(str) {
-		if (str == null) return '';
-		return String(str)
-			.replace(/&/g,  '&amp;')
-			.replace(/</g,  '&lt;')
-			.replace(/>/g,  '&gt;')
-			.replace(/"/g,  '&quot;')
-			.replace(/'/g,  '&#39;');
-	}
+	// ── Helpers (generic ones shared via window.BR; see js/br-utils.js) ─────
+	var escHtml         = BR.escHtml;
+	var decodeEntities  = BR.decodeEntities;
+	var stripHtml       = BR.stripHtml;
+	var truncate        = BR.truncate;
+	var safeLink        = BR.safeLink;
+	var slugify         = BR.slugify;
+	var debounce        = BR.debounce;
+	var formatDate      = BR.formatDate;
 
 	function parseMarkdown(str) {
 		if (str == null || str === '') return '';
@@ -123,60 +116,25 @@
 		return '<p>' + s + '</p>';
 	}
 
-	function safeLink(url) {
-		if (!url) return '#';
-		try {
-			var parsed = new URL(String(url));
-			if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '#';
-			return parsed.href;
-		} catch (e) { return '#'; }
-	}
-
-	function stripHtml(str) {
-		if (!str) return '';
-		return str.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').trim();
-	}
-
-	function truncate(str, limit) {
-		if (!str || str.length <= limit) return str;
-		var cut = str.lastIndexOf(' ', limit);
-		return str.slice(0, cut > 0 ? cut : limit) + '…';
-	}
-
-	function formatDate(iso) {
-		if (!iso) return '';
-		return new Date(iso).toLocaleDateString('en-GB', {
-			year: 'numeric', month: 'short', day: 'numeric'
-		});
-	}
-
 	function formatAuthors(authors) {
 		if (!authors || !authors.length) return '';
 		var names = authors.map(function (a) { return a.full_name; });
 		return names.length > 3 ? names.slice(0, 3).join(', ') + ' et al.' : names.join(', ');
 	}
 
-	function slugify(str) {
-		return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
-	}
-
 	function todayISO() {
 		return new Date().toISOString().slice(0, 10);
-	}
-
-	function debounce(fn, ms) {
-		var t;
-		return function () { clearTimeout(t); t = setTimeout(fn, ms); };
 	}
 
 	// ── URL state ──────────────────────────────────────────────────────────
 
 	function readURL() {
 		var params = new URLSearchParams(window.location.search);
-		state.keyword            = params.get('q')          || '';
-		state.category           = params.get('category')   || '';
-		state.subjects           = params.get('subjects')   || '';
-		state.sort               = params.get('sort')       || 'date';
+		state.keyword            = params.get('q')             || '';
+		state.category           = params.get('category')      || '';
+		state.subjects           = params.get('subjects')      || '';
+		state.subjectsMode       = params.get('subjects_mode') || 'all';
+		state.sort               = params.get('sort')          || 'date';
 		if (state.sort === 'relevance') state.sort = 'ml_score'; // canonicalize old bookmarked URLs
 		state.relevant           = params.has('relevant') ? params.get('relevant') !== 'false' : requireRelevant;
 		state.hasClinicalTrials  = params.has('has_clinical_trials') ? params.get('has_clinical_trials') !== 'false' : null;
@@ -192,6 +150,7 @@
 		if (state.keyword)                    params.set('q',                    state.keyword);
 		if (state.category)                   params.set('category',             state.category);
 		if (state.subjects)                   params.set('subjects',             state.subjects);
+		if (state.subjectsMode !== 'all')     params.set('subjects_mode',        state.subjectsMode);
 		params.set('sort',                    state.sort);
 		params.set('relevant',                String(state.relevant));
 		if (state.hasClinicalTrials !== null) params.set('has_clinical_trials',  String(state.hasClinicalTrials));
@@ -228,8 +187,8 @@
 		// Subject selects: split single-select (advanced) or combined
 		var subjectIds = (state.subjects || '').split(',').filter(Boolean);
 		if (conditionsSelect || researchAreasSelect) {
-			if (conditionsSelect)    conditionsSelect.value    = subjectIds.find(function (id) { return Array.from(conditionsSelect.options).some(function (o) { return o.value === id; }); }) || '';
-			if (researchAreasSelect) researchAreasSelect.value = subjectIds.find(function (id) { return Array.from(researchAreasSelect.options).some(function (o) { return o.value === id; }); }) || '';
+			if (conditionsSelect)    Array.from(conditionsSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
+			if (researchAreasSelect) Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = subjectIds.indexOf(o.value) !== -1; });
 		} else if (subjectsMulti) {
 			Array.from(subjectsMulti.options).forEach(function (opt) { opt.selected = subjectIds.indexOf(opt.value) !== -1; });
 		} else if (subjectsSelect) {
@@ -240,6 +199,23 @@
 		if (dateFromInput)   dateFromInput.value     = state.dateFrom;
 		if (dateToInput)     dateToInput.value       = state.dateTo;
 		renderCategoryPanel();
+
+		// Sync desktop chips
+		var chipSubjectIds = (state.subjects || '').split(',').filter(Boolean);
+		[conditionChips, areaChips].forEach(function (group) {
+			if (!group) return;
+			group.querySelectorAll('.search-chip').forEach(function (chip) {
+				BR.feedUI.setSearchChipActive(chip, chipSubjectIds.indexOf(chip.dataset.value || '') !== -1);
+			});
+		});
+		// Sync desktop subjects mode toggle
+		var papersSubjectsModeEl = document.getElementById('papers-subjects-mode');
+		if (papersSubjectsModeEl) {
+			papersSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+				b.classList.toggle('active', b.dataset.mode === state.subjectsMode);
+				b.setAttribute('aria-pressed', b.dataset.mode === state.subjectsMode ? 'true' : 'false');
+			});
+		}
 	}
 
 	// ── API URL builders ──────────────────────────────────────────────────
@@ -267,7 +243,7 @@
 		if (subjectId)        url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)    url.searchParams.set('search',        state.keyword);
 		if (state.category)   url.searchParams.set('category_id',   state.category);
-		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
+		if (state.subjects)   url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
 		if (state.openAccess) url.searchParams.set('open_access',   'true');
 		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
@@ -291,7 +267,7 @@
 		if (subjectId)        url.searchParams.set('subject_id',    subjectId);
 		if (state.keyword)    url.searchParams.set('search',        state.keyword);
 		if (state.category)   url.searchParams.set('category_id',   state.category);
-		if (state.subjects)   url.searchParams.set('subjects',      state.subjects);
+		if (state.subjects)   url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.authorId)   url.searchParams.set('author_id',     state.authorId);
 		if (state.openAccess) url.searchParams.set('open_access',          'true');
 		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
@@ -349,9 +325,9 @@
 	}
 
 	function buildCard(a) {
-		var authors  = formatAuthors(a.authors);
+		var authors  = decodeEntities(formatAuthors(a.authors));
 		var date     = formatDate(a.published_date);
-		var journal  = a.container_title || '';
+		var journal  = decodeEntities(a.container_title || '');
 		var abstract = truncate(stripHtml(a.summary || ''), 200);
 		var accessBadge = a.access === 'open'
 			? '<span class="access-badge open">Open Access</span>'
@@ -381,7 +357,7 @@
 		if (a.team_categories && a.team_categories.length) {
 			categories = '<div class="paper-card-categories">' +
 				a.team_categories.map(function (c) {
-					return '<span class="condition-tag" style="font-size:12px;padding:2px 8px;">' + escHtml(c.category_name || c.slug || c) + '</span>';
+					return '<span class="condition-tag" style="font-size:12px;padding:2px 8px;">' + escHtml(decodeEntities(c.category_name || c.slug || c)) + '</span>';
 				}).join('') +
 			'</div>';
 		}
@@ -389,7 +365,7 @@
 		var rawUrl = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		return '<article class="paper-card">' +
 			'<div class="paper-card-title">' +
-				'<a href="' + escHtml(rawUrl) + '">' + escHtml(a.title) + '</a>' +
+				'<a href="' + escHtml(rawUrl) + '">' + escHtml(decodeEntities(a.title)) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
 				(mlScores    ? ' ' + mlScores    : '') +
 			'</div>' +
@@ -602,7 +578,9 @@
 			renderCards(state.results);
 			updatePagination(cached.current_page || page, cached.total_pages || 1);
 			updateCounter(cached.count || 0);
+			if (tabPapersCount && page === 1) tabPapersCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
+			renderDesktopTokens();
 			return;
 		}
 
@@ -629,7 +607,9 @@
 				renderCards(state.results);
 				updatePagination(data.current_page || page, totalPages);
 				updateCounter(data.count || 0);
+				if (tabPapersCount && page === 1) tabPapersCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
+				renderDesktopTokens();
 			})
 			.catch(renderError);
 	}
@@ -794,12 +774,26 @@
 
 	// ── Event listeners ────────────────────────────────────────────────────
 
+	function collectDesktopSubjects() {
+		var ids = [];
+		[conditionChips, areaChips].forEach(function (group) {
+			if (!group) return;
+			group.querySelectorAll('.search-chip.search-chip--active').forEach(function (chip) {
+				var v = chip.dataset.value;
+				if (v) ids.push(v);
+			});
+		});
+		return ids.join(',');
+	}
+
 	function readSubjectsFromControls() {
+		if (conditionChips || areaChips) {
+			return collectDesktopSubjects();
+		}
 		if (conditionsSelect || researchAreasSelect) {
-			var ids = [
-				conditionsSelect    ? conditionsSelect.value    : '',
-				researchAreasSelect ? researchAreasSelect.value : '',
-			].filter(Boolean);
+			var ids = [];
+			if (conditionsSelect)    Array.from(conditionsSelect.selectedOptions    || []).forEach(function (o) { if (o.value) ids.push(o.value); });
+			if (researchAreasSelect) Array.from(researchAreasSelect.selectedOptions || []).forEach(function (o) { if (o.value) ids.push(o.value); });
 			return ids.join(',');
 		}
 		if (subjectsMulti) {
@@ -823,6 +817,12 @@
 
 	if (searchBtn) {
 		searchBtn.addEventListener('click', doSearch);
+	}
+
+	if (searchInput) {
+		searchInput.addEventListener('keydown', function (e) {
+			if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+		});
 	}
 
 	var filterForm = document.getElementById('papers-filter-form');
@@ -934,6 +934,7 @@
 			state.keyword           = '';
 			state.category          = '';
 			state.subjects          = '';
+			state.subjectsMode      = 'all';
 			state.page              = 1;
 			state.sort              = 'date';
 			state.relevant          = requireRelevant;
@@ -942,6 +943,12 @@
 			state.openAccess        = false;
 			state.dateFrom          = '';
 			state.dateTo            = '';
+			if (papersSubjectsModeEl) {
+				papersSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+					b.classList.toggle('active', b.dataset.mode === 'all');
+					b.setAttribute('aria-pressed', b.dataset.mode === 'all' ? 'true' : 'false');
+				});
+			}
 			if (searchInput)     searchInput.value     = '';
 			if (categorySelect)  categorySelect.value  = '';
 			if (subjectsSelect)      subjectsSelect.value  = '';
@@ -955,6 +962,9 @@
 			if (openAccessCheck) openAccessCheck.checked = false;
 			if (dateFromInput)   dateFromInput.value   = '';
 			if (dateToInput)     dateToInput.value     = '';
+			[conditionChips, areaChips].forEach(function (g) {
+				if (g) g.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
+			});
 			hideAuthorSuggestions();
 			hideCategoryPanel();
 			fetchPage(1, false);
@@ -971,35 +981,158 @@
 		if (btn && !btn.disabled) fetchPage(parseInt(btn.dataset.page, 10), true);
 	});
 
-	if (downloadToggle) {
-		var downloadMenu = downloadToggle.parentElement.querySelector('.download-menu');
+	BR.feedUI.wireDownloadDropdown(downloadToggle, {
+		onPage: downloadPageCSV,
+		onAll:  downloadAllCSV
+	});
 
-		downloadToggle.addEventListener('click', function (e) {
-			e.stopPropagation();
-			var open = downloadToggle.getAttribute('aria-expanded') === 'true';
-			downloadToggle.setAttribute('aria-expanded', String(!open));
-			if (downloadMenu) downloadMenu.classList.toggle('is-open', !open);
-		});
-
-		if (downloadMenu) {
-			downloadMenu.addEventListener('click', function (e) {
-				var btn = e.target.closest('.download-option');
-				if (!btn) return;
-				if (btn.dataset.scope === 'all') {
-					downloadAllCSV();
-				} else {
-					downloadPageCSV();
-				}
-				downloadToggle.setAttribute('aria-expanded', 'false');
-				downloadMenu.classList.remove('is-open');
+	// ── Desktop subjects mode toggle ─────────────────────────────────────────
+	var papersSubjectsModeEl = document.getElementById('papers-subjects-mode');
+	if (papersSubjectsModeEl) {
+		papersSubjectsModeEl.addEventListener('click', function (e) {
+			var btn = e.target.closest('.subjects-mode-btn');
+			if (!btn) return;
+			papersSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+				b.classList.remove('active');
+				b.setAttribute('aria-pressed', 'false');
 			});
-		}
-
-		document.addEventListener('click', function () {
-			downloadToggle.setAttribute('aria-expanded', 'false');
-			if (downloadMenu) downloadMenu.classList.remove('is-open');
+			btn.classList.add('active');
+			btn.setAttribute('aria-pressed', 'true');
+			state.subjectsMode = btn.dataset.mode;
+			if (state.subjects) fetchPage(1, false);
 		});
 	}
+
+	// ── Desktop chip filter (advanced search) ─────────────────────────────
+
+	function renderDesktopTokens() {
+		if (!desktopTokens) return;
+		var items = [];
+
+		if (state.subjects) {
+			state.subjects.split(',').filter(Boolean).forEach(function (id) {
+				var label = id;
+				document.querySelectorAll('.search-chip').forEach(function (c) {
+					if (c.dataset.value === id) label = c.textContent.trim();
+				});
+				items.push({ label: label, key: 'subject:' + id });
+			});
+		}
+		if (state.authorId && authorInput && authorInput.value) {
+			items.push({ label: 'Author: ' + authorInput.value, key: 'author' });
+		}
+		if (state.openAccess) {
+			items.push({ label: 'Open access only', key: 'oa' });
+		}
+		if (state.category && categorySelect) {
+			var catLabel = state.category;
+			for (var ci = 0; ci < categorySelect.options.length; ci++) {
+				if (categorySelect.options[ci].value === state.category) { catLabel = categorySelect.options[ci].text; break; }
+			}
+			items.push({ label: catLabel, key: 'category' });
+		}
+		if (state.dateFrom || state.dateTo) {
+			items.push({ label: 'Date: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…'), key: 'date' });
+		}
+		if (state.hasClinicalTrials !== null) {
+			items.push({ label: state.hasClinicalTrials ? 'With clinical trials' : 'Without clinical trials', key: 'show' });
+		}
+
+		desktopTokens.hidden = items.length === 0;
+		if (items.length === 0) return;
+
+		desktopTokens.innerHTML = '<span class="search-tokens__label">Filtering by:</span>' +
+			items.map(function (item) {
+				return '<span class="search-token">' + escHtml(item.label) +
+					'<button class="search-token__x" data-key="' + escHtml(item.key) + '" aria-label="Remove ' + escHtml(item.label) + ' filter">×</button>' +
+					'</span>';
+			}).join('') +
+			'<button class="search-clear-all" id="papers-desktop-clear-all">Clear all</button>';
+
+		desktopTokens.querySelectorAll('.search-token__x').forEach(function (btn) {
+			btn.addEventListener('click', function () { removeDesktopToken(btn.dataset.key); });
+		});
+		var clearAllBtn = document.getElementById('papers-desktop-clear-all');
+		if (clearAllBtn) {
+			clearAllBtn.addEventListener('click', function () {
+				state.subjects = '';
+				state.authorId = '';
+				state.openAccess = false;
+				state.category = '';
+				state.dateFrom = '';
+				state.dateTo = '';
+				state.hasClinicalTrials = null;
+				state.page = 1;
+				[conditionChips, areaChips].forEach(function (g) {
+					if (g) g.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
+				});
+				if (authorInput)     authorInput.value = '';
+				if (authorHidden)    authorHidden.value = '';
+				if (openAccessCheck) openAccessCheck.checked = false;
+				if (categorySelect)  categorySelect.value = '';
+				if (dateFromInput)   dateFromInput.value = '';
+				if (dateToInput)     dateToInput.value = '';
+				hideCategoryPanel();
+				fetchPage(1, false);
+			});
+		}
+	}
+
+	function removeDesktopToken(key) {
+		if (key.indexOf('subject:') === 0) {
+			var removeId = key.slice(8);
+			var ids = (state.subjects || '').split(',').filter(Boolean);
+			state.subjects = ids.filter(function (x) { return x !== removeId; }).join(',');
+			document.querySelectorAll('.search-chip').forEach(function (c) {
+				if (c.dataset.value === removeId) BR.feedUI.setSearchChipActive(c, false);
+			});
+		} else if (key === 'author') {
+			state.authorId = '';
+			if (authorInput) authorInput.value = '';
+			if (authorHidden) authorHidden.value = '';
+		} else if (key === 'oa') {
+			state.openAccess = false;
+			if (openAccessCheck) openAccessCheck.checked = false;
+		} else if (key === 'category') {
+			state.category = '';
+			if (categorySelect) categorySelect.value = '';
+			hideCategoryPanel();
+		} else if (key === 'date') {
+			state.dateFrom = '';
+			state.dateTo = '';
+			if (dateFromInput) dateFromInput.value = '';
+			if (dateToInput) dateToInput.value = '';
+		} else if (key === 'show') {
+			state.hasClinicalTrials = null;
+			state.relevant = requireRelevant;
+			if (relevantSelect) relevantSelect.value = String(requireRelevant);
+		}
+		state.page = 1;
+		fetchPage(1, false);
+	}
+
+	function wireDesktopChipGroup(group) {
+		if (!group) return;
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.search-chip');
+			if (!chip) return;
+			BR.feedUI.setSearchChipActive(chip, !chip.classList.contains('search-chip--active'));
+			state.subjects = collectDesktopSubjects();
+			state.page = 1;
+			fetchPage(1, false);
+		});
+	}
+	wireDesktopChipGroup(conditionChips);
+	wireDesktopChipGroup(areaChips);
+
+	BR.feedUI.wireMoreFilters(moreFiltersBtn, advancedPanel, 'papers-more-arrow');
+
+	BR.feedUI.wireHintTags(function (hint) {
+		if (searchInput) searchInput.value = hint;
+		state.keyword = hint;
+		state.page = 1;
+		fetchPage(1, false);
+	});
 
 	// ── Init ───────────────────────────────────────────────────────────────
 	readURL();
@@ -1048,6 +1181,15 @@
 
 	fetchPage(state.page, false);
 
+	// Background fetch for trials tab count badge
+	if (tabTrialsCount) {
+		var trialsCountUrl = articlesEndpoint.replace('/articles/', '/trials/') + '?format=json&page_size=1' + (teamId ? '&team_id=' + teamId : '');
+		fetch(trialsCountUrl)
+			.then(function (r) { return r.json(); })
+			.then(function (d) { if (d.count != null) tabTrialsCount.textContent = d.count.toLocaleString(); })
+			.catch(function () {});
+	}
+
 	// ── Mobile UI ──────────────────────────────────────────────────────────
 	// Wires the mobile search bar, filter token strip, and bottom sheet.
 	// All state changes call the same fetchPage() used by desktop controls.
@@ -1071,22 +1213,22 @@
 
 	var draft = {};
 
-	function subjectIdForGroup(groupId) {
+	function activeIdsForGroup(groupId) {
 		var group = document.getElementById(groupId);
 		if (!group) return '';
-		var ids = (state.subjects || '').split(',').filter(Boolean);
-		for (var i = 0; i < ids.length; i++) {
-			if (group.querySelector('.sheet-chip[data-value="' + ids[i] + '"]')) return ids[i];
-		}
-		return '';
+		var allIds = (state.subjects || '').split(',').filter(Boolean);
+		var groupVals = Array.from(group.querySelectorAll('.sheet-chip[data-value]'))
+			.map(function (c) { return c.dataset.value; }).filter(Boolean);
+		return allIds.filter(function (id) { return groupVals.indexOf(id) !== -1; }).join(',');
 	}
 
 	function resetDraft() {
 		draft = {
 			category:              state.category,
 			subjects:              state.subjects,
-			conditionSubject:      subjectIdForGroup('papers-sheet-conditions'),
-			researchAreaSubject:   subjectIdForGroup('papers-sheet-research-areas'),
+			subjectsMode:          state.subjectsMode,
+			conditionSubject:      activeIdsForGroup('papers-sheet-conditions'),
+			researchAreaSubject:   activeIdsForGroup('papers-sheet-research-areas'),
 			sort:                  state.sort,
 			relevant:              state.relevant,
 			hasClinicalTrials:     state.hasClinicalTrials,
@@ -1095,30 +1237,37 @@
 		};
 	}
 
-	function setActiveChip(groupId, value) {
-		var group = document.getElementById(groupId);
-		if (!group) return;
-		var chips = group.querySelectorAll('.sheet-chip');
-		chips.forEach(function (chip) {
-			chip.classList.toggle('active', chip.dataset.value === value);
-		});
-	}
+	var setActiveChip = BR.feedUI.setActiveChip;
 
 	function syncSheetToDraft() {
-		setActiveChip('papers-sheet-category', draft.category);
-		setActiveChip('papers-sheet-sort',     draft.sort);
+		setActiveChip('papers-sheet-category',       draft.category);
+		setActiveChip('papers-sheet-sort',           draft.sort);
+		setActiveChip('papers-sheet-subjects-mode',  draft.subjectsMode || 'all');
 		var showVal;
 		if (draft.hasClinicalTrials === true)      showVal = 'has_clinical_trials_true';
 		else if (draft.hasClinicalTrials === false) showVal = 'has_clinical_trials_false';
 		else                                        showVal = String(draft.relevant);
 		setActiveChip('papers-sheet-show', showVal);
 
-		// Condition / research-area: single-select chip groups (advanced) or combined (standard)
-		setActiveChip('papers-sheet-conditions',     draft.conditionSubject    || '');
-		setActiveChip('papers-sheet-research-areas', draft.researchAreaSubject || '');
+		// Condition / research-area: multi-select chip groups (advanced) or combined (standard)
+		var condGroup = document.getElementById('papers-sheet-conditions');
+		if (condGroup) {
+			var condIds = (draft.conditionSubject || '').split(',').filter(Boolean);
+			condGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
+				chip.classList.toggle('active', Boolean(chip.dataset.value) && condIds.indexOf(chip.dataset.value) !== -1);
+			});
+		}
+		var raGroup = document.getElementById('papers-sheet-research-areas');
+		if (raGroup) {
+			var raIds = (draft.researchAreaSubject || '').split(',').filter(Boolean);
+			raGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
+				chip.classList.toggle('active', Boolean(chip.dataset.value) && raIds.indexOf(chip.dataset.value) !== -1);
+			});
+		}
 		var subjectsGroup = document.getElementById('papers-sheet-subjects');
 		if (subjectsGroup) {
 			if (subjectsGroup.dataset.multi === 'true') {
+				var activeSubjectIds = (draft.subjects || '').split(',').filter(Boolean);
 				subjectsGroup.querySelectorAll('.sheet-chip').forEach(function (chip) {
 					chip.classList.toggle('active', Boolean(chip.dataset.value) && activeSubjectIds.indexOf(chip.dataset.value) !== -1);
 				});
@@ -1209,20 +1358,7 @@
 		return id;
 	}
 
-	function buildToken(label, filterKey) {
-		var token = document.createElement('span');
-		token.className = 'filter-token';
-		token.dataset.filter = filterKey;
-		var text = document.createTextNode(label + ' ');
-		var removeBtn = document.createElement('button');
-		removeBtn.type = 'button';
-		removeBtn.className = 'filter-token-remove';
-		removeBtn.setAttribute('aria-label', 'Remove ' + label + ' filter');
-		removeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-		token.appendChild(text);
-		token.appendChild(removeBtn);
-		return token;
-	}
+	var buildToken = BR.feedUI.buildToken;
 
 	function removeToken(filterKey) {
 		if (filterKey === 'category')    { state.category = ''; hideCategoryPanel(); }
@@ -1396,8 +1532,9 @@
 	}
 	wireChipGroup('papers-sheet-conditions',     function (val) { draft.conditionSubject    = val; });
 	wireChipGroup('papers-sheet-research-areas', function (val) { draft.researchAreaSubject = val; });
-	wireChipGroup('papers-sheet-category', function (val) { draft.category = val; });
-	wireChipGroup('papers-sheet-subjects',  function (val) { draft.subjects = val; });
+	wireChipGroup('papers-sheet-category',        function (val) { draft.category      = val; });
+	wireChipGroup('papers-sheet-subjects',         function (val) { draft.subjects      = val; });
+	wireChipGroup('papers-sheet-subjects-mode',    function (val) { draft.subjectsMode  = val; });
 	wireChipGroup('papers-sheet-sort',       function (val) { draft.sort = val; });
 	wireChipGroup('papers-sheet-show', function (val) {
 		if (val === 'has_clinical_trials_true')       { draft.hasClinicalTrials = true;  draft.relevant = requireRelevant; }
@@ -1452,15 +1589,28 @@
 			state.category          = draft.category          !== undefined ? draft.category          : state.category;
 			if (draft.conditionSubject !== undefined || draft.researchAreaSubject !== undefined) {
 				state.subjects = [draft.conditionSubject || '', draft.researchAreaSubject || ''].filter(Boolean).join(',');
-				if (conditionsSelect)    conditionsSelect.value    = draft.conditionSubject    || '';
-				if (researchAreasSelect) researchAreasSelect.value = draft.researchAreaSubject || '';
+				if (conditionsSelect) {
+					var condSyncIds = (draft.conditionSubject || '').split(',').filter(Boolean);
+					Array.from(conditionsSelect.options).forEach(function (o) { o.selected = condSyncIds.indexOf(o.value) !== -1; });
+				}
+				if (researchAreasSelect) {
+					var raSyncIds = (draft.researchAreaSubject || '').split(',').filter(Boolean);
+					Array.from(researchAreasSelect.options).forEach(function (o) { o.selected = raSyncIds.indexOf(o.value) !== -1; });
+				}
 			} else {
 				state.subjects = draft.subjects !== undefined ? draft.subjects : state.subjects;
 			}
 			state.sort              = draft.sort               !== undefined ? draft.sort               : state.sort;
+			state.subjectsMode      = draft.subjectsMode       !== undefined ? draft.subjectsMode       : state.subjectsMode;
 			state.relevant          = draft.relevant           !== undefined ? draft.relevant           : state.relevant;
 			state.hasClinicalTrials = draft.hasClinicalTrials  !== undefined ? draft.hasClinicalTrials  : state.hasClinicalTrials;
 			state.openAccess        = draft.openAccess         !== undefined ? draft.openAccess         : state.openAccess;
+			if (papersSubjectsModeEl) {
+				papersSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
+					b.classList.toggle('active', b.dataset.mode === state.subjectsMode);
+					b.setAttribute('aria-pressed', b.dataset.mode === state.subjectsMode ? 'true' : 'false');
+				});
+			}
 			if (draft.authorId !== undefined) {
 				state.authorId = draft.authorId;
 				// Sync desktop author display
@@ -1486,6 +1636,7 @@
 			draft = {
 				category:            '',
 				subjects:            '',
+				subjectsMode:        'all',
 				conditionSubject:    '',
 				researchAreaSubject: '',
 				sort:                'date',

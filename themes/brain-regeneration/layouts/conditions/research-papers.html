@@ -41,60 +41,17 @@
 
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}
-<section id="rp-alerts" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
-	<div class="container">
-		<div class="newsletter-card">
-			<div class="text-center mb-4">
-				<h2 style="margin-bottom: 8px;">Get a weekly digest of new {{ $conditionPage.Title }} research</h2>
-				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">New relevant papers delivered to your inbox every week.</p>
-			</div>
-			<form
-				data-inline-subscribe
-				data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
-				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
-				data-error="{{ .Site.Params.subscriptions.error_url }}"
-				novalidate
-			>
-				<input type="hidden" name="list" value="{{ .Params.list_id }}">
-				<div class="row g-3 align-items-end">
-					<div class="col-12 col-md-3">
-						<label for="rp-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
-						<input type="text" class="form-control" id="rp-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
-					</div>
-					<div class="col-12 col-md-3">
-						<label for="rp-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
-						<input type="email" class="form-control" id="rp-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
-					</div>
-					<div class="col-12 col-md-3">
-						<label for="rp-profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
-						<select class="form-select" id="rp-profile" name="profile" required style="border-color: var(--color-border);">
-							<option value="" disabled selected>Select…</option>
-							<option value="patient">Patient</option>
-							<option value="caregiver">Caregiver</option>
-							<option value="doctor">Doctor</option>
-							<option value="clinical centre">Clinical Centre</option>
-							<option value="researcher">Researcher</option>
-							<option value="other">Other</option>
-						</select>
-					</div>
-					<div class="col-12 col-md-3 d-flex align-items-end">
-						<button type="submit" class="btn-amber w-100" data-umami-event="Condition: Subscribe Papers" data-umami-event-condition="{{ $conditionPage.Title }}">Subscribe</button>
-					</div>
-					{{ range .Site.Params.subscriptions.global_lists }}
-					<div class="col-12">
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-rp-{{ .list_id }}">
-							<label class="form-check-label" for="global-list-rp-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
-						</div>
-					</div>
-					{{ end }}
-				</div>
-			</form>
-		</div>
-	</div>
-</section>
+{{ partial "forms/newsletter-inline" (dict
+	"site" .Site
+	"anchorId" "rp-alerts"
+	"idPrefix" "rp"
+	"heading" (printf "Get a weekly digest of new %s research" $conditionPage.Title)
+	"subhead" "New relevant papers delivered to your inbox every week."
+	"listId" .Params.list_id
+	"umamiEvent" "Condition: Subscribe Papers"
+	"umamiTitle" $conditionPage.Title) }}
 {{ end }}
 
-<script src="{{ "js/inline-subscribe.js" | relURL }}" defer></script>
+<script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 
 {{ end }}

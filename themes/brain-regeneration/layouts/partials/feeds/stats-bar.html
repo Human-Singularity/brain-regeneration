@@ -1,0 +1,40 @@
+{{- /*
+  feeds/stats-bar.html — clinical-trials aggregate stats bar (populated by
+  trials-feed.js via #trials-stats).
+
+  Params (dict):
+    page      — the page object (for .Params.api + .Site)
+    subjectId — optional override; defaults to the page's api.subject_id.
+                Advanced search passes "" to aggregate across all subjects.
+*/ -}}
+{{- $page := .page -}}
+{{- $api := $page.Params.api -}}
+{{- $subjectId := "" -}}
+{{- with $api }}{{ $subjectId = .subject_id }}{{ end -}}
+{{- if isset . "subjectId" }}{{ $subjectId = .subjectId }}{{ end -}}
+<div class="stats-bar"
+	id="trials-stats"
+	data-endpoint="{{ partial "api-endpoint" (dict "api" $api "apiBase" $page.Site.Params.apiBase) }}"
+	data-team-id="{{ with $api }}{{ .team_id }}{{ end }}"
+	data-subject-id="{{ $subjectId }}">
+	<div class="container">
+		<div class="d-flex justify-content-center flex-wrap">
+			<div class="stat-item">
+				<div class="stat-number" id="stat-recruiting" style="color: var(--color-accent);">—</div>
+				<div class="stat-label">Recruiting</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-active">—</div>
+				<div class="stat-label">Active, not recruiting</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-completed">—</div>
+				<div class="stat-label">Completed</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="stat-total">—</div>
+				<div class="stat-label">Total</div>
+			</div>
+		</div>
+	</div>
+</div>
