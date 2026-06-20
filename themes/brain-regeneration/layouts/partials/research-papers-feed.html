@@ -70,7 +70,13 @@
 
 			{{- if $researchAreaPages }}
 			<div class="search-filter-group">
-				<div class="search-filter-label">Research focus</div>
+				<div class="search-filter-label-row">
+					<span class="search-filter-label">Research focus</span>
+					<div class="subjects-mode" id="papers-areas-mode">
+						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">Match all</button>
+						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Match any</button>
+					</div>
+				</div>
 				<div class="search-chips" id="papers-area-chips">
 					{{- range $researchAreaPages }}
 					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
@@ -312,10 +318,19 @@
 			</div>
 		</div>
 		{{- end }}
-		{{- if or $conditionPagesMobile $researchAreaPagesMobile }}
+		{{- if $conditionPagesMobile }}
 		<div class="sheet-group">
 			<div class="sheet-group-label">Condition match</div>
 			<div class="sheet-chips" id="papers-sheet-subjects-mode">
+				<button type="button" class="sheet-chip active" data-value="all">Match all selected</button>
+				<button type="button" class="sheet-chip" data-value="any">Match any selected</button>
+			</div>
+		</div>
+		{{- end }}
+		{{- if $researchAreaPagesMobile }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Research area match</div>
+			<div class="sheet-chips" id="papers-sheet-areas-mode">
 				<button type="button" class="sheet-chip active" data-value="all">Match all selected</button>
 				<button type="button" class="sheet-chip" data-value="any">Match any selected</button>
 			</div>
