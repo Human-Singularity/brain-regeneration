@@ -187,9 +187,10 @@
 		<div class="row g-4 justify-content-center">
 			{{ $alzheimers := .Site.GetPage "/conditions/alzheimers" }}
 			{{ $ms := .Site.GetPage "/conditions/multiple-sclerosis" }}
-			{{ range slice $alzheimers $ms }}
+			{{ $parkinsons := .Site.GetPage "/conditions/parkinsons" }}
+			{{ range slice $alzheimers $ms $parkinsons }}
 			{{ if . }}
-			<div class="col-12 col-md-6" style="max-width: 520px;">
+			<div class="col-12 col-md-4">
 				<div class="card-trial d-flex flex-column">
 					<div class="d-flex justify-content-between align-items-start mb-3">
 						<h3 style="font-size: 22px; margin-bottom: 0;">{{ .Title }}</h3>
@@ -203,7 +204,7 @@
 			{{ end }}
 		</div>
 		<div class="text-center mt-4">
-			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">Parkinson's Disease, ALS, and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to suggest a condition.</a></p>
+			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">ALS and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to suggest a condition.</a></p>
 		</div>
 	</div>
 </section>
