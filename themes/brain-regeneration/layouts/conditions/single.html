@@ -39,32 +39,7 @@
 </div>
 
 <!-- ── STATS BAR (populated by JS) ── -->
-<div class="stats-bar"
-	id="trials-stats"
-	data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.brain-regeneration.com" $.Site.Params.apiBase }}{{ end }}"
-	data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
-	data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}">
-	<div class="container">
-		<div class="d-flex justify-content-center flex-wrap">
-			<div class="stat-item">
-				<div class="stat-number" id="stat-recruiting" style="color: var(--color-accent);">—</div>
-				<div class="stat-label">Recruiting</div>
-			</div>
-			<div class="stat-item">
-				<div class="stat-number" id="stat-active">—</div>
-				<div class="stat-label">Active, not recruiting</div>
-			</div>
-			<div class="stat-item">
-				<div class="stat-number" id="stat-completed">—</div>
-				<div class="stat-label">Completed</div>
-			</div>
-			<div class="stat-item">
-				<div class="stat-number" id="stat-total">—</div>
-				<div class="stat-label">Total</div>
-			</div>
-		</div>
-	</div>
-</div>
+{{ partial "feeds/stats-bar" (dict "page" .) }}
 
 <!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
 <div class="d-none d-lg-block">
@@ -115,42 +90,7 @@
 				<div class="col-6 col-md-3">
 					<label for="filter-country">Country</label>
 					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
-					<datalist id="country-list">
-						<option value="Argentina">
-						<option value="Australia">
-						<option value="Austria">
-						<option value="Belgium">
-						<option value="Brazil">
-						<option value="Canada">
-						<option value="China">
-						<option value="Czech Republic">
-						<option value="Denmark">
-						<option value="Finland">
-						<option value="France">
-						<option value="Germany">
-						<option value="Greece">
-						<option value="Hungary">
-						<option value="India">
-						<option value="Ireland">
-						<option value="Israel">
-						<option value="Italy">
-						<option value="Japan">
-						<option value="Mexico">
-						<option value="Netherlands">
-						<option value="New Zealand">
-						<option value="Norway">
-						<option value="Poland">
-						<option value="Portugal">
-						<option value="Romania">
-						<option value="Russia">
-						<option value="South Korea">
-						<option value="Spain">
-						<option value="Sweden">
-						<option value="Switzerland">
-						<option value="Turkey">
-						<option value="United Kingdom">
-						<option value="United States">
-					</datalist>
+					{{ partial "forms/country-datalist.html" }}
 				</div>
 				<div class="col-6 col-md-4">
 					<label for="sort-order">Sort by</label>
@@ -175,123 +115,12 @@
 		</form>
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="results-count"></span>
-			<div class="download-dropdown">
-				<button class="btn-download" id="download-toggle" aria-haspopup="true" aria-expanded="false">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-						<polyline points="7 10 12 15 17 10"/>
-						<line x1="12" y1="15" x2="12" y2="3"/>
-					</svg>
-					Download
-					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
-				</button>
-				<ul class="download-menu" role="menu">
-					<li><button class="download-option" data-scope="page" role="menuitem">Current page</button></li>
-					<li><button class="download-option" data-scope="all" role="menuitem">All results</button></li>
-				</ul>
-			</div>
+			{{ partial "feeds/download-dropdown" (dict "toggleId" "download-toggle") }}
 		</div>
 	</div>
 </div></div>{{/* end d-none d-lg-block */}}
 
-<!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
-<div class="mobile-feeds-bar d-lg-none" id="trials-mobile-bar">
-	<div class="container">
-		<div class="mobile-search-wrap">
-			<label for="trials-mobile-search" class="visually-hidden">Search trials</label>
-			<input type="text" class="form-control" id="trials-mobile-search" placeholder="Search trials…" autocomplete="off">
-			<button type="button" class="mobile-search-clear" id="trials-mobile-clear" hidden aria-label="Clear search">
-				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-			</button>
-		</div>
-		<div class="filter-tokens" id="trials-filter-tokens" hidden>
-			<!-- active filter tokens rendered by JS -->
-			<button type="button" class="token-add-filters"
-				data-bs-toggle="offcanvas"
-				data-bs-target="#trials-filter-sheet"
-				aria-controls="trials-filter-sheet">
-				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
-				+ Filters
-			</button>
-		</div>
-	</div>
-</div>
-
-<!-- ── MOBILE FILTER BOTTOM SHEET ── -->
-<div class="offcanvas offcanvas-bottom filter-sheet d-lg-none"
-	tabindex="-1"
-	id="trials-filter-sheet"
-	role="dialog"
-	aria-modal="true"
-	aria-label="Filter clinical trials">
-	<div class="offcanvas-header">
-		<div class="title-row">
-			<h5 class="offcanvas-title">Filters</h5>
-			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-		</div>
-	</div>
-	<div class="offcanvas-body">
-		<div class="sheet-group">
-			<label for="trials-sheet-identifiers-input" class="sheet-group-label">Identifiers</label>
-			<input type="text" class="form-control form-control-sm" id="trials-sheet-identifiers-input" placeholder="e.g. NCT02521311, 2020-001234-12" autocomplete="off">
-		</div>
-		<div class="sheet-group">
-			<label for="trials-sheet-acronym-input" class="sheet-group-label">Acronym</label>
-			<input type="text" class="form-control form-control-sm" id="trials-sheet-acronym-input" placeholder="e.g. ReCOVER, MODIF-MS" autocomplete="off">
-		</div>
-		<div class="sheet-group">
-			<div class="sheet-group-label">Phase</div>
-			<div class="sheet-chips" id="trials-sheet-phase">
-				<button type="button" class="sheet-chip active" data-value="">All phases</button>
-				<button type="button" class="sheet-chip" data-value="PHASE1">Phase 1</button>
-				<button type="button" class="sheet-chip" data-value="PHASE2">Phase 2</button>
-				<button type="button" class="sheet-chip" data-value="PHASE3">Phase 3</button>
-				<button type="button" class="sheet-chip" data-value="PHASE4">Phase 4</button>
-			</div>
-		</div>
-		<div class="sheet-group">
-			<div class="sheet-group-label">Status</div>
-			<div class="sheet-chips" id="trials-sheet-status">
-				<button type="button" class="sheet-chip active" data-value="">All statuses</button>
-				<button type="button" class="sheet-chip" data-value="RECRUITING">Recruiting</button>
-				<button type="button" class="sheet-chip" data-value="ACTIVE_NOT_RECRUITING">Active, not recruiting</button>
-				<button type="button" class="sheet-chip" data-value="NOT_YET_RECRUITING">Not yet recruiting</button>
-				<button type="button" class="sheet-chip" data-value="COMPLETED">Completed</button>
-			</div>
-		</div>
-		<div class="sheet-group">
-			<div class="sheet-group-label">Sort by</div>
-			<div class="sheet-chips" id="trials-sheet-sort">
-				<button type="button" class="sheet-chip active" data-value="-discovery_date">Date added (newest)</button>
-				<button type="button" class="sheet-chip" data-value="discovery_date">Date added (oldest)</button>
-				<button type="button" class="sheet-chip" data-value="-published_date">Published (newest)</button>
-				<button type="button" class="sheet-chip" data-value="published_date">Published (oldest)</button>
-			</div>
-		</div>
-		<div class="sheet-group">
-			<div class="sheet-group-label">Show</div>
-			<div class="sheet-chips" id="trials-sheet-show">
-				<button type="button" class="sheet-chip active" data-value="">All trials</button>
-				<button type="button" class="sheet-chip" data-value="has_results">With results posted</button>
-			</div>
-		</div>
-	</div>
-	<div class="sheet-footer">
-		<button type="button" class="btn-outline-teal" id="trials-sheet-reset">Reset</button>
-		<button type="button" class="btn-amber" id="trials-sheet-apply">Show results</button>
-	</div>
-</div>
-
-<!-- ── MOBILE FAB ── -->
-<button type="button" class="filter-fab d-lg-none" id="trials-filter-fab"
-	data-bs-toggle="offcanvas"
-	data-bs-target="#trials-filter-sheet"
-	aria-controls="trials-filter-sheet"
-	aria-label="Open filters">
-	<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-	Filters
-	<span class="fab-count" id="trials-fab-count" hidden>0</span>
-</button>
+{{ partial "feeds/trials-mobile-filters" (dict "showStudyType" false) }}
 <!-- ── TRIAL LISTING ── -->
 <section class="section bg-sand">
 	<div class="container">
@@ -299,7 +128,7 @@
 
 		{{/* Trial listing mount point — populated at runtime */}}
 		<div id="trials-list"
-			data-endpoint="{{ with .Params.api }}{{ replace .endpoint "https://api.brain-regeneration.com" $.Site.Params.apiBase }}{{ end }}"
+			data-endpoint="{{ partial "api-endpoint" (dict "api" .Params.api "apiBase" .Site.Params.apiBase) }}"
 			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 			data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
 			data-default-status="{{ with .Params.filters }}{{ .default_status }}{{ end }}"
@@ -311,77 +140,21 @@
 			<button class="btn-outline-teal" id="clear-filters">Clear filters</button>
 		</div>
 
-		<div class="pagination-controls" id="pagination">
-			<button class="pagination-btn" id="trials-first-btn" title="First page">
-				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
-			</button>
-			<button class="pagination-btn" id="prev-btn" disabled title="Previous page">
-				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
-			</button>
-			<button class="pagination-btn" id="next-btn" title="Next page">
-				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
-			</button>
-			<button class="pagination-btn" id="trials-last-btn" title="Last page">
-				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
-			</button>
-		</div>
+		{{ partial "feeds/trials-pagination.html" }}
 	</div>
 </section>
 
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}
-<section id="ct-alerts" class="section bg-sand" style="padding-top: 0; scroll-margin-top: 140px;">
-	<div class="container">
-		<div class="newsletter-card">
-			<div class="text-center mb-4">
-				<h2 style="margin-bottom: 8px;">Get alerts when new {{ .Title }} trials open</h2>
-				<p style="max-width: 480px; margin: 0 auto; font-size: 16px;">We notify you when a new recruiting trial is added to this page.</p>
-			</div>
-			<form
-				data-inline-subscribe
-				data-api="{{ .Site.Params.apiBase }}/subscriptions/new/"
-				data-thank-you="{{ .Site.Params.subscriptions.thank_you_url }}"
-				data-error="{{ .Site.Params.subscriptions.error_url }}"
-				novalidate
-			>
-				<input type="hidden" name="list" value="{{ .Params.list_id }}">
-				<div class="row g-3 align-items-end">
-					<div class="col-12 col-md-3">
-						<label for="ct-first-name" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">First name</label>
-						<input type="text" class="form-control" id="ct-first-name" name="first_name" placeholder="Jane" required maxlength="150" style="border-color: var(--color-border);">
-					</div>
-					<div class="col-12 col-md-3">
-						<label for="ct-email" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">Email address</label>
-						<input type="email" class="form-control" id="ct-email" name="email" placeholder="you@example.com" required maxlength="254" style="border-color: var(--color-border);">
-					</div>
-					<div class="col-12 col-md-3">
-						<label for="ct-profile" class="form-label" style="font-family: var(--font-heading); font-size: 14px; color: var(--color-muted);">I am a&hellip;</label>
-						<select class="form-select" id="ct-profile" name="profile" required style="border-color: var(--color-border);">
-							<option value="" disabled selected>Select…</option>
-							<option value="patient">Patient</option>							
-							<option value="caregiver">Caregiver</option>							
-							<option value="doctor">Doctor</option>
-							<option value="clinical centre">Clinical Centre</option>
-							<option value="researcher">Researcher</option>
-							<option value="other">Other</option>
-						</select>
-					</div>
-					<div class="col-12 col-md-3 d-flex align-items-end">
-						<button type="submit" class="btn-amber w-100" data-umami-event="Condition: Subscribe" data-umami-event-condition="{{ .Title }}">Subscribe</button>
-					</div>
-					{{ range .Site.Params.subscriptions.global_lists }}
-					<div class="col-12">
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" name="list" value="{{ .list_id }}" id="global-list-ct-{{ .list_id }}">
-							<label class="form-check-label" for="global-list-ct-{{ .list_id }}">Also subscribe to {{ .title }}{{ with .description }} &mdash; <span style="color: var(--color-muted); font-size: 14px;">{{ . }}</span>{{ end }}</label>
-						</div>
-					</div>
-					{{ end }}
-				</div>
-			</form>
-		</div>
-	</div>
-</section>
+{{ partial "forms/newsletter-inline" (dict
+	"site" .Site
+	"anchorId" "ct-alerts"
+	"idPrefix" "ct"
+	"heading" (printf "Get alerts when new %s trials open" .Title)
+	"subhead" "We notify you when a new recruiting trial is added to this page."
+	"listId" .Params.list_id
+	"umamiEvent" "Condition: Subscribe"
+	"umamiTitle" .Title) }}
 {{ end }}
 
 <script src="{{ "js/trials-feed.js" | relURL }}" defer></script>

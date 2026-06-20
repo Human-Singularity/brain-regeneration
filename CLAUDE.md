@@ -82,7 +82,9 @@ workers/              Cloudflare worker (see content/cloudflare-worker.md)
 layouts/
   _default/   baseof, single, list, sectioned-page, prose-page,
               subscribe, thankyou, communication-tools, error
-  partials/   head, nav, footer, research-papers-feed
+  partials/   head, nav, footer, research-papers-feed, api-endpoint
+    feeds/    stats-bar, download-dropdown, trials-pagination, trials-mobile-filters
+    forms/    newsletter-inline, country-datalist
   shortcodes/ figure
   conditions/ list, single, research-papers
   research-areas/ list, single

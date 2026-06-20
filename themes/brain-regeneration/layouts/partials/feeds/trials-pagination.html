@@ -1,0 +1,19 @@
+{{- /*
+  feeds/trials-pagination.html — pagination controls for the clinical-trials
+  feed. Fixed ids consumed by trials-feed.js (first/prev/next/last; numbered
+  page buttons are injected into #pagination at runtime). No params.
+*/ -}}
+<div class="pagination-controls" id="pagination">
+	<button class="pagination-btn" id="trials-first-btn" title="First page">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+	</button>
+	<button class="pagination-btn" id="prev-btn" disabled title="Previous page">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
+	</button>
+	<button class="pagination-btn" id="next-btn" title="Next page">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
+	</button>
+	<button class="pagination-btn" id="trials-last-btn" title="Last page">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+	</button>
+</div>

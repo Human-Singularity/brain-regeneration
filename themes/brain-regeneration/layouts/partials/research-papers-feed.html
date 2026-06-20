@@ -136,21 +136,7 @@
 
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="papers-result-count"></span>
-			<div class="download-dropdown">
-				<button class="btn-download" id="papers-download-toggle" aria-haspopup="true" aria-expanded="false" data-umami-event="click--research-papers-download" data-umami-event-context="{{ $contextTitle }}">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-						<polyline points="7 10 12 15 17 10"/>
-						<line x1="12" y1="15" x2="12" y2="3"/>
-					</svg>
-					Download
-					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
-				</button>
-				<ul class="download-menu" role="menu">
-					<li><button class="download-option" data-scope="page" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="page">Current page</button></li>
-					<li><button class="download-option" data-scope="all" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="all">All matching results</button></li>
-				</ul>
-			</div>
+			{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
 		</div>
 	</div>
 </div>
@@ -223,21 +209,7 @@
 		</form>
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="papers-result-count"></span>
-			<div class="download-dropdown">
-				<button class="btn-download" id="papers-download-toggle" aria-haspopup="true" aria-expanded="false" data-umami-event="click--research-papers-download" data-umami-event-context="{{ $contextTitle }}">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-						<polyline points="7 10 12 15 17 10"/>
-						<line x1="12" y1="15" x2="12" y2="3"/>
-					</svg>
-					Download
-					<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
-				</button>
-				<ul class="download-menu" role="menu">
-					<li><button class="download-option" data-scope="page" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="page">Current page</button></li>
-					<li><button class="download-option" data-scope="all" role="menuitem" data-umami-event="click--research-papers-download" data-umami-event-scope="all">All matching results</button></li>
-				</ul>
-			</div>
+			{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
 		</div>
 	</div>
 </div>
