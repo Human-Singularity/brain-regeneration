@@ -567,6 +567,7 @@
 			renderCards(state.results);
 			updatePagination(cached.current_page || page, cached.total_pages || 1);
 			updateCounter(cached.count || 0);
+			if (tabPapersCount && page === 1) tabPapersCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
 			renderDesktopTokens();
 			return;
@@ -1141,7 +1142,7 @@
 		var trialsCountUrl = articlesEndpoint.replace('/articles/', '/trials/') + '?format=json&page_size=1' + (teamId ? '&team_id=' + teamId : '');
 		fetch(trialsCountUrl)
 			.then(function (r) { return r.json(); })
-			.then(function (d) { if (d.count) tabTrialsCount.textContent = d.count.toLocaleString(); })
+			.then(function (d) { if (d.count != null) tabTrialsCount.textContent = d.count.toLocaleString(); })
 			.catch(function () {});
 	}
 

@@ -43,7 +43,6 @@
 	var trialsConditionChips = document.getElementById('trials-condition-chips');
 	var trialsMoreBtn        = document.getElementById('trials-more-filters-btn');
 	var trialsAdvPanel       = document.getElementById('trials-advanced-panel');
-	var trialsDesktopTokens  = document.getElementById('trials-desktop-tokens');
 
 	// ── State ────────────────────────────────────────────────────────────────
 	// Normalise the default status value to uppercase to match what the API expects.
@@ -296,6 +295,7 @@
 		if (cached) {
 			renderCards(cached.results || []);
 			updatePagination(cached.current_page || page, cached.total_pages || 1, cached.count || 0);
+			if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (cached.count || 0).toLocaleString();
 			return;
 		}
 
@@ -439,8 +439,7 @@
 	// ── Hero hint tags ───────────────────────────────────────────────────────
 	BR.feedUI.wireHintTags(function (hint) {
 		if (searchInput) searchInput.value = hint;
-		state.keyword = hint;
-		fetchPage(1);
+		applyFilters();
 	});
 
 	// ── Hero search button ───────────────────────────────────────────────────
@@ -449,10 +448,7 @@
 	// #search-btn is the form's submit button and is handled by the form submit
 	// listener — binding here too would fire a second, stale-state fetch.
 	if (heroSearchBtn && heroSearchBtn.type !== 'submit') {
-		heroSearchBtn.addEventListener('click', function () {
-			state.keyword = searchInput ? searchInput.value.trim() : '';
-			fetchPage(1);
-		});
+		heroSearchBtn.addEventListener('click', applyFilters);
 	}
 
 	if (prevBtn) {
@@ -570,7 +566,7 @@
 		var papersCountUrl = papersEndpoint + '?format=json&page_size=1' + (teamId ? '&team_id=' + teamId : '');
 		fetch(papersCountUrl)
 			.then(function (r) { return r.json(); })
-			.then(function (d) { if (d.count) tabPapersCount.textContent = d.count.toLocaleString(); })
+			.then(function (d) { if (d.count != null) tabPapersCount.textContent = d.count.toLocaleString(); })
 			.catch(function () {});
 	}
 

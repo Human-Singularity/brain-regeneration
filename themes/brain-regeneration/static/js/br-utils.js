@@ -120,7 +120,7 @@
 		};
 	}
 
-	window.BR = {
+	window.BR = Object.assign(window.BR || {}, {
 		escHtml: escHtml,
 		decodeEntities: decodeEntities,
 		stripHtml: stripHtml,
@@ -130,5 +130,5 @@
 		slugify: slugify,
 		safeLink: safeLink,
 		makeCache: makeCache
-	};
+	});
 })(window);
