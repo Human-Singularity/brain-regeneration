@@ -10,5 +10,4 @@ hero_description: "Search across 45,000+ research papers tracked by the Observat
 
 api:
   endpoint: "https://api.brain-regeneration.com/articles/"
-  team_id: 1
 ---

@@ -540,7 +540,7 @@
 		if (categoryPanelName) categoryPanelName.textContent = cat.name;
 
 		var url = new URL(apiBase.replace(/\/$/, '') + '/categories/');
-		url.searchParams.set('team_id', teamId);
+		if (teamId) url.searchParams.set('team_id', teamId);
 		url.searchParams.set('category_id', catId);
 		url.searchParams.set('include_authors', 'false');
 		url.searchParams.set('monthly_counts', 'true');
@@ -649,7 +649,7 @@
 	function fetchPage(page, push) {
 		var url = buildURL(page);
 		var cached = getCached(url);
-		if (cached) {
+		if (cached && cached.count > 0) {
 			state.results = cached.results || [];
 			state.pageSize = state.results.length || state.pageSize;
 			renderCards(state.results);
@@ -673,7 +673,7 @@
 				return r.json();
 			})
 			.then(function (data) {
-				setCached(url, data);
+				if (data && data.count > 0) setCached(url, data);
 				state.results  = data.results || [];
 				state.pageSize = state.results.length || state.pageSize;
 				state.totalCount = data.count || 0;
@@ -1300,7 +1300,7 @@
 	// Fetch categories from API when the mount requests it (site-wide advanced search)
 	if (mount.dataset.fetchCategories === 'true' && !state.categories.length && !state.categoryGroups.length) {
 		var catFetchUrl = new URL(apiBase.replace(/\/$/, '') + '/categories/');
-		catFetchUrl.searchParams.set('team_id', teamId);
+		if (teamId) catFetchUrl.searchParams.set('team_id', teamId);
 		catFetchUrl.searchParams.set('format', 'json');
 		fetch(catFetchUrl.toString())
 			.then(function (r) { return r.json(); })
