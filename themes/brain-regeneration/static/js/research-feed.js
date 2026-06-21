@@ -644,8 +644,10 @@
 		}
 
 		renderSkeleton();
-		var scrollTarget = document.getElementById('papers-filters') || mount;
-		scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		if (push === true) {
+			var scrollTarget = document.getElementById('papers-filters') || mount;
+			scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
 
 		fetch(url)
 			.then(function (r) {
