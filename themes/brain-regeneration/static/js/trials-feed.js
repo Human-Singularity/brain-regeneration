@@ -304,7 +304,7 @@
 		fetch(url)
 			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
 			.then(function (data) {
-				setCached(cacheKey, data);
+				if (data && data.count > 0) setCached(cacheKey, data);
 				renderCards(data.results || []);
 				updatePagination(data.current_page || page, data.total_pages || 1, data.count || 0);
 				if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (data.count || 0).toLocaleString();

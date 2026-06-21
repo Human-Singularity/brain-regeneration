@@ -673,7 +673,7 @@
 				return r.json();
 			})
 			.then(function (data) {
-				setCached(url, data);
+				if (data && data.count > 0) setCached(url, data);
 				state.results  = data.results || [];
 				state.pageSize = state.results.length || state.pageSize;
 				state.totalCount = data.count || 0;
