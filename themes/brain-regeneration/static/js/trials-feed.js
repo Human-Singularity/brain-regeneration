@@ -293,7 +293,7 @@
 		var url = buildURL(page);
 		var cacheKey = 'brTrialsFeed:' + url;
 		var cached = getCached(cacheKey);
-		if (cached) {
+		if (cached && cached.count > 0) {
 			renderCards(cached.results || []);
 			updatePagination(cached.current_page || page, cached.total_pages || 1, cached.count || 0);
 			if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (cached.count || 0).toLocaleString();
