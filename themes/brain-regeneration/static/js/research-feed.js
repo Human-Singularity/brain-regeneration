@@ -779,25 +779,27 @@
 		if (authorSuggestions) authorSuggestions.hidden = true;
 	}
 
-	// Bold the typed substring within a suggestion. Both args are already
-	// HTML-escaped, so matching/slicing by length stays consistent.
-	function highlightMatch(safeName, safeQuery) {
-		if (!safeQuery) return safeName;
-		var idx = safeName.toLowerCase().indexOf(safeQuery.toLowerCase());
+	// Bold the typed substring within a suggestion name. Matching runs on the
+	// raw strings and each slice is escaped afterwards, so a match landing
+	// inside an HTML entity (e.g. "&" -> "&amp;") can't split it and break the
+	// markup or the selected value.
+	function highlightMatch(name, query) {
+		var safeName = escHtml(name);
+		if (!query) return safeName;
+		var idx = name.toLowerCase().indexOf(query.toLowerCase());
 		if (idx < 0) return safeName;
-		return safeName.slice(0, idx) +
-			'<mark class="author-suggestion-match">' + safeName.slice(idx, idx + safeQuery.length) + '</mark>' +
-			safeName.slice(idx + safeQuery.length);
+		return escHtml(name.slice(0, idx)) +
+			'<mark class="author-suggestion-match">' + escHtml(name.slice(idx, idx + query.length)) + '</mark>' +
+			escHtml(name.slice(idx + query.length));
 	}
 
 	function showAuthorSuggestions(authors) {
 		if (!authorSuggestions) return;
 		if (!authors.length) { hideAuthorSuggestions(); return; }
-		var safeQ = escHtml(authorInput ? authorInput.value.trim() : '');
+		var q = authorInput ? authorInput.value.trim() : '';
 		var html = authors.map(function (a) {
-			var safeName = escHtml(a.full_name);
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + safeName + '">' +
-				highlightMatch(safeName, safeQ) +
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(a.full_name) + '">' +
+				highlightMatch(a.full_name, q) +
 			'</button>';
 		}).join('');
 		authorSuggestions.innerHTML = html;
