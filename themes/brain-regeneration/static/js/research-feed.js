@@ -35,6 +35,8 @@
 	var categoryPanelName = document.getElementById('category-panel-name');
 	var categoryPanelDesc = document.getElementById('category-panel-description');
 	var categoryPanelSparkline = document.getElementById('category-panel-sparkline');
+	var categoryPanelTerms = document.getElementById('category-panel-terms');
+	var categoryPanelTermsList = document.getElementById('category-panel-terms-list');
 
 	var authorInput        = document.getElementById('papers-author-input');
 	var authorHidden       = document.getElementById('papers-author-id');
@@ -547,6 +549,8 @@
 		var catCached = getCached(catCacheKey);
 
 		if (categoryPanelDesc) categoryPanelDesc.innerHTML = '';
+		if (categoryPanelTerms) categoryPanelTerms.hidden = true;
+		if (categoryPanelTermsList) categoryPanelTermsList.innerHTML = '';
 		categoryPanel.hidden = false;
 
 		function applyCategoryData(data) {
@@ -560,6 +564,18 @@
 			}
 			if (categoryPanelDesc && match.category_description) {
 				categoryPanelDesc.innerHTML = parseMarkdown(match.category_description);
+			}
+			if (categoryPanelTerms && categoryPanelTermsList) {
+				var terms = match.category_terms;
+				if (Array.isArray(terms) && terms.length) {
+					categoryPanelTermsList.innerHTML = terms.map(function (t) {
+						return '<li class="category-panel-terms__item">' + BR.escHtml(t) + '</li>';
+					}).join('');
+					categoryPanelTerms.hidden = false;
+				} else {
+					categoryPanelTerms.hidden = true;
+					categoryPanelTermsList.innerHTML = '';
+				}
 			}
 			if (categoryPanelSparkline) {
 				categoryPanelSparkline.innerHTML = match.monthly_counts ? buildSparklines(match.monthly_counts) : '';
@@ -586,6 +602,8 @@
 
 	function hideCategoryPanel() {
 		if (categoryPanel) categoryPanel.hidden = true;
+		if (categoryPanelTerms) categoryPanelTerms.hidden = true;
+		if (categoryPanelTermsList) categoryPanelTermsList.innerHTML = '';
 	}
 
 	// ── Result counter ─────────────────────────────────────────────────────
