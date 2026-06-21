@@ -779,12 +779,25 @@
 		if (authorSuggestions) authorSuggestions.hidden = true;
 	}
 
+	// Bold the typed substring within a suggestion. Both args are already
+	// HTML-escaped, so matching/slicing by length stays consistent.
+	function highlightMatch(safeName, safeQuery) {
+		if (!safeQuery) return safeName;
+		var idx = safeName.toLowerCase().indexOf(safeQuery.toLowerCase());
+		if (idx < 0) return safeName;
+		return safeName.slice(0, idx) +
+			'<mark class="author-suggestion-match">' + safeName.slice(idx, idx + safeQuery.length) + '</mark>' +
+			safeName.slice(idx + safeQuery.length);
+	}
+
 	function showAuthorSuggestions(authors) {
 		if (!authorSuggestions) return;
 		if (!authors.length) { hideAuthorSuggestions(); return; }
+		var safeQ = escHtml(authorInput ? authorInput.value.trim() : '');
 		var html = authors.map(function (a) {
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '">' +
-				escHtml(a.full_name) +
+			var safeName = escHtml(a.full_name);
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + safeName + '">' +
+				highlightMatch(safeName, safeQ) +
 			'</button>';
 		}).join('');
 		authorSuggestions.innerHTML = html;
