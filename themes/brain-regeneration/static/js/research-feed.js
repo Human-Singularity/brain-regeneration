@@ -549,6 +549,8 @@
 		var catCached = getCached(catCacheKey);
 
 		if (categoryPanelDesc) categoryPanelDesc.innerHTML = '';
+		if (categoryPanelTerms) categoryPanelTerms.hidden = true;
+		if (categoryPanelTermsList) categoryPanelTermsList.innerHTML = '';
 		categoryPanel.hidden = false;
 
 		function applyCategoryData(data) {
@@ -572,6 +574,7 @@
 					categoryPanelTerms.hidden = false;
 				} else {
 					categoryPanelTerms.hidden = true;
+					categoryPanelTermsList.innerHTML = '';
 				}
 			}
 			if (categoryPanelSparkline) {
