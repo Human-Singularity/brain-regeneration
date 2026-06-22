@@ -128,6 +128,15 @@
 							</div>
 						</div>
 					</div>
+					<div class="row g-3 mt-1">
+						<div class="col-12">
+							<label for="papers-doi-input">DOI — article identifier</label>
+							<input type="text" class="form-control" id="papers-doi-input"
+								placeholder="e.g. 10.1038/s41593-025-01812-5 — separate multiple with commas"
+								autocomplete="off">
+							<div class="form-text">Paste the unique identifier printed on a paper to find it directly. Enter several by separating them with commas.</div>
+						</div>
+					</div>
 					<div class="d-flex gap-2 mt-3 align-items-center flex-wrap">
 						<select class="form-select" id="papers-category-select" style="max-width:200px;font-size:13px">
 							<option value="">All categories</option>
@@ -286,6 +295,12 @@
 			<label for="papers-sheet-author-input" class="sheet-group-label">Author</label>
 			<input type="text" class="form-control form-control-sm" id="papers-sheet-author-input" placeholder="e.g. Thompson, Coles…" autocomplete="off">
 			<input type="hidden" id="papers-sheet-author-id">
+		</div>
+		<div class="sheet-group">
+			<label for="papers-sheet-doi-input" class="sheet-group-label">DOI — article identifier</label>
+			<input type="text" class="form-control form-control-sm" id="papers-sheet-doi-input"
+				placeholder="e.g. 10.1038/s41593-025-01812-5"
+				autocomplete="off">
 		</div>
 		{{- end }}
 		<div class="sheet-group">

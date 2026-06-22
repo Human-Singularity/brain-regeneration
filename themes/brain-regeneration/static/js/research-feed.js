@@ -44,6 +44,7 @@
 	var openAccessCheck    = document.getElementById('papers-open-access');
 	var dateFromInput      = document.getElementById('papers-date-from');
 	var dateToInput        = document.getElementById('papers-date-to');
+	var doiInput           = document.getElementById('papers-doi-input');
 
 	var firstBtn         = document.getElementById('papers-first-btn');
 	var prevBtn          = document.getElementById('papers-prev-btn');
@@ -82,6 +83,7 @@
 		openAccess:         false, // open_access=true filter
 		dateFrom:           '',
 		dateTo:             '',
+		doi:                '',   // DOI filter (comma-separated)
 		results:            [],   // current page articles
 		categories:         [],   // flat list (populated from category_groups or data-categories)
 		categoryGroups:     [],   // grouped list (populated from data-category-groups)
@@ -158,6 +160,7 @@
 		state.openAccess         = params.get('open_access') === 'true';
 		state.dateFrom           = params.get('date_from')   || '';
 		state.dateTo             = params.get('date_to')     || '';
+		state.doi                = params.get('doi')         || '';
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
@@ -181,6 +184,7 @@
 		if (state.openAccess)                 params.set('open_access',          'true');
 		if (state.dateFrom)                   params.set('date_from',            state.dateFrom);
 		if (state.dateTo)                     params.set('date_to',              state.dateTo);
+		if (state.doi)                        params.set('doi',                  state.doi);
 		if (state.page > 1)                   params.set('page',                 String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
@@ -221,6 +225,7 @@
 		if (openAccessCheck) openAccessCheck.checked = state.openAccess;
 		if (dateFromInput)   dateFromInput.value     = state.dateFrom;
 		if (dateToInput)     dateToInput.value       = state.dateTo;
+		if (doiInput)        doiInput.value          = state.doi;
 		renderCategoryPanel();
 
 		// Sync desktop chips
@@ -309,6 +314,7 @@
 		if (state.openAccess) url.searchParams.set('open_access',   'true');
 		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
 		if (state.dateTo)     url.searchParams.set('published_date_before', state.dateTo);
+		if (state.doi)        url.searchParams.set('doi',           state.doi);
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -333,6 +339,7 @@
 		if (state.openAccess) url.searchParams.set('open_access',          'true');
 		if (state.dateFrom)   url.searchParams.set('published_date_after',  state.dateFrom);
 		if (state.dateTo)     url.searchParams.set('published_date_before', state.dateTo);
+		if (state.doi)        url.searchParams.set('doi',                   state.doi);
 		if (state.hasClinicalTrials !== null) {
 			url.searchParams.set('has_clinical_trials', String(state.hasClinicalTrials));
 		} else if (!state.category && state.relevant) {
@@ -913,6 +920,7 @@
 		if (openAccessCheck) state.openAccess = openAccessCheck.checked;
 		if (dateFromInput) state.dateFrom = dateFromInput.value;
 		if (dateToInput)   state.dateTo   = dateToInput.value;
+		if (doiInput)      state.doi      = doiInput.value.trim();
 		state.page      = 1;
 		renderCategoryPanel();
 		if (!state.category) hideCategoryPanel();
@@ -1015,6 +1023,14 @@
 		});
 	}
 
+	if (doiInput) {
+		doiInput.addEventListener('change', function () {
+			state.doi  = this.value.trim();
+			state.page = 1;
+			fetchPage(1, false);
+		});
+	}
+
 	if (relevantSelect) {
 		relevantSelect.addEventListener('change', function () {
 			var val = this.value;
@@ -1047,6 +1063,7 @@
 			state.openAccess        = false;
 			state.dateFrom          = '';
 			state.dateTo            = '';
+			state.doi               = '';
 			if (papersSubjectsModeEl) {
 				papersSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
 					b.classList.toggle('active', b.dataset.mode === 'all');
@@ -1066,6 +1083,7 @@
 			if (openAccessCheck) openAccessCheck.checked = false;
 			if (dateFromInput)   dateFromInput.value   = '';
 			if (dateToInput)     dateToInput.value     = '';
+			if (doiInput)        doiInput.value        = '';
 			[conditionChips, areaChips].forEach(function (g) {
 				if (g) g.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 			});
@@ -1155,6 +1173,10 @@
 		if (state.dateFrom || state.dateTo) {
 			items.push({ label: 'Date: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…'), key: 'date' });
 		}
+		if (state.doi) {
+			var doiDisplay = state.doi.length > 30 ? state.doi.slice(0, 30) + '…' : state.doi;
+			items.push({ label: 'DOI: ' + doiDisplay, key: 'doi' });
+		}
 		if (state.hasClinicalTrials !== null) {
 			items.push({ label: state.hasClinicalTrials ? 'With clinical trials' : 'Without clinical trials', key: 'show' });
 		}
@@ -1186,6 +1208,7 @@
 				state.category = '';
 				state.dateFrom = '';
 				state.dateTo = '';
+				state.doi = '';
 				state.hasClinicalTrials = null;
 				state.page = 1;
 				[conditionChips, areaChips].forEach(function (g) {
@@ -1204,6 +1227,7 @@
 				if (categorySelect)  categorySelect.value = '';
 				if (dateFromInput)   dateFromInput.value = '';
 				if (dateToInput)     dateToInput.value = '';
+				if (doiInput)        doiInput.value = '';
 				hideCategoryPanel();
 				fetchPage(1, false);
 			});
@@ -1240,6 +1264,9 @@
 			state.dateTo = '';
 			if (dateFromInput) dateFromInput.value = '';
 			if (dateToInput) dateToInput.value = '';
+		} else if (key === 'doi') {
+			state.doi = '';
+			if (doiInput) doiInput.value = '';
 		} else if (key === 'show') {
 			state.hasClinicalTrials = null;
 			state.relevant = requireRelevant;
@@ -1349,6 +1376,7 @@
 	// Mobile-sheet author inputs (advanced page only)
 	var sheetAuthorInput = document.getElementById('papers-sheet-author-input');
 	var sheetAuthorId    = document.getElementById('papers-sheet-author-id');
+	var sheetDoiInput    = document.getElementById('papers-sheet-doi-input');
 
 	var draft = {};
 
@@ -1374,6 +1402,7 @@
 			hasClinicalTrials:     state.hasClinicalTrials,
 			authorId:              state.authorId,
 			openAccess:            state.openAccess,
+			doi:                   state.doi,
 		};
 	}
 
@@ -1423,6 +1452,8 @@
 		// Author (advanced)
 		if (sheetAuthorInput) sheetAuthorInput.value = draft.authorId ? (authorInput ? authorInput.value : '') : '';
 		if (sheetAuthorId)    sheetAuthorId.value    = draft.authorId || '';
+		// DOI (advanced)
+		if (sheetDoiInput)    sheetDoiInput.value    = draft.doi || '';
 	}
 
 	function wireChipGroup(groupId, onChange) {
@@ -1520,6 +1551,11 @@
 			if (dateFromInput) dateFromInput.value = '';
 			if (dateToInput)   dateToInput.value   = '';
 		}
+		else if (filterKey === 'doi') {
+			state.doi = '';
+			if (doiInput)      doiInput.value      = '';
+			if (sheetDoiInput) sheetDoiInput.value  = '';
+		}
 		else if (filterKey === 'show') {
 			state.relevant = requireRelevant;
 			state.hasClinicalTrials = null;
@@ -1582,6 +1618,11 @@
 			tokenStrip.appendChild(buildToken(dateLabel, 'dateRange'));
 			hasTokens = true;
 		}
+		if (state.doi) {
+			var mDoiDisplay = state.doi.length > 30 ? state.doi.slice(0, 30) + '…' : state.doi;
+			tokenStrip.appendChild(buildToken('DOI: ' + mDoiDisplay, 'doi'));
+			hasTokens = true;
+		}
 
 		if (addChip) tokenStrip.appendChild(addChip);
 		tokenStrip.hidden = !hasTokens;
@@ -1599,6 +1640,7 @@
 		if (state.hasClinicalTrials !== null) count++;
 		else if (state.relevant !== requireRelevant) count++;
 		if (state.dateFrom || state.dateTo) count++;
+		if (state.doi) count++;
 
 		if (!fabCount) return;
 		fabCount.textContent = String(count);
@@ -1720,6 +1762,12 @@
 		});
 	}
 
+	if (sheetDoiInput) {
+		sheetDoiInput.addEventListener('input', function () {
+			draft.doi = this.value.trim();
+		});
+	}
+
 	if (sheetEl) {
 		sheetEl.addEventListener('show.bs.offcanvas', function () {
 			resetDraft();
@@ -1770,6 +1818,10 @@
 				if (authorInput && sheetAuthorInput) authorInput.value = sheetAuthorInput.value;
 				if (authorHidden) authorHidden.value = state.authorId;
 			}
+			if (draft.doi !== undefined) {
+				state.doi = draft.doi;
+				if (doiInput) doiInput.value = state.doi;
+			}
 			state.page = 1;
 
 			if (state.category) { renderCategoryPanel(); } else { hideCategoryPanel(); }
@@ -1798,9 +1850,11 @@
 				hasClinicalTrials:   null,
 				authorId:            '',
 				openAccess:          false,
+				doi:                 '',
 			};
 			if (sheetAuthorInput) sheetAuthorInput.value = '';
 			if (sheetAuthorId)    sheetAuthorId.value    = '';
+			if (sheetDoiInput)    sheetDoiInput.value    = '';
 			syncSheetToDraft();
 		});
 	}
@@ -1811,6 +1865,7 @@
 			if (mobileClearBtn) mobileClearBtn.hidden = true;
 			if (sheetAuthorInput) sheetAuthorInput.value = '';
 			if (sheetAuthorId)    sheetAuthorId.value    = '';
+			if (sheetDoiInput)    sheetDoiInput.value    = '';
 			renderTokens();
 		});
 	}
