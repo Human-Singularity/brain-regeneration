@@ -1750,7 +1750,7 @@ a:hover {
 	font-size: 13px;
 	color: var(--color-text);
 	background: #fff;
-	border: 1px solid var(--color-primary);
+	border: 1px solid var(--color-border);
 	border-radius: 6px;
 	padding: 6px 10px;
 	cursor: pointer;
@@ -1758,7 +1758,16 @@ a:hover {
 	transition: border-color 150ms;
 }
 .results-sort-select:focus { border-color: var(--color-primary); }
-.results-actions .btn-download { border-color: var(--color-primary); }
+.results-actions .btn-download {
+	background: var(--color-primary);
+	color: #fff;
+	border-color: var(--color-primary);
+}
+.results-actions .btn-download:hover {
+	background: #155756;
+	border-color: #155756;
+	color: #fff;
+}
 
 /* ── Filter buttons (conditions index) ── */
 .filter-btn {
@@ -2916,7 +2925,7 @@ a:hover {
 .subjects-mode {
 	display: inline-flex;
 	border: 1px solid var(--color-border);
-	border-radius: 4px;
+	border-radius: 100px;
 	overflow: hidden;
 }
 .subjects-mode-btn {
