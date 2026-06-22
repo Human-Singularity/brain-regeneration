@@ -93,25 +93,13 @@
 			<div class="search-advanced-panel" id="papers-advanced-panel" hidden>
 				<form id="papers-filter-form" action="javascript:void(0)">
 					<div class="row g-3 align-items-end mt-1">
-						<div class="col-12 col-md-2">
-							<label for="papers-sort-select">Sort by</label>
-							<select class="form-select" id="papers-sort-select">
-								<option value="date">Newest published</option>
-								<option value="date_asc">Oldest published</option>
-								<option value="discovery">Recently discovered</option>
-								<option value="discovery_asc">First discovered</option>
-								<option value="title_asc">Title A→Z</option>
-								<option value="title_desc">Title Z→A</option>
-								<option value="ml_score">AI relevance</option>
-							</select>
-						</div>
-						<div class="col-12 col-md-3" style="position:relative">
+						<div class="col-12 col-md-4" style="position:relative">
 							<label for="papers-author-input">Author name</label>
 							<input type="text" class="form-control" id="papers-author-input" placeholder="Search by author…" autocomplete="off">
 							<input type="hidden" id="papers-author-id">
 							<div id="papers-author-suggestions" class="author-suggestions" hidden></div>
 						</div>
-						<div class="col-12 col-md-4">
+						<div class="col-12 col-md-5">
 							<label>Published between</label>
 							<div class="d-flex gap-2 align-items-center">
 								<input type="date" class="form-control" id="papers-date-from">
@@ -155,9 +143,20 @@
 
 		<div class="search-tokens" id="papers-desktop-tokens" hidden></div>
 
-		<div class="mt-2 d-flex align-items-center justify-content-between">
+		<div class="papers-results-bar">
 			<span class="results-count" id="papers-result-count"></span>
-			{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
+			<div class="results-actions">
+				<select class="results-sort-select" id="papers-sort-select">
+					<option value="date">Newest published</option>
+					<option value="date_asc">Oldest published</option>
+					<option value="discovery">Recently discovered</option>
+					<option value="discovery_asc">First discovered</option>
+					<option value="title_asc">Title A→Z</option>
+					<option value="title_desc">Title Z→A</option>
+					<option value="ml_score">AI relevance</option>
+				</select>
+				{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
+			</div>
 		</div>
 	</div>
 </div>

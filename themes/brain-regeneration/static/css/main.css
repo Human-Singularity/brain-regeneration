@@ -1726,6 +1726,39 @@ a:hover {
 .results-count { font-family: var(--font-heading); font-size: 14px; color: var(--color-muted); }
 .results-count strong { color: var(--color-text); font-weight: 600; }
 
+/* ── Advanced search results bar ── */
+.papers-results-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 14px 0 12px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	color: var(--color-muted);
+	border-bottom: 1px solid var(--color-border);
+	margin-bottom: 16px;
+}
+.results-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.results-sort-select {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-text);
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: 6px;
+	padding: 6px 10px;
+	cursor: pointer;
+	outline: none;
+	transition: border-color 150ms;
+}
+.results-sort-select:focus { border-color: var(--color-primary); }
+
 /* ── Filter buttons (conditions index) ── */
 .filter-btn {
 	font-family: var(--font-heading);
