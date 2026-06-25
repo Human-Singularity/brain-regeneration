@@ -24,7 +24,8 @@
 
 <!-- ── SECTION TABS ── -->
 {{/* Find research-papers sibling page within this section's pages */}}
-{{ $rpPage := index (where .Pages "Params.layout" "research-papers") 0 }}
+{{- $rpPage := "" -}}
+{{- with where .Pages "Params.layout" "research-papers" -}}{{- $rpPage = index . 0 -}}{{- end -}}
 {{- $categoryGroups := slice -}}
 {{- with $rpPage -}}{{- with .Params.category_groups -}}{{- $categoryGroups = . -}}{{- end -}}{{- end -}}
 <div class="section-tabs">

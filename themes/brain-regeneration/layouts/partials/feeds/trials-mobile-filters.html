@@ -7,6 +7,8 @@
     showStudyType  — bool; render the "Study type" group (advanced search only)
     conditionPages — slice of condition section pages; when non-empty, render
                      the multi-select "Condition" chip group (advanced search)
+    categoryGroups — slice of category-group maps (from front matter); when
+                     non-empty, render the "Category" chip group
 */ -}}
 {{- $showStudyType := .showStudyType -}}
 {{- $conditionPages := .conditionPages -}}

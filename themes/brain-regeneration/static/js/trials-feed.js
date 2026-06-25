@@ -81,8 +81,9 @@
 		state.subjects     = params.get('conditions')      || '';
 		state.subjectsMode = params.get('conditions_mode') || 'all';
 		state.categoryId   = params.get('category')        || '';
-		state.phase        = params.get('phase')           || listEl.dataset.defaultPhase || '';
-		state.status       = params.get('status')          || normaliseStatus(rawDefaultStatus);
+		// Use params.has() so an explicit empty param (user cleared a default) beats the data-attribute default.
+		state.phase        = params.has('phase')   ? (params.get('phase')  || '') : (listEl.dataset.defaultPhase  || '');
+		state.status       = params.has('status')  ? (params.get('status') || '') : normaliseStatus(rawDefaultStatus);
 		state.studyType    = params.get('study_type')      || '';
 		state.country      = params.get('country')         || '';
 		state.identifiers  = params.get('identifiers')     || '';
@@ -91,17 +92,21 @@
 		state.dateFrom     = params.get('date_from')       || '';
 		state.dateTo       = params.get('date_to')         || '';
 		state.sort         = params.get('sort')            || '-discovery_date';
-		state.page         = parseInt(params.get('page')   || '1', 10) || 1;
+		state.page         = Math.max(1, parseInt(params.get('page') || '1', 10) || 1);
 	}
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
+		var defaultPhase  = listEl.dataset.defaultPhase  || '';
+		var defaultStatus = normaliseStatus(rawDefaultStatus);
 		if (state.keyword)                params.set('q',               state.keyword);
 		if (state.subjects)               params.set('conditions',      state.subjects);
 		if (state.subjectsMode !== 'all') params.set('conditions_mode', state.subjectsMode);
 		if (state.categoryId)             params.set('category',        state.categoryId);
-		if (state.phase)                  params.set('phase',           state.phase);
-		if (state.status)                 params.set('status',          state.status);
+		// Write phase/status when they differ from the page default so that an
+		// explicitly-cleared default (state='') is represented as param= in the URL.
+		if (state.phase  !== defaultPhase  && (state.phase  || defaultPhase))  params.set('phase',  state.phase);
+		if (state.status !== defaultStatus && (state.status || defaultStatus)) params.set('status', state.status);
 		if (state.studyType)              params.set('study_type',      state.studyType);
 		if (state.country)                params.set('country',         state.country);
 		if (state.identifiers)            params.set('identifiers',     state.identifiers);
@@ -707,7 +712,7 @@
 	var trialsSheetIdentifiers  = document.getElementById('trials-sheet-identifiers-input');
 	var trialsSheetAcronym      = document.getElementById('trials-sheet-acronym-input');
 
-	// ── Sync UI controls → state (used by init and popstate) ─────────────────
+	// ── Sync state → UI controls (used by init and popstate) ─────────────────
 	function syncUIFromState() {
 		if (searchInput)       searchInput.value        = state.keyword;
 		if (filterPhase)       filterPhase.value        = state.phase;
