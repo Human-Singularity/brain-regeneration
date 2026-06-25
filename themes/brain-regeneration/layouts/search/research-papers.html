@@ -3,6 +3,34 @@
 {{/* Find the clinical-trials child page within this section */}}
 {{ $trialsPage := index (where .Pages "Params.layout" "single") 0 }}
 
+{{/* Build per-condition category groups from front matter (source of truth) */}}
+{{- $conditionPages := slice -}}
+{{- range where (where .Site.AllPages "Section" "conditions") "Kind" "section" -}}
+	{{- if and .Params.api .Params.api.subject_id -}}
+		{{- $conditionPages = $conditionPages | append . -}}
+	{{- end -}}
+{{- end -}}
+{{- $conditionPages = sort $conditionPages "Title" -}}
+{{- $allCategoryGroups := slice -}}
+{{- range $conditionPages -}}
+	{{- $condTitle := .Title -}}
+	{{- range .Pages -}}
+		{{- if eq .Params.layout "research-papers" -}}
+			{{- with .Params.category_groups -}}
+				{{- $cats := slice -}}
+				{{- range . -}}
+					{{- range .categories -}}
+						{{- $cats = $cats | append (dict "id" .id "name" .name) -}}
+					{{- end -}}
+				{{- end -}}
+				{{- if $cats -}}
+					{{- $allCategoryGroups = $allCategoryGroups | append (dict "label" $condTitle "categories" $cats) -}}
+				{{- end -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+
 <!-- ── SEARCH HERO ── -->
 <section class="search-hero">
 	<div class="container">
@@ -51,7 +79,7 @@
 	</div>
 </div>
 
-{{ partial "research-papers-feed" (dict "page" . "contextTitle" "Advanced Search" "requireRelevant" false "advanced" true "siteWide" true) }}
+{{ partial "research-papers-feed" (dict "page" . "contextTitle" "Advanced Search" "requireRelevant" false "advanced" true "categoryGroups" $allCategoryGroups) }}
 
 <script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 

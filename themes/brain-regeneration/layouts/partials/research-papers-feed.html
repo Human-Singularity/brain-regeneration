@@ -7,7 +7,7 @@
     .contextTitle    — string used for umami event context attributes (e.g. condition or research area title)
     .requireRelevant — boolean (default true); set to false to show all articles regardless of relevance flag
     .advanced        — boolean (default false); when true renders extra power-user filters
-    .siteWide        — boolean (default false); when true fetches categories from API instead of inline front matter
+    .categoryGroups  — optional []group override; if set, takes precedence over page front matter category_groups
 */}}
 {{- $page := .page -}}
 {{- $apiBase := $page.Site.Params.apiBase -}}
@@ -19,13 +19,12 @@
 {{- end -}}
 {{- $categories := $page.Params.categories -}}
 {{- $categoryGroups := $page.Params.category_groups -}}
+{{- if .categoryGroups -}}{{- $categoryGroups = .categoryGroups -}}{{- end -}}
 {{- $contextTitle := .contextTitle -}}
 {{- $requireRelevant := "true" -}}
 {{- if isset . "requireRelevant" -}}{{- if not .requireRelevant -}}{{- $requireRelevant = "false" -}}{{- end -}}{{- end -}}
 {{- $advanced := false -}}
 {{- if isset . "advanced" -}}{{- if .advanced -}}{{- $advanced = true -}}{{- end -}}{{- end -}}
-{{- $siteWide := false -}}
-{{- if isset . "siteWide" -}}{{- if .siteWide -}}{{- $siteWide = true -}}{{- end -}}{{- end -}}
 
 {{- $conditionPages := slice -}}
 {{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
@@ -444,11 +443,8 @@
 			data-team-id="{{ $teamId }}"
 			data-subject-id="{{ $subjectId }}"
 			data-require-relevant="{{ $requireRelevant }}"
-			{{- if $siteWide }} data-fetch-categories="true"
-			{{- else }}
 			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}
-			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}
-			{{- end }}>
+			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
 		</div>
 
 		<div class="pagination-controls" id="papers-pagination">

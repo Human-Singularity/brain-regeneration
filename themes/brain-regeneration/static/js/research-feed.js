@@ -1324,25 +1324,6 @@
 		}
 	} catch (e) { /* non-fatal: category select will just have no options */ }
 
-	// Fetch categories from API when the mount requests it (site-wide advanced search)
-	if (mount.dataset.fetchCategories === 'true' && !state.categories.length && !state.categoryGroups.length) {
-		var catFetchUrl = new URL(apiBase.replace(/\/$/, '') + '/categories/');
-		if (teamId) catFetchUrl.searchParams.set('team_id', teamId);
-		catFetchUrl.searchParams.set('format', 'json');
-		fetch(catFetchUrl.toString())
-			.then(function (r) { return r.json(); })
-			.then(function (data) {
-				var cats = (data.results || []).map(function (c) {
-					return { id: c.id, name: c.category_name };
-				});
-				cats.sort(function (a, b) { return (a.name || '').localeCompare(b.name || ''); });
-				state.categories = cats;
-				populateCategorySelect();
-				populateMobileCategoryChips();
-			})
-			.catch(function () { /* non-fatal */ });
-	}
-
 	populateCategorySelect();
 
 	fetchPage(state.page, false);
