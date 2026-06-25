@@ -213,6 +213,18 @@
 			return;
 		}
 
+		// Validate categoryId against available chips; clear if stale or from wrong condition
+		if (state.categoryId) {
+			var validIds = [];
+			groups.forEach(function (grp) {
+				(grp.categories || []).forEach(function (cat) { validIds.push(String(cat.id)); });
+			});
+			if (validIds.indexOf(state.categoryId) === -1) {
+				state.categoryId = '';
+				if (filterCategory) filterCategory.value = '';
+			}
+		}
+
 		buildDesktopCategoryChips(trialsDesktopCategoryChips, groups, state.categoryId);
 		trialsDesktopCategoryRow.hidden = false;
 		syncSheetCategoryGroup(state.subjects, state.categoryId);
