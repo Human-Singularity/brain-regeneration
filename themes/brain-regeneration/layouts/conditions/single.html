@@ -25,6 +25,8 @@
 <!-- ── SECTION TABS ── -->
 {{/* Find research-papers sibling page within this section's pages */}}
 {{ $rpPage := index (where .Pages "Params.layout" "research-papers") 0 }}
+{{- $categoryGroups := slice -}}
+{{- with $rpPage -}}{{- with .Params.category_groups -}}{{- $categoryGroups = . -}}{{- end -}}{{- end -}}
 <div class="section-tabs">
 	<div class="container">
 		<nav class="section-tabs-nav">
@@ -77,6 +79,14 @@
 						<option value="PHASE4">Phase 4</option>
 					</select>
 				</div>
+				{{- with $categoryGroups }}
+				<div class="col-6 col-md-3">
+					<label for="filter-category">Category</label>
+					<select class="form-select" id="filter-category">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				{{- end }}
 				<div class="col-6 col-md-3">
 					<label for="filter-status">Status</label>
 					<select class="form-select" id="filter-status">
@@ -87,12 +97,12 @@
 						<option value="COMPLETED">Completed</option>
 					</select>
 				</div>
-				<div class="col-6 col-md-3">
+				<div class="col-6 col-md-2">
 					<label for="filter-country">Country</label>
 					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
 					{{ partial "forms/country-datalist.html" }}
 				</div>
-				<div class="col-6 col-md-4">
+				<div class="col-6 col-md-2">
 					<label for="sort-order">Sort by</label>
 					<select class="form-select" id="sort-order">
 						<option value="-discovery_date">Date added (newest first)</option>
@@ -120,7 +130,7 @@
 	</div>
 </div></div>{{/* end d-none d-lg-block */}}
 
-{{ partial "feeds/trials-mobile-filters" (dict "showStudyType" false) }}
+{{ partial "feeds/trials-mobile-filters" (dict "showStudyType" false "categoryGroups" $categoryGroups) }}
 <!-- ── TRIAL LISTING ── -->
 <section class="section bg-sand">
 	<div class="container">
@@ -132,7 +142,8 @@
 			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
 			data-subject-id="{{ with .Params.api }}{{ .subject_id }}{{ end }}"
 			data-default-status="{{ with .Params.filters }}{{ .default_status }}{{ end }}"
-			data-default-phase="{{ with .Params.filters }}{{ .default_phase }}{{ end }}">
+			data-default-phase="{{ with .Params.filters }}{{ .default_phase }}{{ end }}"
+			{{- with $categoryGroups }} data-category-groups="{{ . | jsonify }}"{{ end }}>
 		</div>
 
 		<div class="no-results" id="no-results" style="display: none;">
