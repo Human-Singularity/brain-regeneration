@@ -9,6 +9,19 @@
 {{- end -}}
 {{- $conditionPages = sort $conditionPages "Title" -}}
 
+{{/* Build per-subject category map for the dynamic category chip row */}}
+{{- $categoriesBySubject := dict -}}
+{{- range $conditionPages -}}
+	{{- $subjId := printf "%v" .Params.api.subject_id -}}
+	{{- range .Pages -}}
+		{{- if eq .Params.layout "research-papers" -}}
+			{{- with .Params.category_groups -}}
+				{{- $categoriesBySubject = merge $categoriesBySubject (dict $subjId .) -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+
 <!-- ── SEARCH HERO ── -->
 <section class="search-hero">
 	<div class="container">
@@ -75,13 +88,18 @@
 						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
 					</div>
 				</div>
-				<div class="search-chips" id="trials-condition-chips">
+				<div class="search-chips" id="trials-condition-chips"{{- if $categoriesBySubject }} data-categories-by-subject="{{ $categoriesBySubject | jsonify }}"{{ end }}>
 					{{- range $conditionPages }}
 					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
 					{{- end }}
 				</div>
 			</div>
 			{{- end }}
+
+			<div class="search-filter-group" id="trials-category-row" hidden>
+				<span class="search-filter-label">Category</span>
+				<div class="search-chips" id="trials-category-chips"></div>
+			</div>
 
 			<button type="button" class="search-more-btn" id="trials-more-filters-btn">
 				<span class="search-more-btn__arrow" id="trials-more-arrow">▼</span>
@@ -181,7 +199,7 @@
 	</div>
 </div>
 
-{{ partial "feeds/trials-mobile-filters" (dict "showStudyType" true "conditionPages" $conditionPages) }}
+{{ partial "feeds/trials-mobile-filters" (dict "showStudyType" true "conditionPages" $conditionPages "categoriesBySubject" $categoriesBySubject) }}
 
 <!-- ── TRIAL LISTING ── -->
 <section class="section bg-sand">

@@ -39,8 +39,10 @@ category_groups:
         name: "Fingolimod"
       - id: 10
         name: "Siponimod"
-      - id: 40
+      - id: 41
         name: "Ponesimod"
+      - id: 40
+        name: "Ozanimod"
   - label: "Oral Small Molecules"
     categories:
       - id: 36

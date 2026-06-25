@@ -44,9 +44,19 @@
 	var tabTrialsCount = document.getElementById('tab-trials-count');
 
 	// Desktop chip groups (advanced search page)
-	var trialsConditionChips = document.getElementById('trials-condition-chips');
-	var trialsMoreBtn        = document.getElementById('trials-more-filters-btn');
-	var trialsAdvPanel       = document.getElementById('trials-advanced-panel');
+	var trialsConditionChips       = document.getElementById('trials-condition-chips');
+	var trialsMoreBtn              = document.getElementById('trials-more-filters-btn');
+	var trialsAdvPanel             = document.getElementById('trials-advanced-panel');
+	var trialsDesktopCategoryRow   = document.getElementById('trials-category-row');
+	var trialsDesktopCategoryChips = document.getElementById('trials-category-chips');
+
+	// Per-condition category groups embedded by Hugo (advanced search only)
+	var categoriesBySubject = {};
+	try {
+		if (trialsConditionChips && trialsConditionChips.dataset.categoriesBySubject) {
+			categoriesBySubject = JSON.parse(trialsConditionChips.dataset.categoriesBySubject);
+		}
+	} catch (e) {}
 
 	// ── State ────────────────────────────────────────────────────────────────
 	// Normalise the default status value to uppercase to match what the API expects.
@@ -122,6 +132,102 @@
 		} else {
 			history.replaceState(null, '', url);
 		}
+	}
+
+	// ── Category chip row helpers (advanced search page only) ──────────────────
+
+	function buildDesktopCategoryChips(container, groups, activeCatId) {
+		if (!container) return;
+		container.innerHTML = '';
+		var allBtn = document.createElement('button');
+		allBtn.type = 'button';
+		allBtn.className = 'search-chip';
+		allBtn.dataset.value = '';
+		allBtn.textContent = 'All categories';
+		BR.feedUI.setSearchChipActive(allBtn, !activeCatId);
+		container.appendChild(allBtn);
+		groups.forEach(function (grp) {
+			(grp.categories || []).forEach(function (cat) {
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'search-chip';
+				btn.dataset.value = String(cat.id);
+				btn.textContent = cat.name;
+				BR.feedUI.setSearchChipActive(btn, String(cat.id) === activeCatId);
+				container.appendChild(btn);
+			});
+		});
+	}
+
+	function buildSheetCategoryChips(container, groups, activeCatId) {
+		if (!container) return;
+		container.innerHTML = '';
+		var allBtn = document.createElement('button');
+		allBtn.type = 'button';
+		allBtn.className = 'sheet-chip';
+		allBtn.dataset.value = '';
+		allBtn.textContent = 'All categories';
+		allBtn.classList.toggle('active', !activeCatId);
+		container.appendChild(allBtn);
+		groups.forEach(function (grp) {
+			(grp.categories || []).forEach(function (cat) {
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'sheet-chip';
+				btn.dataset.value = String(cat.id);
+				btn.textContent = cat.name;
+				btn.classList.toggle('active', String(cat.id) === activeCatId);
+				container.appendChild(btn);
+			});
+		});
+	}
+
+	// Update the mobile sheet's dynamic category group.
+	// May be called with draft subjects (sheet in use) or committed state.subjects.
+	function syncSheetCategoryGroup(subjects, activeCatId) {
+		if (!trialsDesktopCategoryRow) return; // no-op on condition pages
+		var mg = document.getElementById('trials-sheet-category-group');
+		if (!mg) return;
+		var ids    = subjects ? subjects.split(',').filter(Boolean) : [];
+		var groups = ids.length === 1 ? (categoriesBySubject[ids[0]] || null) : null;
+		if (!groups || !groups.length) { mg.hidden = true; return; }
+		buildSheetCategoryChips(document.getElementById('trials-sheet-category'), groups, activeCatId || '');
+		mg.hidden = false;
+	}
+
+	// Build/hide the desktop category chip row; also syncs the mobile sheet.
+	// Only active on pages that embed data-categories-by-subject (advanced search).
+	function updateCategoryRow() {
+		if (!trialsDesktopCategoryRow) return; // no-op on condition pages
+
+		var activeIds = state.subjects ? state.subjects.split(',').filter(Boolean) : [];
+		var groups    = activeIds.length === 1 ? (categoriesBySubject[activeIds[0]] || null) : null;
+
+		if (!groups || !groups.length) {
+			trialsDesktopCategoryRow.hidden = true;
+			syncSheetCategoryGroup('', '');
+			if (state.categoryId) {
+				state.categoryId = '';
+				if (filterCategory) filterCategory.value = '';
+			}
+			return;
+		}
+
+		// Validate categoryId against available chips; clear if stale or from wrong condition
+		if (state.categoryId) {
+			var validIds = [];
+			groups.forEach(function (grp) {
+				(grp.categories || []).forEach(function (cat) { validIds.push(String(cat.id)); });
+			});
+			if (validIds.indexOf(state.categoryId) === -1) {
+				state.categoryId = '';
+				if (filterCategory) filterCategory.value = '';
+			}
+		}
+
+		buildDesktopCategoryChips(trialsDesktopCategoryChips, groups, state.categoryId);
+		trialsDesktopCategoryRow.hidden = false;
+		syncSheetCategoryGroup(state.subjects, state.categoryId);
 	}
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -385,7 +491,7 @@
 		state.country      = filterCountry    ? filterCountry.value.trim()     : '';
 		state.sort         = sortOrder        ? sortOrder.value                : '-discovery_date';
 		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
-		state.categoryId   = filterCategory   ? filterCategory.value           : '';
+		if (filterCategory) state.categoryId = filterCategory.value;
 		if (trialsConditionChips) {
 			var chipIds = [];
 			trialsConditionChips.querySelectorAll('.search-chip.search-chip--active').forEach(function (c) {
@@ -489,6 +595,7 @@
 		if (trialsConditionChips) {
 			trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 		}
+		updateCategoryRow();
 		fetchPage(1, true);
 	}
 
@@ -523,6 +630,22 @@
 				if (c.dataset.value) ids.push(c.dataset.value);
 			});
 			state.subjects = ids.join(',');
+			state.categoryId = '';
+			updateCategoryRow();
+			fetchPage(1, true);
+		});
+	}
+
+	// ── Desktop category chips (advanced search — populated by updateCategoryRow) ─
+	if (trialsDesktopCategoryChips) {
+		trialsDesktopCategoryChips.addEventListener('click', function (e) {
+			var chip = e.target.closest('.search-chip');
+			if (!chip) return;
+			trialsDesktopCategoryChips.querySelectorAll('.search-chip').forEach(function (c) {
+				BR.feedUI.setSearchChipActive(c, false);
+			});
+			BR.feedUI.setSearchChipActive(chip, true);
+			state.categoryId = chip.dataset.value;
 			fetchPage(1, true);
 		});
 	}
@@ -744,6 +867,7 @@
 		}
 		if (trialsMobileSearch) trialsMobileSearch.value = state.keyword;
 		if (trialsMobileClear)  trialsMobileClear.hidden = !state.keyword;
+		updateCategoryRow();
 	}
 
 	window.addEventListener('popstate', function () {
@@ -843,6 +967,9 @@
 				trialsDraft.subjects = arr.join(',');
 			}
 			syncTrialsSubjectChips();
+			// Reset and update the dynamic category group for the new draft condition selection
+			trialsDraft.categoryId = '';
+			syncSheetCategoryGroup(trialsDraft.subjects, '');
 		});
 	})();
 
@@ -884,6 +1011,7 @@
 		if (filterSubjects)    Array.from(filterSubjects.options).forEach(function (o) { o.selected = state.subjects && state.subjects.split(',').indexOf(o.value) !== -1; });
 		if (filterDateFrom)    filterDateFrom.value     = state.dateFrom;
 		if (filterDateTo)      filterDateTo.value       = state.dateTo;
+		updateCategoryRow();
 		fetchPage(1, true);
 	}
 
@@ -954,11 +1082,23 @@
 		}
 		if (state.categoryId) {
 			var catName = state.categoryId;
+			// Search static category groups (condition pages)
 			categoryGroups.forEach(function (grp) {
 				(grp.categories || []).forEach(function (cat) {
 					if (String(cat.id) === state.categoryId) catName = cat.name;
 				});
 			});
+			// Fallback: search categoriesBySubject (advanced search page)
+			if (catName === state.categoryId) {
+				var activeSubjIds = state.subjects ? state.subjects.split(',').filter(Boolean) : [];
+				if (activeSubjIds.length === 1) {
+					(categoriesBySubject[activeSubjIds[0]] || []).forEach(function (grp) {
+						(grp.categories || []).forEach(function (cat) {
+							if (String(cat.id) === state.categoryId) catName = cat.name;
+						});
+					});
+				}
+			}
 			trialsTokenStrip.appendChild(buildTrialsToken(catName, 'categoryId'));
 			hasTokens = true;
 		}
@@ -1042,6 +1182,7 @@
 	if (trialsSheetEl) {
 		trialsSheetEl.addEventListener('show.bs.offcanvas', function () {
 			resetTrialsDraft();
+			updateCategoryRow();
 			syncTrialsSheetToDraft();
 		});
 	}
@@ -1079,6 +1220,7 @@
 				Array.from(filterSubjects.options).forEach(function (o) { o.selected = selSubjects.indexOf(o.value) !== -1; });
 			}
 
+			updateCategoryRow();
 			fetchPage(1, true);
 
 			if (window.bootstrap && bootstrap.Offcanvas) {
