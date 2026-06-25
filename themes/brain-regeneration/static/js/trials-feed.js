@@ -44,9 +44,19 @@
 	var tabTrialsCount = document.getElementById('tab-trials-count');
 
 	// Desktop chip groups (advanced search page)
-	var trialsConditionChips = document.getElementById('trials-condition-chips');
-	var trialsMoreBtn        = document.getElementById('trials-more-filters-btn');
-	var trialsAdvPanel       = document.getElementById('trials-advanced-panel');
+	var trialsConditionChips       = document.getElementById('trials-condition-chips');
+	var trialsMoreBtn              = document.getElementById('trials-more-filters-btn');
+	var trialsAdvPanel             = document.getElementById('trials-advanced-panel');
+	var trialsDesktopCategoryRow   = document.getElementById('trials-category-row');
+	var trialsDesktopCategoryChips = document.getElementById('trials-category-chips');
+
+	// Per-condition category groups embedded by Hugo (advanced search only)
+	var categoriesBySubject = {};
+	try {
+		if (trialsConditionChips && trialsConditionChips.dataset.categoriesBySubject) {
+			categoriesBySubject = JSON.parse(trialsConditionChips.dataset.categoriesBySubject);
+		}
+	} catch (e) {}
 
 	// ── State ────────────────────────────────────────────────────────────────
 	// Normalise the default status value to uppercase to match what the API expects.
@@ -122,6 +132,56 @@
 		} else {
 			history.replaceState(null, '', url);
 		}
+	}
+
+	// Build/hide the per-condition category chip row (desktop + mobile sheet).
+	// Reads committed state (not draft) and re-renders chips whenever the active
+	// condition changes. Safe to call before mobile elements exist — falls back
+	// gracefully when container IDs are absent.
+	function updateCategoryRow() {
+		var mobileGroup = document.getElementById('trials-sheet-category-group');
+		var mobileChips = document.getElementById('trials-sheet-category');
+
+		var activeIds = state.subjects ? state.subjects.split(',').filter(Boolean) : [];
+		var groups    = activeIds.length === 1 ? (categoriesBySubject[activeIds[0]] || null) : null;
+
+		if (!groups || !groups.length) {
+			if (trialsDesktopCategoryRow) trialsDesktopCategoryRow.hidden = true;
+			if (mobileGroup) mobileGroup.hidden = true;
+			if (state.categoryId) {
+				state.categoryId = '';
+				if (filterCategory) filterCategory.value = '';
+			}
+			return;
+		}
+
+		function buildChips(container) {
+			if (!container) return;
+			container.innerHTML = '';
+			var allBtn = document.createElement('button');
+			allBtn.type = 'button';
+			allBtn.className = 'search-chip';
+			allBtn.dataset.value = '';
+			allBtn.textContent = 'All categories';
+			BR.feedUI.setSearchChipActive(allBtn, !state.categoryId);
+			container.appendChild(allBtn);
+			groups.forEach(function (grp) {
+				(grp.categories || []).forEach(function (cat) {
+					var btn = document.createElement('button');
+					btn.type = 'button';
+					btn.className = 'search-chip';
+					btn.dataset.value = String(cat.id);
+					btn.textContent = cat.name;
+					BR.feedUI.setSearchChipActive(btn, String(cat.id) === state.categoryId);
+					container.appendChild(btn);
+				});
+			});
+		}
+
+		buildChips(trialsDesktopCategoryChips);
+		buildChips(mobileChips);
+		if (trialsDesktopCategoryRow) trialsDesktopCategoryRow.hidden = false;
+		if (mobileGroup) mobileGroup.hidden = false;
 	}
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -489,6 +549,7 @@
 		if (trialsConditionChips) {
 			trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) { BR.feedUI.setSearchChipActive(c, false); });
 		}
+		updateCategoryRow();
 		fetchPage(1, true);
 	}
 
@@ -523,6 +584,22 @@
 				if (c.dataset.value) ids.push(c.dataset.value);
 			});
 			state.subjects = ids.join(',');
+			state.categoryId = '';
+			updateCategoryRow();
+			fetchPage(1, true);
+		});
+	}
+
+	// ── Desktop category chips (advanced search — populated by updateCategoryRow) ─
+	if (trialsDesktopCategoryChips) {
+		trialsDesktopCategoryChips.addEventListener('click', function (e) {
+			var chip = e.target.closest('.search-chip');
+			if (!chip) return;
+			trialsDesktopCategoryChips.querySelectorAll('.search-chip').forEach(function (c) {
+				BR.feedUI.setSearchChipActive(c, false);
+			});
+			BR.feedUI.setSearchChipActive(chip, true);
+			state.categoryId = chip.dataset.value;
 			fetchPage(1, true);
 		});
 	}
@@ -744,6 +821,7 @@
 		}
 		if (trialsMobileSearch) trialsMobileSearch.value = state.keyword;
 		if (trialsMobileClear)  trialsMobileClear.hidden = !state.keyword;
+		updateCategoryRow();
 	}
 
 	window.addEventListener('popstate', function () {
@@ -884,6 +962,7 @@
 		if (filterSubjects)    Array.from(filterSubjects.options).forEach(function (o) { o.selected = state.subjects && state.subjects.split(',').indexOf(o.value) !== -1; });
 		if (filterDateFrom)    filterDateFrom.value     = state.dateFrom;
 		if (filterDateTo)      filterDateTo.value       = state.dateTo;
+		updateCategoryRow();
 		fetchPage(1, true);
 	}
 
@@ -1042,6 +1121,7 @@
 	if (trialsSheetEl) {
 		trialsSheetEl.addEventListener('show.bs.offcanvas', function () {
 			resetTrialsDraft();
+			updateCategoryRow();
 			syncTrialsSheetToDraft();
 		});
 	}
@@ -1079,6 +1159,7 @@
 				Array.from(filterSubjects.options).forEach(function (o) { o.selected = selSubjects.indexOf(o.value) !== -1; });
 			}
 
+			updateCategoryRow();
 			fetchPage(1, true);
 
 			if (window.bootstrap && bootstrap.Offcanvas) {

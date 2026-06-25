@@ -4,15 +4,18 @@
   trials-feed.js.
 
   Params (dict):
-    showStudyType  — bool; render the "Study type" group (advanced search only)
-    conditionPages — slice of condition section pages; when non-empty, render
-                     the multi-select "Condition" chip group (advanced search)
-    categoryGroups — slice of category-group maps (from front matter); when
-                     non-empty, render the "Category" chip group
+    showStudyType       — bool; render the "Study type" group (advanced search only)
+    conditionPages      — slice of condition section pages; when non-empty, render
+                          the multi-select "Condition" chip group (advanced search)
+    categoryGroups      — slice of category-group maps (from front matter); when
+                          non-empty, render the static "Category" chip group (condition pages)
+    categoriesBySubject — map of subject_id → category-group slices; when non-empty,
+                          render a hidden dynamic "Category" group for the advanced search page
 */ -}}
-{{- $showStudyType := .showStudyType -}}
-{{- $conditionPages := .conditionPages -}}
-{{- $categoryGroups := .categoryGroups -}}
+{{- $showStudyType       := .showStudyType -}}
+{{- $conditionPages      := .conditionPages -}}
+{{- $categoryGroups      := .categoryGroups -}}
+{{- $categoriesBySubject := .categoriesBySubject -}}
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
 <div class="mobile-feeds-bar d-lg-none" id="trials-mobile-bar">
 	<div class="container">
@@ -55,6 +58,14 @@
 			<div class="sheet-chips" id="trials-sheet-category">
 				<button type="button" class="sheet-chip active" data-value="">All categories</button>
 				{{/* remaining chips populated by trials-feed.js from data-category-groups */}}
+			</div>
+		</div>
+		{{- end }}
+		{{- if $categoriesBySubject }}
+		<div class="sheet-group" id="trials-sheet-category-group" hidden>
+			<div class="sheet-group-label">Category</div>
+			<div class="sheet-chips" id="trials-sheet-category">
+				{{/* populated dynamically by updateCategoryRow() in trials-feed.js */}}
 			</div>
 		</div>
 		{{- end }}
