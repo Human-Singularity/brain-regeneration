@@ -53,6 +53,10 @@ category_groups:
         name: "Teriflunomide"
       - id: 3
         name: "Cladribine"
+  - label: "BTK Inhibitors"
+    categories:
+      - id: 34
+        name: "Tolebrutinib"
   - label: "Cytotoxic Immunosuppressant"
     categories:
       - id: 38
