@@ -7,9 +7,12 @@
     showStudyType  — bool; render the "Study type" group (advanced search only)
     conditionPages — slice of condition section pages; when non-empty, render
                      the multi-select "Condition" chip group (advanced search)
+    categoryGroups — slice of category-group maps (from front matter); when
+                     non-empty, render the "Category" chip group
 */ -}}
 {{- $showStudyType := .showStudyType -}}
 {{- $conditionPages := .conditionPages -}}
+{{- $categoryGroups := .categoryGroups -}}
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
 <div class="mobile-feeds-bar d-lg-none" id="trials-mobile-bar">
 	<div class="container">
@@ -46,6 +49,15 @@
 		</div>
 	</div>
 	<div class="offcanvas-body">
+		{{- with $categoryGroups }}
+		<div class="sheet-group">
+			<div class="sheet-group-label">Category</div>
+			<div class="sheet-chips" id="trials-sheet-category">
+				<button type="button" class="sheet-chip active" data-value="">All categories</button>
+				{{/* remaining chips populated by trials-feed.js from data-category-groups */}}
+			</div>
+		</div>
+		{{- end }}
 		<div class="sheet-group">
 			<label for="trials-sheet-identifiers-input" class="sheet-group-label">Identifiers</label>
 			<input type="text" class="form-control form-control-sm" id="trials-sheet-identifiers-input" placeholder="e.g. NCT02521311, 2020-001234-12" autocomplete="off">
