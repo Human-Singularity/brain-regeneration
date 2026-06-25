@@ -155,7 +155,7 @@
 			return;
 		}
 
-		function buildChips(container) {
+		function buildDesktopChips(container) {
 			if (!container) return;
 			container.innerHTML = '';
 			var allBtn = document.createElement('button');
@@ -178,8 +178,31 @@
 			});
 		}
 
-		buildChips(trialsDesktopCategoryChips);
-		buildChips(mobileChips);
+		function buildSheetChips(container) {
+			if (!container) return;
+			container.innerHTML = '';
+			var allBtn = document.createElement('button');
+			allBtn.type = 'button';
+			allBtn.className = 'sheet-chip';
+			allBtn.dataset.value = '';
+			allBtn.textContent = 'All categories';
+			allBtn.classList.toggle('active', !state.categoryId);
+			container.appendChild(allBtn);
+			groups.forEach(function (grp) {
+				(grp.categories || []).forEach(function (cat) {
+					var btn = document.createElement('button');
+					btn.type = 'button';
+					btn.className = 'sheet-chip';
+					btn.dataset.value = String(cat.id);
+					btn.textContent = cat.name;
+					btn.classList.toggle('active', String(cat.id) === state.categoryId);
+					container.appendChild(btn);
+				});
+			});
+		}
+
+		buildDesktopChips(trialsDesktopCategoryChips);
+		buildSheetChips(mobileChips);
 		if (trialsDesktopCategoryRow) trialsDesktopCategoryRow.hidden = false;
 		if (mobileGroup) mobileGroup.hidden = false;
 	}
@@ -445,7 +468,7 @@
 		state.country      = filterCountry    ? filterCountry.value.trim()     : '';
 		state.sort         = sortOrder        ? sortOrder.value                : '-discovery_date';
 		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
-		state.categoryId   = filterCategory   ? filterCategory.value           : '';
+		if (filterCategory) state.categoryId = filterCategory.value;
 		if (trialsConditionChips) {
 			var chipIds = [];
 			trialsConditionChips.querySelectorAll('.search-chip.search-chip--active').forEach(function (c) {
@@ -1033,11 +1056,23 @@
 		}
 		if (state.categoryId) {
 			var catName = state.categoryId;
+			// Search static category groups (condition pages)
 			categoryGroups.forEach(function (grp) {
 				(grp.categories || []).forEach(function (cat) {
 					if (String(cat.id) === state.categoryId) catName = cat.name;
 				});
 			});
+			// Fallback: search categoriesBySubject (advanced search page)
+			if (catName === state.categoryId) {
+				var activeSubjIds = state.subjects ? state.subjects.split(',').filter(Boolean) : [];
+				if (activeSubjIds.length === 1) {
+					(categoriesBySubject[activeSubjIds[0]] || []).forEach(function (grp) {
+						(grp.categories || []).forEach(function (cat) {
+							if (String(cat.id) === state.categoryId) catName = cat.name;
+						});
+					});
+				}
+			}
 			trialsTokenStrip.appendChild(buildTrialsToken(catName, 'categoryId'));
 			hasTokens = true;
 		}

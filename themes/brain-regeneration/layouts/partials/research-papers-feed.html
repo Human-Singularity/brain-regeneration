@@ -444,7 +444,7 @@
 			data-team-id="{{ $teamId }}"
 			data-subject-id="{{ $subjectId }}"
 			data-require-relevant="{{ $requireRelevant }}"
-			{{- if or $siteWide $subjectId }} data-fetch-categories="true"
+			{{- if $siteWide }} data-fetch-categories="true"
 			{{- else }}
 			{{ with $categories }}data-categories="{{ . | jsonify }}"{{ end }}
 			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}
