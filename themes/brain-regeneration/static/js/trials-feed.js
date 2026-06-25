@@ -134,20 +134,78 @@
 		}
 	}
 
-	// Build/hide the per-condition category chip row (desktop + mobile sheet).
-	// Reads committed state (not draft) and re-renders chips whenever the active
-	// condition changes. Safe to call before mobile elements exist — falls back
-	// gracefully when container IDs are absent.
+	// ── Category chip row helpers (advanced search page only) ──────────────────
+
+	function buildDesktopCategoryChips(container, groups, activeCatId) {
+		if (!container) return;
+		container.innerHTML = '';
+		var allBtn = document.createElement('button');
+		allBtn.type = 'button';
+		allBtn.className = 'search-chip';
+		allBtn.dataset.value = '';
+		allBtn.textContent = 'All categories';
+		BR.feedUI.setSearchChipActive(allBtn, !activeCatId);
+		container.appendChild(allBtn);
+		groups.forEach(function (grp) {
+			(grp.categories || []).forEach(function (cat) {
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'search-chip';
+				btn.dataset.value = String(cat.id);
+				btn.textContent = cat.name;
+				BR.feedUI.setSearchChipActive(btn, String(cat.id) === activeCatId);
+				container.appendChild(btn);
+			});
+		});
+	}
+
+	function buildSheetCategoryChips(container, groups, activeCatId) {
+		if (!container) return;
+		container.innerHTML = '';
+		var allBtn = document.createElement('button');
+		allBtn.type = 'button';
+		allBtn.className = 'sheet-chip';
+		allBtn.dataset.value = '';
+		allBtn.textContent = 'All categories';
+		allBtn.classList.toggle('active', !activeCatId);
+		container.appendChild(allBtn);
+		groups.forEach(function (grp) {
+			(grp.categories || []).forEach(function (cat) {
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'sheet-chip';
+				btn.dataset.value = String(cat.id);
+				btn.textContent = cat.name;
+				btn.classList.toggle('active', String(cat.id) === activeCatId);
+				container.appendChild(btn);
+			});
+		});
+	}
+
+	// Update the mobile sheet's dynamic category group.
+	// May be called with draft subjects (sheet in use) or committed state.subjects.
+	function syncSheetCategoryGroup(subjects, activeCatId) {
+		if (!trialsDesktopCategoryRow) return; // no-op on condition pages
+		var mg = document.getElementById('trials-sheet-category-group');
+		if (!mg) return;
+		var ids    = subjects ? subjects.split(',').filter(Boolean) : [];
+		var groups = ids.length === 1 ? (categoriesBySubject[ids[0]] || null) : null;
+		if (!groups || !groups.length) { mg.hidden = true; return; }
+		buildSheetCategoryChips(document.getElementById('trials-sheet-category'), groups, activeCatId || '');
+		mg.hidden = false;
+	}
+
+	// Build/hide the desktop category chip row; also syncs the mobile sheet.
+	// Only active on pages that embed data-categories-by-subject (advanced search).
 	function updateCategoryRow() {
-		var mobileGroup = document.getElementById('trials-sheet-category-group');
-		var mobileChips = document.getElementById('trials-sheet-category');
+		if (!trialsDesktopCategoryRow) return; // no-op on condition pages
 
 		var activeIds = state.subjects ? state.subjects.split(',').filter(Boolean) : [];
 		var groups    = activeIds.length === 1 ? (categoriesBySubject[activeIds[0]] || null) : null;
 
 		if (!groups || !groups.length) {
-			if (trialsDesktopCategoryRow) trialsDesktopCategoryRow.hidden = true;
-			if (mobileGroup) mobileGroup.hidden = true;
+			trialsDesktopCategoryRow.hidden = true;
+			syncSheetCategoryGroup('', '');
 			if (state.categoryId) {
 				state.categoryId = '';
 				if (filterCategory) filterCategory.value = '';
@@ -155,56 +213,9 @@
 			return;
 		}
 
-		function buildDesktopChips(container) {
-			if (!container) return;
-			container.innerHTML = '';
-			var allBtn = document.createElement('button');
-			allBtn.type = 'button';
-			allBtn.className = 'search-chip';
-			allBtn.dataset.value = '';
-			allBtn.textContent = 'All categories';
-			BR.feedUI.setSearchChipActive(allBtn, !state.categoryId);
-			container.appendChild(allBtn);
-			groups.forEach(function (grp) {
-				(grp.categories || []).forEach(function (cat) {
-					var btn = document.createElement('button');
-					btn.type = 'button';
-					btn.className = 'search-chip';
-					btn.dataset.value = String(cat.id);
-					btn.textContent = cat.name;
-					BR.feedUI.setSearchChipActive(btn, String(cat.id) === state.categoryId);
-					container.appendChild(btn);
-				});
-			});
-		}
-
-		function buildSheetChips(container) {
-			if (!container) return;
-			container.innerHTML = '';
-			var allBtn = document.createElement('button');
-			allBtn.type = 'button';
-			allBtn.className = 'sheet-chip';
-			allBtn.dataset.value = '';
-			allBtn.textContent = 'All categories';
-			allBtn.classList.toggle('active', !state.categoryId);
-			container.appendChild(allBtn);
-			groups.forEach(function (grp) {
-				(grp.categories || []).forEach(function (cat) {
-					var btn = document.createElement('button');
-					btn.type = 'button';
-					btn.className = 'sheet-chip';
-					btn.dataset.value = String(cat.id);
-					btn.textContent = cat.name;
-					btn.classList.toggle('active', String(cat.id) === state.categoryId);
-					container.appendChild(btn);
-				});
-			});
-		}
-
-		buildDesktopChips(trialsDesktopCategoryChips);
-		buildSheetChips(mobileChips);
-		if (trialsDesktopCategoryRow) trialsDesktopCategoryRow.hidden = false;
-		if (mobileGroup) mobileGroup.hidden = false;
+		buildDesktopCategoryChips(trialsDesktopCategoryChips, groups, state.categoryId);
+		trialsDesktopCategoryRow.hidden = false;
+		syncSheetCategoryGroup(state.subjects, state.categoryId);
 	}
 
 	// ── Cache ────────────────────────────────────────────────────────────────
@@ -944,6 +955,9 @@
 				trialsDraft.subjects = arr.join(',');
 			}
 			syncTrialsSubjectChips();
+			// Reset and update the dynamic category group for the new draft condition selection
+			trialsDraft.categoryId = '';
+			syncSheetCategoryGroup(trialsDraft.subjects, '');
 		});
 	})();
 
