@@ -591,6 +591,12 @@
 								<textarea id="bannerSubtitle" class="ct-textarea" rows="3" placeholder="Enter subtitle">When hope can't be found, we create it.</textarea>
 							</div>
 
+							<!-- Lead Text -->
+							<div class="ct-field">
+								<label class="ct-label" for="bannerLeadText">Lead Text</label>
+								<textarea id="bannerLeadText" class="ct-textarea" rows="3" placeholder="Optional body text after the subtitle"></textarea>
+							</div>
+
 							<!-- Title Colour -->
 							<div class="ct-field">
 								<label class="ct-label">Title Colour</label>
@@ -621,6 +627,13 @@
 									<label class="ct-checkbox-label">
 										<input type="checkbox" id="bannerShowBtn"> Show
 									</label>
+								</div>
+								<div class="ct-fine-grid" style="margin-top:10px;">
+									<div class="ct-fine-row">
+										<label for="bannerButtonSize">Button Size</label>
+										<input type="range" id="bannerButtonSize" min="50" max="150" step="5" value="100">
+										<span id="bannerButtonSizeVal">100%</span>
+									</div>
 								</div>
 							</div>
 
@@ -747,6 +760,8 @@
 (function () {
 	'use strict';
 
+	var SCALE = 2; /* export at 2× logical resolution for crisp platform scaling */
+
 	var SIZES = {
 		square:    { w: 1080, h: 1080, label: '1080 \u00d7 1080 px' },
 		landscape: { w: 1200, h: 628,  label: '1200 \u00d7 628 px'  },
@@ -831,8 +846,11 @@
 		var sz = SIZES[state.size];
 		var w  = sz.w;
 		var h  = sz.h;
-		canvas.width  = w;
-		canvas.height = h;
+		canvas.width       = w * SCALE;
+		canvas.height      = h * SCALE;
+		canvas.style.width = w + 'px';
+		ctx.scale(SCALE, SCALE);
+		dimLabel.textContent = (w * SCALE) + ' × ' + (h * SCALE) + ' px';
 
 		var ref     = Math.min(w, h);
 		var pad     = Math.round(ref * 0.056);
@@ -964,7 +982,6 @@
 			for (var j = 0; j < sizeBtns.length; j++) sizeBtns[j].classList.remove('active');
 			this.classList.add('active');
 			state.size = this.getAttribute('data-size');
-			dimLabel.textContent = SIZES[state.size].label;
 			redraw();
 		});
 	}
@@ -1090,7 +1107,7 @@
 		var sz = SIZES[state.size];
 		try {
 			var link = document.createElement('a');
-			link.download = 'brain-regeneration-post-' + state.size + '-' + sz.w + 'x' + sz.h + '.png';
+			link.download = 'brain-regeneration-post-' + state.size + '-' + (sz.w * SCALE) + 'x' + (sz.h * SCALE) + '.png';
 			link.href = canvas.toDataURL('image/png');
 			link.click();
 		} catch (err) {
@@ -1111,6 +1128,8 @@
 (function () {
 	'use strict';
 
+	var SCALE = 2; /* export at 2× logical resolution for crisp platform scaling */
+
 	var FORMATS = {
 		website:  { w: 1400, h: 400, label: '1400 \u00d7 400 px' },
 		linkedin: { w: 1584, h: 396, label: '1584 \u00d7 396 px' },
@@ -1127,16 +1146,19 @@
 	var contentWidthVal   = document.getElementById('bannerContentWidthVal');
 	var yOffsetVal        = document.getElementById('bannerYOffsetVal');
 	var xOffsetVal        = document.getElementById('bannerXOffsetVal');
+	var buttonSizeVal     = document.getElementById('bannerButtonSizeVal');
 	var dropZone          = document.getElementById('bannerDropZone');
 
 	var state = {
 		format:         'website',
 		title:          document.getElementById('bannerTitle').value,
 		subtitle:       document.getElementById('bannerSubtitle').value,
+		leadText:       '',
 		titleColor:     '#2D2D2D',
 		accentColor:    '#1A6B6A',
 		buttonText:     document.getElementById('bannerBtnText').value,
 		showButton:     false,
+		buttonSize:     100,
 		bgImage:        null,
 		overlayColor:   '#ffffff',
 		overlayOpacity: 15,
@@ -1221,6 +1243,7 @@
 		contentWidthVal.textContent   = state.contentWidth + '%';
 		yOffsetVal.textContent        = state.contentYOffset + '%';
 		xOffsetVal.textContent        = state.contentXOffset + '%';
+		buttonSizeVal.textContent     = state.buttonSize + '%';
 	}
 
 	function getFmt() { return FORMATS[state.format] || FORMATS.website; }
@@ -1229,9 +1252,11 @@
 		var fmt = getFmt();
 		var w   = fmt.w;
 		var h   = fmt.h;
-		canvas.width  = w;
-		canvas.height = h;
-		dimLabel.textContent = fmt.label;
+		canvas.width       = w * SCALE;
+		canvas.height      = h * SCALE;
+		canvas.style.width = w + 'px';
+		ctx.scale(SCALE, SCALE);
+		dimLabel.textContent = (w * SCALE) + ' × ' + (h * SCALE) + ' px';
 
 		ctx.clearRect(0, 0, w, h);
 		ctx.fillStyle = '#ffffff';
@@ -1266,12 +1291,14 @@
 		/* Font sizes */
 		var titleSize    = Math.round(h * 0.105);
 		var subtitleSize = Math.round(h * 0.078);
+		var leadSize     = Math.round(h * 0.058);
 		var footerSize   = Math.round(h * 0.04);
-		var buttonH      = Math.round(h * 0.18);
+		var buttonH      = Math.round(h * 0.18 * (state.buttonSize / 100));
 		var buttonFont   = Math.round(buttonH * 0.36);
 		var padBottom    = Math.round(h * 0.04);
 		var titleStep    = Math.round(titleSize * 1.05);
 		var subtitleStep = Math.round(subtitleSize * 1.22);
+		var leadStep     = Math.round(leadSize * 1.4);
 
 		/* Text column bounds */
 		var xOffsetPx = Math.round(w * (state.contentXOffset / 100));
@@ -1295,11 +1322,14 @@
 		var titleLines = getWrappedLines(ctx, state.title, textWidth);
 		ctx.font = subtitleSize + 'px Helvetica, Arial, sans-serif';
 		var subtitleLines = getWrappedLines(ctx, state.subtitle, textWidth);
+		ctx.font = leadSize + 'px Helvetica, Arial, sans-serif';
+		var leadLines = getWrappedLines(ctx, state.leadText, textWidth);
 		var hasBtn = state.showButton && state.buttonText.trim();
 
 		var blockH = 0;
 		if (titleLines.length)    blockH += titleLines.length * titleStep;
 		if (subtitleLines.length) blockH += Math.round(h * 0.02) + subtitleLines.length * subtitleStep;
+		if (leadLines.length)     blockH += Math.round(h * 0.02) + leadLines.length * leadStep;
 		if (hasBtn)               blockH += Math.round(h * 0.06) + buttonH;
 
 		/* Vertical start from layout preset */
@@ -1336,6 +1366,17 @@
 			y += subtitleStep;
 		}
 
+		/* Lead text */
+		if (leadLines.length) {
+			y += Math.round(h * 0.02);
+			ctx.font      = leadSize + 'px Helvetica, Arial, sans-serif';
+			ctx.fillStyle = state.titleColor;
+			for (var l = 0; l < leadLines.length; l++) {
+				ctx.fillText(leadLines[l], textLeft, y);
+				y += leadStep;
+			}
+		}
+
 		/* Button */
 		if (hasBtn) {
 			y += Math.round(h * 0.06);
@@ -1368,9 +1409,10 @@
 		document.getElementById(id).addEventListener('input', function (e) { state[key] = parseInt(e.target.value, 10); updateLabels(); redraw(); });
 	}
 
-	bindText('bannerTitle',    'title');
-	bindText('bannerSubtitle', 'subtitle');
-	bindText('bannerBtnText',  'buttonText');
+	bindText('bannerTitle',      'title');
+	bindText('bannerSubtitle',   'subtitle');
+	bindText('bannerLeadText',   'leadText');
+	bindText('bannerBtnText',    'buttonText');
 	bindText('bannerFooterText', 'footerText');
 	bindRange('bannerOverlayOpacity', 'overlayOpacity');
 	bindRange('bannerImageStart',     'imageStart');
@@ -1378,6 +1420,7 @@
 	bindRange('bannerContentWidth',   'contentWidth');
 	bindRange('bannerYOffset',        'contentYOffset');
 	bindRange('bannerXOffset',        'contentXOffset');
+	bindRange('bannerButtonSize',     'buttonSize');
 
 	var bannerLayoutBtns = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
 	for (var bli = 0; bli < bannerLayoutBtns.length; bli++) {
@@ -1454,12 +1497,14 @@
 		state.contentLayout   = 'middle-left';
 		state.contentYOffset  = 0;
 		state.contentXOffset  = 0;
+		state.buttonSize      = 100;
 		document.getElementById('bannerOverlayOpacity').value = '15';
 		document.getElementById('bannerImageStart').value     = '74';
 		document.getElementById('bannerDiagonalDepth').value  = '14';
 		document.getElementById('bannerContentWidth').value   = '46';
 		document.getElementById('bannerYOffset').value        = '0';
 		document.getElementById('bannerXOffset').value        = '0';
+		document.getElementById('bannerButtonSize').value     = '100';
 		var bls = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
 		for (var k = 0; k < bls.length; k++) bls[k].classList.remove('active');
 		bls[1].classList.add('active');
@@ -1507,7 +1552,7 @@
 		try {
 			var fmt  = getFmt();
 			var link = document.createElement('a');
-			link.download = 'brain-regeneration-banner-' + state.format + '-' + fmt.w + 'x' + fmt.h + '.png';
+			link.download = 'brain-regeneration-banner-' + state.format + '-' + (fmt.w * SCALE) + 'x' + (fmt.h * SCALE) + '.png';
 			link.href = canvas.toDataURL('image/png');
 			link.click();
 		} catch (err) {
