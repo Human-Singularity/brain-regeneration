@@ -570,6 +570,15 @@
 								</div>
 							</div>
 
+							<!-- Image Side -->
+							<div class="ct-field">
+								<label class="ct-label">Image Side</label>
+								<div class="ct-size-toggle" id="bannerSideToggle">
+									<button class="ct-size-btn active" data-side="right" type="button">Image Right <span>Text on left</span></button>
+									<button class="ct-size-btn" data-side="left" type="button">Image Left <span>Text on right</span></button>
+								</div>
+							</div>
+
 							<!-- Title -->
 							<div class="ct-field">
 								<label class="ct-label" for="bannerTitle">Title</label>
@@ -1134,6 +1143,7 @@
 		imageStart:     74,
 		diagonalDepth:  14,
 		contentWidth:   46,
+		imageSide:      'right',
 		contentLayout:  'middle-left',
 		contentYOffset: 0,
 		contentXOffset: 0,
@@ -1180,16 +1190,28 @@
 		context.closePath();
 	}
 
-	function drawImagePanel(context, w, h, startX, depth) {
-		var topX    = Math.round(w * (startX / 100));
-		var bottomX = Math.round(w * ((startX - depth) / 100));
-		context.beginPath();
-		context.moveTo(topX, 0);
-		context.lineTo(w, 0);
-		context.lineTo(w, h);
-		context.lineTo(bottomX, h);
-		context.closePath();
-		return { topX: topX, bottomX: bottomX };
+	function drawImagePanel(context, w, h, startX, depth, side) {
+		if (side === 'left') {
+			var topX    = Math.round(w * ((100 - startX) / 100));
+			var bottomX = Math.round(w * ((100 - startX + depth) / 100));
+			context.beginPath();
+			context.moveTo(0, 0);
+			context.lineTo(topX, 0);
+			context.lineTo(bottomX, h);
+			context.lineTo(0, h);
+			context.closePath();
+			return { topX: topX, bottomX: bottomX };
+		} else {
+			var topX    = Math.round(w * (startX / 100));
+			var bottomX = Math.round(w * ((startX - depth) / 100));
+			context.beginPath();
+			context.moveTo(topX, 0);
+			context.lineTo(w, 0);
+			context.lineTo(w, h);
+			context.lineTo(bottomX, h);
+			context.closePath();
+			return { topX: topX, bottomX: bottomX };
+		}
 	}
 
 	function updateLabels() {
@@ -1217,12 +1239,12 @@
 
 		var padX    = Math.round(w * 0.038);
 		var padTop  = Math.round(h * 0.05);
-		var panel   = drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+		var panel   = drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth, state.imageSide);
 
 		/* Image panel */
 		if (state.bgImage) {
 			ctx.save();
-			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth, state.imageSide);
 			ctx.clip();
 			var iw    = state.bgImage.naturalWidth;
 			var ih    = state.bgImage.naturalHeight;
@@ -1234,7 +1256,7 @@
 			ctx.restore();
 		} else {
 			ctx.save();
-			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth);
+			drawImagePanel(ctx, w, h, state.imageStart, state.diagonalDepth, state.imageSide);
 			ctx.clip();
 			ctx.fillStyle = '#E6F2F2';
 			ctx.fillRect(0, 0, w, h);
@@ -1251,11 +1273,20 @@
 		var titleStep    = Math.round(titleSize * 1.05);
 		var subtitleStep = Math.round(subtitleSize * 1.22);
 
-		/* Text column bounds (X offset shifts the left edge) */
-		var xOffsetPx    = Math.round(w * (state.contentXOffset / 100));
-		var textLeft     = Math.max(0, padX + xOffsetPx);
-		var textRightLim = Math.min(Math.round(w * (state.contentWidth / 100)), panel.bottomX - Math.round(w * 0.025));
-		var textWidth    = Math.max(280, textRightLim - textLeft);
+		/* Text column bounds */
+		var xOffsetPx = Math.round(w * (state.contentXOffset / 100));
+		var textLeft, textWidth;
+		if (state.imageSide === 'left') {
+			/* image on left → text starts after the diagonal's rightmost edge */
+			var imageEdge = Math.max(panel.topX, panel.bottomX);
+			textLeft  = Math.max(imageEdge + Math.round(w * 0.025), imageEdge + Math.round(w * 0.025) + xOffsetPx);
+			textWidth = Math.max(280, w - padX - textLeft);
+		} else {
+			/* image on right → text in left portion, bounded by diagonal's leftmost edge */
+			textLeft  = Math.max(0, padX + xOffsetPx);
+			var textRightLim = Math.min(Math.round(w * (state.contentWidth / 100)), panel.bottomX - Math.round(w * 0.025));
+			textWidth = Math.max(280, textRightLim - textLeft);
+		}
 
 		ctx.textBaseline = 'top';
 
@@ -1368,6 +1399,16 @@
 		});
 	}
 
+	var sideBtns = document.querySelectorAll('#bannerSideToggle .ct-size-btn');
+	for (var si = 0; si < sideBtns.length; si++) {
+		sideBtns[si].addEventListener('click', function () {
+			for (var sj = 0; sj < sideBtns.length; sj++) sideBtns[sj].classList.remove('active');
+			this.classList.add('active');
+			state.imageSide = this.getAttribute('data-side');
+			redraw();
+		});
+	}
+
 	document.getElementById('bannerShowBtn').addEventListener('change', function (e) {
 		state.showButton = e.target.checked;
 		document.getElementById('bannerBtnText').disabled = !e.target.checked;
@@ -1409,6 +1450,7 @@
 		state.imageStart      = 74;
 		state.diagonalDepth   = 14;
 		state.contentWidth    = 46;
+		state.imageSide       = 'right';
 		state.contentLayout   = 'middle-left';
 		state.contentYOffset  = 0;
 		state.contentXOffset  = 0;
@@ -1421,6 +1463,9 @@
 		var bls = document.querySelectorAll('#bannerLayoutToggle .ct-layout-btn');
 		for (var k = 0; k < bls.length; k++) bls[k].classList.remove('active');
 		bls[1].classList.add('active');
+		var sbs = document.querySelectorAll('#bannerSideToggle .ct-size-btn');
+		for (var k = 0; k < sbs.length; k++) sbs[k].classList.remove('active');
+		sbs[0].classList.add('active');
 		updateLabels();
 		redraw();
 	});
