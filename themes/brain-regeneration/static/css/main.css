@@ -95,9 +95,9 @@ a:hover {
 
 .site-nav .nav-link-donate {
 	font-family: var(--font-heading);
-	font-weight: 500;
+	font-weight: 700;
 	font-size: 13px;
-	color: #3a2208;
+	color: #fff;
 	background: var(--color-accent);
 	padding: 7px 16px;
 	border-radius: 6px;
@@ -105,7 +105,7 @@ a:hover {
 	text-decoration: none;
 }
 
-.site-nav .nav-link-donate:hover { background: #d4822e; color: #3a2208; text-decoration: none; }
+.site-nav .nav-link-donate:hover { background: #d4822e; color: #fff; text-decoration: none; }
 
 .site-nav .navbar-toggler {
 	border: 1px solid rgba(255, 255, 255, 0.3);
