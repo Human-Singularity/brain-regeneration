@@ -95,15 +95,17 @@ a:hover {
 
 .site-nav .nav-link-donate {
 	font-family: var(--font-heading);
-	font-weight: 400;
+	font-weight: 500;
 	font-size: 13px;
-	color: rgba(255, 255, 255, 0.6);
-	padding: 16px 14px;
-	transition: color 200ms ease;
+	color: #3a2208;
+	background: var(--color-accent);
+	padding: 7px 16px;
+	border-radius: 6px;
+	transition: background 200ms ease, color 200ms ease;
 	text-decoration: none;
 }
 
-.site-nav .nav-link-donate:hover { color: rgba(255, 255, 255, 0.9); text-decoration: none; }
+.site-nav .nav-link-donate:hover { background: #d4822e; color: #3a2208; text-decoration: none; }
 
 .site-nav .navbar-toggler {
 	border: 1px solid rgba(255, 255, 255, 0.3);
