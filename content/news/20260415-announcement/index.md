@@ -4,7 +4,7 @@ date: 2026-04-16T12:25:00+01:00
 draft: false
 
 # Short summary for cards and meta
-description: "Introducing Brain-Regeneration.com — an open observatory tracking published research and clinical trials across CNS regeneration, built on GregoryAI and guided by three scientific research teams."
+description: "Introducing Brain-Regeneration.com — an open observatory tracking published research and clinical trials across CNS regeneration, built from the old Gregory-MS and guided by three scientific research teams."
 
 # Author (slug from content/curators/ or free text)
 author: ""
