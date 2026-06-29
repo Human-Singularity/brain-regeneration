@@ -1,0 +1,8 @@
+<script>
+(function () {
+  var match = window.location.hash.match(/^#\/articles\/(\d+)/);
+  if (match) {
+    window.location.replace('/articles/' + match[1] + '/');
+  }
+})();
+</script>

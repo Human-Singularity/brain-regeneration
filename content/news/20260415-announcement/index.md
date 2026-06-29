@@ -32,6 +32,7 @@ tags:
 options:
   header: "small"
 ---
+{{< article-redirect >}}
 
 In Coimbra, Portugal, a lab is reprogramming glial cells into neurons. In Cambridge, a similar team researches how to rewrite the brain's immune system and improve it's response to damage. A research lab in Lisbon is mapping how inflammation outside the brain accelerates destruction inside it.
 
