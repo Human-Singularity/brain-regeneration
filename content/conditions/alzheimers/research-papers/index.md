@@ -15,6 +15,9 @@ api:
   endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 1
   subject_id: 13
+
+# Show the full feed by default instead of ML/curator-relevant-only papers
+require_relevant: false
 ---
 
 Research papers on Alzheimer's Disease are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
