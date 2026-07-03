@@ -25,8 +25,8 @@ in the tab bar:
 - **Not found** → renders a disabled tab with a "Coming soon" badge.
 
 So adding the section is purely a **content** change (one new file) — no template
-or JS changes are needed. As of this writing, only `multiple-sclerosis` has this
-file; `alzheimers` and `parkinsons` show "Coming soon".
+or JS changes are needed. If a condition is missing this leaf bundle, its Clinical
+Trials page will show the "Research Papers" tab as "Coming soon".
 
 ## Steps
 
