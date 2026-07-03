@@ -37,7 +37,9 @@
 	</div>
 </div>
 
-{{ partial "research-papers-feed" (dict "page" . "contextTitle" $conditionPage.Title) }}
+{{- $requireRelevant := true -}}
+{{- if isset .Params "require_relevant" -}}{{- if not .Params.require_relevant -}}{{- $requireRelevant = false -}}{{- end -}}{{- end -}}
+{{ partial "research-papers-feed" (dict "page" . "contextTitle" $conditionPage.Title "requireRelevant" $requireRelevant) }}
 
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}

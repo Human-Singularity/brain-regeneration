@@ -64,6 +64,10 @@ Trials page will show the "Research Papers" tab as "Coming soon".
      team_id: 1                # same team_id as _index.md
      subject_id: <same subject_id as _index.md>
 
+   # Optional — defaults to true (ML/curator-relevant papers only). Set to
+   # false to show the full unfiltered feed by default for this condition.
+   require_relevant: false
+
    # Optional — only include if you have known GregoryAI category ids to group
    # (e.g. named drugs/treatments). Omit entirely if none apply; the feed still
    # works without it, it just won't have a populated category filter.
@@ -101,6 +105,11 @@ Trials page will show the "Research Papers" tab as "Coming soon".
 
 ## Gotchas
 
+- By default the papers feed shows only ML/curator-relevant articles
+  (`requireRelevant` defaults to `true` in `research-papers-feed.html`). Set
+  `require_relevant: false` in the page's frontmatter to show the full feed by
+  default instead — `conditions/research-papers.html` reads this param and
+  passes it through to the partial.
 - `category_groups` category **ids** must already exist in GregoryAI for that
   `team_id`/`subject_id` — don't invent ids. If unsure what categories exist,
   that's a GregoryAI backend question.
