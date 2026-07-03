@@ -5,7 +5,7 @@
 
 {{/* Build per-condition category groups from front matter (source of truth) */}}
 {{- $conditionPages := slice -}}
-{{- range where (where .Site.AllPages "Section" "conditions") "Kind" "section" -}}
+{{- range where (where .Site.Pages "Section" "conditions") "Kind" "section" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $conditionPages = $conditionPages | append . -}}
 	{{- end -}}

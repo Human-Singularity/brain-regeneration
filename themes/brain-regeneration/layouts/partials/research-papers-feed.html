@@ -27,14 +27,14 @@
 {{- if isset . "advanced" -}}{{- if .advanced -}}{{- $advanced = true -}}{{- end -}}{{- end -}}
 
 {{- $conditionPages := slice -}}
-{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
+{{- range where (where $page.Site.Pages "Section" "conditions") "Kind" "section" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $conditionPages = $conditionPages | append . -}}
 	{{- end -}}
 {{- end -}}
 {{- $conditionPages = sort $conditionPages "Title" -}}
 {{- $researchAreaPages := slice -}}
-{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
+{{- range where (where $page.Site.Pages "Section" "research-areas") "Kind" "page" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $researchAreaPages = $researchAreaPages | append . -}}
 	{{- end -}}
@@ -238,14 +238,14 @@
 
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
 {{- $conditionPagesMobile := slice -}}
-{{- range where (where $page.Site.AllPages "Section" "conditions") "Kind" "section" -}}
+{{- range where (where $page.Site.Pages "Section" "conditions") "Kind" "section" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $conditionPagesMobile = $conditionPagesMobile | append . -}}
 	{{- end -}}
 {{- end -}}
 {{- $conditionPagesMobile = sort $conditionPagesMobile "Title" -}}
 {{- $researchAreaPagesMobile := slice -}}
-{{- range where (where $page.Site.AllPages "Section" "research-areas") "Kind" "page" -}}
+{{- range where (where $page.Site.Pages "Section" "research-areas") "Kind" "page" -}}
 	{{- if and .Params.api .Params.api.subject_id -}}
 		{{- $researchAreaPagesMobile = $researchAreaPagesMobile | append . -}}
 	{{- end -}}
