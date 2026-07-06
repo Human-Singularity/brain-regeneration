@@ -3,6 +3,8 @@ title: "SPEM — Portuguese Multiple Sclerosis Society"
 date: 2025-01-06
 draft: false
 
+description: "SPEM, the Portuguese Multiple Sclerosis Society, is a founding supporter of the Brain Regeneration Observatory and the earlier Gregory-MS project."
+
 name: "SPEM"
 type_of: "organisation"
 representative: "Alexandre Guedes da Silva"

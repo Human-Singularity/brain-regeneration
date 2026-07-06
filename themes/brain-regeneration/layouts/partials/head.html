@@ -9,13 +9,21 @@
 <!-- Canonical URL -->
 <link rel="canonical" href="{{ .Permalink }}">
 
+<!-- Favicons -->
+<link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
+<link rel="alternate icon" href="{{ "favicon.ico" | relURL }}">
+<link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
+<link rel="manifest" href="{{ "site.webmanifest" | relURL }}">
+<meta name="theme-color" content="#1A6B6A">
+
 <!-- Open Graph -->
 <meta property="og:site_name" content="{{ .Site.Title }}">
 <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
 {{ with $description }}<meta property="og:description" content="{{ . }}">{{ end }}
 <meta property="og:url" content="{{ .Permalink }}">
-<meta property="og:locale" content="en_US">
-{{ if .IsPage -}}
+<meta property="og:locale" content="en_GB">
+{{- $isArticleContent := and .IsPage (eq .Section "news") }}
+{{ if $isArticleContent -}}
 <meta property="og:type" content="article">
 {{ with .Date }}<meta property="article:published_time" content="{{ .Format "2006-01-02T15:04:05Z07:00" }}">{{ end }}
 {{ with .Lastmod }}<meta property="article:modified_time" content="{{ .Format "2006-01-02T15:04:05Z07:00" }}">{{ end }}
@@ -70,39 +78,60 @@
 {{ with .Site.Params.twitter }}<meta name="twitter:site" content="@{{ . }}">{{ end }}
 
 <!-- JSON-LD structured data -->
-<script type="application/ld+json">
-{
-	"@context": "https://schema.org",
-	{{ if .IsHome -}}
-	"@type": "WebSite",
-	"name": {{ .Site.Title | jsonify }},
-	"url": {{ .Site.BaseURL | jsonify }},
-	"description": {{ $description | jsonify }}
-	{{- else if .IsPage -}}
-	"@type": "Article",
-	"headline": {{ .Title | jsonify }},
-	"url": {{ .Permalink | jsonify }},
-	{{ with $description }}"description": {{ . | jsonify }},{{ end }}
-	{{ with .Date }}"datePublished": "{{ .Format "2006-01-02" }}",{{ end }}
-	{{ with .Lastmod }}"dateModified": "{{ .Format "2006-01-02" }}",{{ end }}
-	"publisher": {
-		"@type": "Organization",
-		"name": {{ .Site.Title | jsonify }},
-		"url": {{ .Site.BaseURL | jsonify }}
-	}
-	{{- else -}}
-	"@type": "WebPage",
-	"name": {{ .Title | jsonify }},
-	"url": {{ .Permalink | jsonify }},
-	{{ with $description }}"description": {{ . | jsonify }},{{ end }}
-	"isPartOf": {
-		"@type": "WebSite",
-		"name": {{ .Site.Title | jsonify }},
-		"url": {{ .Site.BaseURL | jsonify }}
-	}
+{{- $publisher := dict "@type" "Organization" "name" .Site.Title "url" .Site.BaseURL }}
+{{- $jsonld := dict "@context" "https://schema.org" }}
+{{- if .IsHome }}
+	{{- $jsonld = merge $jsonld (dict
+		"@type" "WebSite"
+		"name" .Site.Title
+		"url" .Site.BaseURL
+		"description" $description
+		"potentialAction" (dict
+			"@type" "SearchAction"
+			"target" (dict "@type" "EntryPoint" "urlTemplate" (printf "%ssearch/?q={search_term_string}" .Site.BaseURL))
+			"query-input" "required name=search_term_string"
+		)
+	) }}
+{{- else if $isArticleContent }}
+	{{- $jsonld = merge $jsonld (dict
+		"@type" "Article"
+		"headline" .Title
+		"url" .Permalink
+		"description" $description
+		"publisher" $publisher
+	) }}
+	{{- if not .Date.IsZero }}
+		{{- $jsonld = merge $jsonld (dict "datePublished" (.Date.Format "2006-01-02")) }}
 	{{- end }}
-}
-</script>
+	{{- if not .Lastmod.IsZero }}
+		{{- $jsonld = merge $jsonld (dict "dateModified" (.Lastmod.Format "2006-01-02")) }}
+	{{- end }}
+{{- else }}
+	{{- $jsonld = merge $jsonld (dict
+		"@type" "WebPage"
+		"name" .Title
+		"url" .Permalink
+		"description" $description
+		"isPartOf" (dict "@type" "WebSite" "name" .Site.Title "url" .Site.BaseURL)
+	) }}
+{{- end }}
+<script type="application/ld+json">{{ $jsonld | jsonify | safeJS }}</script>
+
+{{ if .IsHome }}
+{{- $org := dict
+	"@context" "https://schema.org"
+	"@type" "Organization"
+	"name" .Site.Title
+	"url" .Site.BaseURL
+	"logo" (.Site.BaseURL | printf "%sfavicon.svg")
+	"sameAs" (slice
+		"https://github.com/Human-Singularity/brain-regeneration"
+		"https://github.com/brunoamaral/gregory-ai"
+		"https://human-singularity.org/"
+	)
+}}
+<script type="application/ld+json">{{ $org | jsonify | safeJS }}</script>
+{{ end }}
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -14,6 +14,8 @@
 	var retryBtn     = document.getElementById('article-retry-btn');
 	var content      = document.getElementById('article-content');
 	var apiBase      = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
+	var siteTitle    = shell.dataset.siteTitle || 'Brain Regeneration Observatory';
+	var siteDesc     = shell.dataset.siteDescription || 'Brain Regeneration Observatory';
 
 	// ── Extract article ID from URL ───────────────────────────────────────
 	// Supports: /articles/28491/ and /articles/28491
@@ -56,6 +58,169 @@
 	function formatAuthors(authors) {
 		if (!authors || !authors.length) return '';
 		return authors.map(function (a) { return a.full_name || ''; }).filter(Boolean).join(', ');
+	}
+
+	function stripHtml(str) {
+		if (str == null) return '';
+		return String(str)
+			.replace(/<[^>]*>/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function truncate(str, maxLen) {
+		if (!str) return '';
+		if (str.length <= maxLen) return str;
+		return str.slice(0, Math.max(0, maxLen - 1)).trimEnd() + '…';
+	}
+
+	function yearFromDate(iso) {
+		if (!iso) return '';
+		var y = new Date(iso).getFullYear();
+		return Number.isFinite(y) && y > 1900 ? String(y) : '';
+	}
+
+	function toISOStringSafe(value) {
+		if (!value) return '';
+		var d = new Date(value);
+		if (!Number.isFinite(d.getTime())) return '';
+		return d.toISOString();
+	}
+
+	function upsertMetaByName(name, value) {
+		if (!value) return;
+		var el = document.querySelector('meta[name="' + name + '"]');
+		if (!el) {
+			el = document.createElement('meta');
+			el.setAttribute('name', name);
+			document.head.appendChild(el);
+		}
+		el.setAttribute('content', value);
+	}
+
+	function upsertMetaByProperty(property, value) {
+		if (!value) return;
+		var el = document.querySelector('meta[property="' + property + '"]');
+		if (!el) {
+			el = document.createElement('meta');
+			el.setAttribute('property', property);
+			document.head.appendChild(el);
+		}
+		el.setAttribute('content', value);
+	}
+
+	function upsertCanonical(url) {
+		if (!url) return;
+		var el = document.querySelector('link[rel="canonical"]');
+		if (!el) {
+			el = document.createElement('link');
+			el.setAttribute('rel', 'canonical');
+			document.head.appendChild(el);
+		}
+		el.setAttribute('href', url);
+	}
+
+	// Normalized page URL: origin + pathname (with trailing slash), stripped of
+	// query strings and hash fragments so canonical/og:url/JSON-LD stay stable
+	// across ?utm_* or other tracking-param variants.
+	function normalizedPageUrl() {
+		var path = window.location.pathname;
+		if (path.charAt(path.length - 1) !== '/') path += '/';
+		return window.location.origin + path;
+	}
+
+	function articleDescription(a) {
+		var summary = stripHtml(a.summary_plain_english || a.abstract || a.description || '');
+		if (summary) return truncate(summary, 180);
+		var subject = (a.subjects && a.subjects[0] && (a.subjects[0].subject_name || a.subjects[0].name)) || '';
+		var fallback = 'Read this research article on ' + (subject || 'brain regeneration') +
+			': summary, source details, related trials, and relevance signals.';
+		return truncate(fallback, 180);
+	}
+
+	function browserTitle(a) {
+		var title = stripHtml(a.title || 'Article');
+		var context = [];
+		if (a.container_title) context.push(stripHtml(a.container_title));
+		var year = yearFromDate(a.published_date);
+		if (year) context.push(year);
+		var contextText = context.slice(0, 2).join(' · ');
+		var parts = [title];
+		if (contextText) parts.push(contextText);
+		parts.push(siteTitle);
+		return parts.filter(Boolean).join(' | ');
+	}
+
+	function updateStructuredData(a, pageUrl, descriptionText) {
+		var el = document.getElementById('article-jsonld-dynamic');
+		if (!el) {
+			el = document.createElement('script');
+			el.type = 'application/ld+json';
+			el.id = 'article-jsonld-dynamic';
+			document.head.appendChild(el);
+		}
+
+		var authors = (a.authors || []).map(function (author) {
+			var fullName = (author && author.full_name) ? String(author.full_name).trim() : '';
+			if (!fullName) return null;
+			return { '@type': 'Person', 'name': fullName };
+		}).filter(Boolean);
+
+		var data = {
+			'@context': 'https://schema.org',
+			'@type': 'ScholarlyArticle',
+			'headline': stripHtml(a.title || ''),
+			'description': descriptionText,
+			'url': pageUrl,
+			'isPartOf': {
+				'@type': 'WebSite',
+				'name': siteTitle,
+				'url': window.location.origin + '/'
+			},
+			'publisher': {
+				'@type': 'Organization',
+				'name': siteTitle,
+				'url': window.location.origin + '/'
+			}
+		};
+
+		var publishedIso = toISOStringSafe(a.published_date);
+		var modifiedIso = toISOStringSafe(a.discovery_date || a.added_date);
+		if (publishedIso) data.datePublished = publishedIso;
+		if (modifiedIso) data.dateModified = modifiedIso;
+		if (a.doi) data.identifier = a.doi;
+		var sourceLink = safeLink(a.link);
+		if (sourceLink && sourceLink !== '#') data.sameAs = sourceLink;
+		if (a.container_title) data.isPartOf = { '@type': 'Periodical', 'name': stripHtml(a.container_title) };
+		if (authors.length) data.author = authors;
+
+		el.textContent = JSON.stringify(data);
+	}
+
+	function updateRuntimeMetadata(a) {
+		var pageUrl = normalizedPageUrl();
+		var title = browserTitle(a);
+		var descriptionText = articleDescription(a) || siteDesc;
+
+		document.title = title;
+		upsertCanonical(pageUrl);
+
+		upsertMetaByName('description', descriptionText);
+		upsertMetaByName('twitter:title', title);
+		upsertMetaByName('twitter:description', descriptionText);
+		upsertMetaByName('twitter:url', pageUrl);
+
+		upsertMetaByProperty('og:title', title);
+		upsertMetaByProperty('og:description', descriptionText);
+		upsertMetaByProperty('og:url', pageUrl);
+		upsertMetaByProperty('og:type', 'article');
+
+		var publishedIso = toISOStringSafe(a.published_date);
+		var modifiedIso = toISOStringSafe(a.discovery_date || a.added_date);
+		if (publishedIso) upsertMetaByProperty('article:published_time', publishedIso);
+		if (modifiedIso) upsertMetaByProperty('article:modified_time', modifiedIso);
+
+		updateStructuredData(a, pageUrl, descriptionText);
 	}
 
 	// ── SVG icons (inline, matches the mockup icon set) ──────────────────
@@ -416,7 +581,7 @@
 				return resp.json();
 			})
 			.then(function (article) {
-				document.title = article.title + ' — Brain Regeneration Observatory';
+				updateRuntimeMetadata(article);
 				showContent(renderArticle(article));
 			})
 			.catch(function () {

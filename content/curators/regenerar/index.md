@@ -3,6 +3,8 @@ title: "REGENERAR"
 date: 2025-01-06
 draft: false
 
+description: "REGENERAR, led by Lino Ferreira at the University of Coimbra, reprograms brain cells into neurons using epigenetic tools to advance CNS regeneration research."
+
 name: "REGENERAR"
 type_of: "organisation"
 lead_researcher: "Lino Ferreira"

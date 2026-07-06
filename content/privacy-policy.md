@@ -1,6 +1,6 @@
 ---
 title: "Privacy Policy"
-description: ""
+description: "The Brain Regeneration Observatory does not track visitors or use cookies, and uses self-hosted, privacy-friendly analytics."
 layout: prose-page
 ---
 
