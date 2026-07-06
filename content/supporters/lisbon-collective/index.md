@@ -3,6 +3,8 @@ title: "Lisbon Collective"
 date: 2026-03-24
 draft: false
 
+description: "Lisbon Collective, a digital consultancy founded by Bruno Amaral, provides the Brain Regeneration Observatory with technical expertise and infrastructure."
+
 name: "Lisbon Collective"
 type_of: "organisation"
 representative: "Bruno Amaral"

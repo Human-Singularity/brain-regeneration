@@ -3,6 +3,8 @@ title: "Project Galileo — Cloudflare"
 date: 2026-03-26
 draft: false
 
+description: "Project Galileo is Cloudflare's programme providing free cybersecurity protection to at-risk public interest organisations, including the Brain Regeneration Observatory."
+
 name: "Project Galileo"
 type_of: "organisation"
 representative: ""

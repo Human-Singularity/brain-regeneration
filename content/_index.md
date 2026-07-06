@@ -1,6 +1,7 @@
 ---
 title: "Brain Regeneration Observatory"
 subtitle: "Real-time tracking of research into myelin repair and CNS regeneration"
+description: "Real-time tracking of research into brain regeneration and myelin repair — new PubMed, bioRxiv, and clinical trial findings for MS, Alzheimer's, and Parkinson's, curated by scientific teams."
 date: 2025-09-12
 draft: false
 hero_image: "images/getty-images-G1FpRJcLoCw-unsplash.jpg"

@@ -3,6 +3,8 @@ title: "Nova SBE — Nova School of Business and Economics"
 date: 2025-05-25
 draft: false
 
+description: "Nova SBE partners with the Brain Regeneration Observatory to develop enhanced algorithms for GregoryAI, improving how the platform ranks relevant research."
+
 name: "Nova SBE"
 type_of: "academic"
 representative: ""
