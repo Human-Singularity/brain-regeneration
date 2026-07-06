@@ -98,10 +98,14 @@
 		"headline" .Title
 		"url" .Permalink
 		"description" $description
-		"datePublished" (.Date.Format "2006-01-02")
-		"dateModified" (.Lastmod.Format "2006-01-02")
 		"publisher" $publisher
 	) }}
+	{{- if not .Date.IsZero }}
+		{{- $jsonld = merge $jsonld (dict "datePublished" (.Date.Format "2006-01-02")) }}
+	{{- end }}
+	{{- if not .Lastmod.IsZero }}
+		{{- $jsonld = merge $jsonld (dict "dateModified" (.Lastmod.Format "2006-01-02")) }}
+	{{- end }}
 {{- else }}
 	{{- $jsonld = merge $jsonld (dict
 		"@type" "WebPage"

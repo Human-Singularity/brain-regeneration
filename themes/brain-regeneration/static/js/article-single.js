@@ -120,6 +120,15 @@
 		el.setAttribute('href', url);
 	}
 
+	// Normalized page URL: origin + pathname (with trailing slash), stripped of
+	// query strings and hash fragments so canonical/og:url/JSON-LD stay stable
+	// across ?utm_* or other tracking-param variants.
+	function normalizedPageUrl() {
+		var path = window.location.pathname;
+		if (path.charAt(path.length - 1) !== '/') path += '/';
+		return window.location.origin + path;
+	}
+
 	function articleDescription(a) {
 		var summary = stripHtml(a.summary_plain_english || a.abstract || a.description || '');
 		if (summary) return truncate(summary, 180);
@@ -189,7 +198,7 @@
 	}
 
 	function updateRuntimeMetadata(a) {
-		var pageUrl = window.location.href;
+		var pageUrl = normalizedPageUrl();
 		var title = browserTitle(a);
 		var descriptionText = articleDescription(a) || siteDesc;
 
