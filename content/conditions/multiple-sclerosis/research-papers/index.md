@@ -77,6 +77,8 @@ category_groups:
         name: "Nanocurcumin"
       - id: 99
         name: "Vafidemstat"
+      - id: 100
+        name: "Indapamide"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
