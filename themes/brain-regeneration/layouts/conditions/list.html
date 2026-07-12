@@ -168,11 +168,13 @@
 		var subjectId = card.dataset.subjectId;
 		if (!endpoint || !teamId || !subjectId) return;
 
-		var url = new URL(endpoint);
+		// The /trials/ list endpoint no longer returns a `stats` key — use the
+		// dedicated /trials/stats/ endpoint instead, with the same filters.
+		var statsEndpoint = endpoint.replace(/\/+$/, '') + '/stats/';
+		var url = new URL(statsEndpoint);
 		url.searchParams.set('format', 'json');
 		url.searchParams.set('team_id', teamId);
 		url.searchParams.set('subject_id', subjectId);
-		url.searchParams.set('page_size', '1'); // minimal payload — we only need stats
 		var urlStr = url.toString();
 
 		var cacheKey = 'brTrialStats:' + teamId + ':' + subjectId;
@@ -182,9 +184,9 @@
 		fetch(urlStr)
 			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
 			.then(function (data) {
-				if (!data.stats) return;
-				setCached(cacheKey, data.stats);
-				updateCard(card, data.stats);
+				if (!data) return;
+				setCached(cacheKey, data);
+				updateCard(card, data);
 			})
 			.catch(function () { /* silently skip on error */ });
 	}

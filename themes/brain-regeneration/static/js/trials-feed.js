@@ -388,23 +388,25 @@
 
 	// Fetches aggregate stats with NO filters (just team + subject) so the stats
 	// bar always reflects the full counts regardless of what filters are active.
+	// The /trials/ list endpoint no longer returns a `stats` key — use the
+	// dedicated /trials/stats/ endpoint instead, with the same team/subject filters.
 	function fetchStats() {
 		var statsCacheKey = 'brTrialsStats:' + teamId + ':' + subjectId;
 		var cached = getCached(statsCacheKey);
 		if (cached) { updateStats(cached); return; }
 
-		var url = new URL(endpoint);
+		var statsEndpoint = endpoint.replace(/\/+$/, '') + '/stats/';
+		var url = new URL(statsEndpoint);
 		url.searchParams.set('format',    'json');
 		url.searchParams.set('team_id',   teamId);
 		if (subjectId) url.searchParams.set('subject_id', subjectId);
-		url.searchParams.set('page_size', '1');
 
 		fetch(url.toString())
 			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
 			.then(function (data) {
-				if (!data.stats) return;
-				setCached(statsCacheKey, data.stats);
-				updateStats(data.stats);
+				if (!data) return;
+				setCached(statsCacheKey, data);
+				updateStats(data);
 			})
 			.catch(function () { /* silently skip */ });
 	}
