@@ -1355,9 +1355,10 @@
 	var mobileResultCount = document.getElementById('papers-mobile-result-count');
 
 	// Mobile-sheet author inputs (advanced page only)
-	var sheetAuthorInput = document.getElementById('papers-sheet-author-input');
-	var sheetAuthorId    = document.getElementById('papers-sheet-author-id');
-	var sheetDoiInput    = document.getElementById('papers-sheet-doi-input');
+	var sheetAuthorInput       = document.getElementById('papers-sheet-author-input');
+	var sheetAuthorId          = document.getElementById('papers-sheet-author-id');
+	var sheetAuthorSuggestions = document.getElementById('papers-sheet-author-suggestions');
+	var sheetDoiInput          = document.getElementById('papers-sheet-doi-input');
 
 	var draft = {};
 
@@ -1710,7 +1711,27 @@
 	});
 	wireChipGroup('papers-sheet-open-access', function (val) { draft.openAccess = val === 'true'; });
 
-	// Mobile sheet author typeahead
+	// Mobile sheet author typeahead — mirrors the desktop suggestions dropdown
+	// (see hideAuthorSuggestions/showAuthorSuggestions above) rather than
+	// requiring an exact full-name match, which almost never happens from a
+	// partial, in-progress query and left the mobile filter looking broken.
+	function hideSheetAuthorSuggestions() {
+		if (sheetAuthorSuggestions) sheetAuthorSuggestions.hidden = true;
+	}
+
+	function showSheetAuthorSuggestions(authors) {
+		if (!sheetAuthorSuggestions) return;
+		if (!authors.length) { hideSheetAuthorSuggestions(); return; }
+		var q = sheetAuthorInput ? sheetAuthorInput.value.trim() : '';
+		var html = authors.map(function (a) {
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(a.full_name) + '">' +
+				highlightMatch(a.full_name, q) +
+			'</button>';
+		}).join('');
+		sheetAuthorSuggestions.innerHTML = html;
+		sheetAuthorSuggestions.hidden = false;
+	}
+
 	if (sheetAuthorInput) {
 		var sheetAuthorTimer;
 		sheetAuthorInput.addEventListener('input', function () {
@@ -1718,6 +1739,7 @@
 			if (sheetAuthorId) sheetAuthorId.value = '';
 			draft.authorId = '';
 			clearTimeout(sheetAuthorTimer);
+			hideSheetAuthorSuggestions();
 			if (q.length < 2) return;
 			sheetAuthorTimer = setTimeout(function () {
 				var aUrl = new URL(apiBase.replace(/\/$/, '') + '/authors/');
@@ -1727,19 +1749,26 @@
 				aUrl.searchParams.set('page_size', '8');
 				fetch(aUrl.toString())
 					.then(function (r) { return r.json(); })
-					.then(function (data) {
-						var authors = data.results || [];
-						if (authors.length > 0) {
-							var a0 = authors[0];
-							var fullName = (a0.full_name || ((a0.first_name || '') + ' ' + (a0.last_name || '')).trim()).trim().toLowerCase();
-							if (q.toLowerCase() === fullName) {
-								draft.authorId = String(a0.author_id);
-								if (sheetAuthorId) sheetAuthorId.value = draft.authorId;
-							}
-						}
-					})
-					.catch(function () {});
-			}, 400);
+					.then(function (data) { showSheetAuthorSuggestions(data.results || []); })
+					.catch(hideSheetAuthorSuggestions);
+			}, 300);
+		});
+
+		if (sheetAuthorSuggestions) {
+			sheetAuthorSuggestions.addEventListener('click', function (e) {
+				var item = e.target.closest('.author-suggestion-item');
+				if (!item) return;
+				draft.authorId = item.dataset.id || '';
+				if (sheetAuthorId) sheetAuthorId.value = draft.authorId;
+				sheetAuthorInput.value = item.textContent.trim();
+				hideSheetAuthorSuggestions();
+			});
+		}
+
+		document.addEventListener('click', function (e) {
+			if (sheetAuthorSuggestions && !sheetAuthorInput.contains(e.target) && !sheetAuthorSuggestions.contains(e.target)) {
+				hideSheetAuthorSuggestions();
+			}
 		});
 	}
 
@@ -1835,6 +1864,7 @@
 			};
 			if (sheetAuthorInput) sheetAuthorInput.value = '';
 			if (sheetAuthorId)    sheetAuthorId.value    = '';
+			hideSheetAuthorSuggestions();
 			if (sheetDoiInput)    sheetDoiInput.value    = '';
 			syncSheetToDraft();
 		});
@@ -1846,6 +1876,7 @@
 			if (mobileClearBtn) mobileClearBtn.hidden = true;
 			if (sheetAuthorInput) sheetAuthorInput.value = '';
 			if (sheetAuthorId)    sheetAuthorId.value    = '';
+			hideSheetAuthorSuggestions();
 			if (sheetDoiInput)    sheetDoiInput.value    = '';
 			renderTokens();
 		});

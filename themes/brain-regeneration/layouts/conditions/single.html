@@ -74,10 +74,17 @@
 					<label for="filter-phase">Phase</label>
 					<select class="form-select" id="filter-phase">
 						<option value="">All phases</option>
-						<option value="PHASE1">Phase 1</option>
-						<option value="PHASE2">Phase 2</option>
-						<option value="PHASE3">Phase 3</option>
-						<option value="PHASE4">Phase 4</option>
+						<option value="early_phase_1">Early Phase 1</option>
+						<option value="phase_1">Phase 1</option>
+						<option value="phase_1_2">Phase 1/2</option>
+						<option value="phase_2">Phase 2</option>
+						<option value="phase_2_3">Phase 2/3</option>
+						<option value="phase_3">Phase 3</option>
+						<option value="phase_3_4">Phase 3/4</option>
+						<option value="phase_4">Phase 4</option>
+						<option value="post_market">Post-market</option>
+						<option value="not_applicable">Not applicable</option>
+						<option value="other">Other</option>
 					</select>
 				</div>
 				{{- with $categoryGroups }}
@@ -92,10 +99,17 @@
 					<label for="filter-status">Status</label>
 					<select class="form-select" id="filter-status">
 						<option value="">All statuses</option>
-						<option value="RECRUITING">Recruiting</option>
-						<option value="ACTIVE_NOT_RECRUITING">Active, not recruiting</option>
-						<option value="NOT_YET_RECRUITING">Not yet recruiting</option>
-						<option value="COMPLETED">Completed</option>
+						<option value="not_yet_recruiting">Not yet recruiting</option>
+						<option value="recruiting">Recruiting</option>
+						<option value="enrolling_by_invitation">Enrolling by invitation</option>
+						<option value="active_not_recruiting">Active, not recruiting</option>
+						<option value="not_recruiting">Not recruiting</option>
+						<option value="suspended">Suspended</option>
+						<option value="completed">Completed</option>
+						<option value="terminated">Terminated</option>
+						<option value="withdrawn">Withdrawn</option>
+						<option value="unknown">Unknown</option>
+						<option value="other">Other</option>
 					</select>
 				</div>
 				<div class="col-6 col-md-2">

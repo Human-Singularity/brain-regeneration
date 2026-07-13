@@ -81,20 +81,34 @@
 			<div class="sheet-group-label">Phase</div>
 			<div class="sheet-chips" id="trials-sheet-phase">
 				<button type="button" class="sheet-chip active" data-value="">All phases</button>
-				<button type="button" class="sheet-chip" data-value="PHASE1">Phase 1</button>
-				<button type="button" class="sheet-chip" data-value="PHASE2">Phase 2</button>
-				<button type="button" class="sheet-chip" data-value="PHASE3">Phase 3</button>
-				<button type="button" class="sheet-chip" data-value="PHASE4">Phase 4</button>
+				<button type="button" class="sheet-chip" data-value="early_phase_1">Early Phase 1</button>
+				<button type="button" class="sheet-chip" data-value="phase_1">Phase 1</button>
+				<button type="button" class="sheet-chip" data-value="phase_1_2">Phase 1/2</button>
+				<button type="button" class="sheet-chip" data-value="phase_2">Phase 2</button>
+				<button type="button" class="sheet-chip" data-value="phase_2_3">Phase 2/3</button>
+				<button type="button" class="sheet-chip" data-value="phase_3">Phase 3</button>
+				<button type="button" class="sheet-chip" data-value="phase_3_4">Phase 3/4</button>
+				<button type="button" class="sheet-chip" data-value="phase_4">Phase 4</button>
+				<button type="button" class="sheet-chip" data-value="post_market">Post-market</button>
+				<button type="button" class="sheet-chip" data-value="not_applicable">Not applicable</button>
+				<button type="button" class="sheet-chip" data-value="other">Other</button>
 			</div>
 		</div>
 		<div class="sheet-group">
 			<div class="sheet-group-label">Status</div>
 			<div class="sheet-chips" id="trials-sheet-status">
 				<button type="button" class="sheet-chip active" data-value="">All statuses</button>
-				<button type="button" class="sheet-chip" data-value="RECRUITING">Recruiting</button>
-				<button type="button" class="sheet-chip" data-value="ACTIVE_NOT_RECRUITING">Active, not recruiting</button>
-				<button type="button" class="sheet-chip" data-value="NOT_YET_RECRUITING">Not yet recruiting</button>
-				<button type="button" class="sheet-chip" data-value="COMPLETED">Completed</button>
+				<button type="button" class="sheet-chip" data-value="not_yet_recruiting">Not yet recruiting</button>
+				<button type="button" class="sheet-chip" data-value="recruiting">Recruiting</button>
+				<button type="button" class="sheet-chip" data-value="enrolling_by_invitation">Enrolling by invitation</button>
+				<button type="button" class="sheet-chip" data-value="active_not_recruiting">Active, not recruiting</button>
+				<button type="button" class="sheet-chip" data-value="not_recruiting">Not recruiting</button>
+				<button type="button" class="sheet-chip" data-value="suspended">Suspended</button>
+				<button type="button" class="sheet-chip" data-value="completed">Completed</button>
+				<button type="button" class="sheet-chip" data-value="terminated">Terminated</button>
+				<button type="button" class="sheet-chip" data-value="withdrawn">Withdrawn</button>
+				<button type="button" class="sheet-chip" data-value="unknown">Unknown</button>
+				<button type="button" class="sheet-chip" data-value="other">Other</button>
 			</div>
 		</div>
 		{{- if $showStudyType }}

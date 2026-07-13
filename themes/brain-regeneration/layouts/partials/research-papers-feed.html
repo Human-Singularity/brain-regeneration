@@ -289,10 +289,11 @@
 	</div>
 	<div class="offcanvas-body">
 		{{- if $advanced }}
-		<div class="sheet-group">
+		<div class="sheet-group" style="position:relative">
 			<label for="papers-sheet-author-input" class="sheet-group-label">Author</label>
 			<input type="text" class="form-control form-control-sm" id="papers-sheet-author-input" placeholder="e.g. Thompson, Coles…" autocomplete="off">
 			<input type="hidden" id="papers-sheet-author-id">
+			<div id="papers-sheet-author-suggestions" class="author-suggestions" hidden></div>
 		</div>
 		<div class="sheet-group">
 			<label for="papers-sheet-doi-input" class="sheet-group-label">DOI — article identifier</label>

@@ -59,9 +59,13 @@
 	} catch (e) {}
 
 	// ── State ────────────────────────────────────────────────────────────────
-	// Normalise the default status value to uppercase to match what the API expects.
+	// Phase/status filters use the API's normalized vocab (lower_snake_case,
+	// e.g. "phase_3", "recruiting"). Coerce data-attribute defaults — which may
+	// be authored as human-readable labels ("Recruiting", "Phase 2/3") or
+	// already-normalized codes — into that vocab.
 	var rawDefaultStatus = listEl.dataset.defaultStatus || '';
-	var normaliseStatus  = function (s) { return s ? s.toUpperCase().replace(/ /g, '_') : ''; };
+	var rawDefaultPhase  = listEl.dataset.defaultPhase  || '';
+	var normaliseValue   = function (s) { return s ? s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : ''; };
 
 	var state = {
 		page:         1,
@@ -70,8 +74,8 @@
 		keyword:      '',
 		identifiers:  '',
 		acronym:      '',
-		phase:        listEl.dataset.defaultPhase  || '',
-		status:       normaliseStatus(rawDefaultStatus),
+		phase:        normaliseValue(rawDefaultPhase),
+		status:       normaliseValue(rawDefaultStatus),
 		country:      '',
 		sort:         '-discovery_date',
 		hasResults:   false,
@@ -92,8 +96,8 @@
 		state.subjectsMode = params.get('conditions_mode') || 'all';
 		state.categoryId   = params.get('category')        || '';
 		// Use params.has() so an explicit empty param (user cleared a default) beats the data-attribute default.
-		state.phase        = params.has('phase')   ? (params.get('phase')  || '') : (listEl.dataset.defaultPhase  || '');
-		state.status       = params.has('status')  ? (params.get('status') || '') : normaliseStatus(rawDefaultStatus);
+		state.phase        = params.has('phase')   ? (params.get('phase')  || '') : normaliseValue(rawDefaultPhase);
+		state.status       = params.has('status')  ? (params.get('status') || '') : normaliseValue(rawDefaultStatus);
 		state.studyType    = params.get('study_type')      || '';
 		state.country      = params.get('country')         || '';
 		state.identifiers  = params.get('identifiers')     || '';
@@ -107,8 +111,8 @@
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
-		var defaultPhase  = listEl.dataset.defaultPhase  || '';
-		var defaultStatus = normaliseStatus(rawDefaultStatus);
+		var defaultPhase  = normaliseValue(rawDefaultPhase);
+		var defaultStatus = normaliseValue(rawDefaultStatus);
 		if (state.keyword)                params.set('q',               state.keyword);
 		if (state.subjects)               params.set('conditions',      state.subjects);
 		if (state.subjectsMode !== 'all') params.set('conditions_mode', state.subjectsMode);
@@ -252,8 +256,8 @@
 		if (state.keyword)     url.searchParams.set('search',             state.keyword);
 		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
 		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
-		if (state.phase)       url.searchParams.set('phase',              state.phase);
-		if (state.status)      url.searchParams.set('recruitment_status', state.status);
+		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
+		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
@@ -266,28 +270,53 @@
 		return url.toString();
 	}
 
-	// ── Status badge ─────────────────────────────────────────────────────────
-	var STATUS_MAP = {
-		'RECRUITING':            { cls: 'badge-recruiting', label: 'Recruiting' },
-		'ACTIVE_NOT_RECRUITING': { cls: 'badge-active',     label: 'Active' },
-		'NOT_YET_RECRUITING':    { cls: 'badge-phase',      label: 'Not yet recruiting' },
-		'ENROLLING_BY_INVITATION':{ cls: 'badge-phase',     label: 'By invitation' },
-		'COMPLETED':             { cls: 'badge-completed',  label: 'Completed' },
-		'TERMINATED':            { cls: 'badge-completed',  label: 'Terminated' },
-		'SUSPENDED':             { cls: 'badge-completed',  label: 'Suspended' },
-		'WITHDRAWN':             { cls: 'badge-completed',  label: 'Withdrawn' },
-		'AUTHORISED':            { cls: 'badge-phase',      label: 'Authorised' },
+	// ── Phase / recruitment-status vocab ─────────────────────────────────────
+	// Canonical labels for the API's normalized closed vocab. Keyed by the
+	// `*_normalized` value (lower_snake_case). "other" is intentionally absent
+	// from both maps — per the API contract, "other" and null both fall back
+	// to displaying the raw registry text instead of a label.
+	var PHASE_LABELS = {
+		early_phase_1: 'Early Phase 1',
+		phase_1:       'Phase 1',
+		phase_1_2:     'Phase 1/2',
+		phase_2:       'Phase 2',
+		phase_2_3:     'Phase 2/3',
+		phase_3:       'Phase 3',
+		phase_3_4:     'Phase 3/4',
+		phase_4:       'Phase 4',
+		post_market:   'Post-market',
+		not_applicable:'Not applicable',
 	};
 
-	function statusBadge(s) {
-		if (!s) return '';
-		var d = STATUS_MAP[s] || { cls: 'badge-phase', label: s.replace(/_/g, ' ').toLowerCase().replace(/^\w/, function (c) { return c.toUpperCase(); }) };
-		return '<span class="' + d.cls + '">' + escHtml(d.label) + '</span>';
+	var STATUS_MAP = {
+		not_yet_recruiting:      { cls: 'badge-phase',      label: 'Not yet recruiting' },
+		recruiting:              { cls: 'badge-recruiting', label: 'Recruiting' },
+		enrolling_by_invitation: { cls: 'badge-phase',      label: 'Enrolling by invitation' },
+		active_not_recruiting:   { cls: 'badge-active',     label: 'Active, not recruiting' },
+		not_recruiting:          { cls: 'badge-phase',      label: 'Not recruiting' },
+		suspended:               { cls: 'badge-completed',  label: 'Suspended' },
+		completed:               { cls: 'badge-completed',  label: 'Completed' },
+		terminated:              { cls: 'badge-completed',  label: 'Terminated' },
+		withdrawn:               { cls: 'badge-completed',  label: 'Withdrawn' },
+		unknown:                 { cls: 'badge-phase',      label: 'Unknown' },
+	};
+
+	// Display rule (matches email digests/RSS): normalized + not "other" → label;
+	// normalized "other" or null → raw registry text (or hide, at the call site).
+	function statusBadge(t) {
+		var norm = t.recruitment_status_normalized;
+		if (norm && norm !== 'other') {
+			var d = STATUS_MAP[norm] || { cls: 'badge-phase', label: norm };
+			return '<span class="' + d.cls + '">' + escHtml(d.label) + '</span>';
+		}
+		if (!t.recruitment_status) return '';
+		return '<span class="badge-phase">' + escHtml(t.recruitment_status) + '</span>';
 	}
 
-	function formatPhase(p) {
-		if (!p || p === 'NA') return '';
-		return p.replace(/^PHASE(\d)$/, 'Phase $1').replace(/^PHASE$/, 'Phase');
+	function formatPhase(t) {
+		var norm = t.phase_normalized;
+		if (norm && norm !== 'other') return PHASE_LABELS[norm] || norm;
+		return t.phase || '';
 	}
 
 	// ── View link label ───────────────────────────────────────────────────────
@@ -309,12 +338,12 @@
 		var ids = t.identifiers || {};
 		var displayId = ids.nct || ids.euct || ids.eudract || '';
 		var summary   = truncate(stripHtml(t.summary), 300);
-		var phase     = formatPhase(t.phase);
+		var phase     = formatPhase(t);
 
 		// ── Top badge row ─────────────────────────────────────────────────
 		var badges = '';
-		if (t.recruitment_status) badges += statusBadge(t.recruitment_status);
-		if (phase)                 badges += '<span class="badge-phase">' + escHtml(phase) + '</span>';
+		badges += statusBadge(t);
+		if (phase) badges += '<span class="badge-phase">' + escHtml(phase) + '</span>';
 
 		// ── Meta row ──────────────────────────────────────────────────────
 		var metaItems = [];
@@ -696,8 +725,8 @@
 		if (state.keyword)     url.searchParams.set('search',             state.keyword);
 		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
 		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
-		if (state.phase)       url.searchParams.set('phase',              state.phase);
-		if (state.status)      url.searchParams.set('recruitment_status', state.status);
+		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
+		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
 		if (state.country)     url.searchParams.set('countries',          state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',  'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
@@ -1018,13 +1047,13 @@
 	}
 
 	function phaseLabel(v) {
-		var map = { PHASE1: 'Phase 1', PHASE2: 'Phase 2', PHASE3: 'Phase 3', PHASE4: 'Phase 4' };
-		return map[v] || v;
+		return PHASE_LABELS[v] || (v === 'other' ? 'Other' : v);
 	}
 
 	function statusLabel(v) {
 		var d = STATUS_MAP[v];
-		return d ? d.label : (v || '');
+		if (d) return d.label;
+		return v === 'other' ? 'Other' : (v || '');
 	}
 
 	function renderTrialsTokens() {
