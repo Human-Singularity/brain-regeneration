@@ -388,6 +388,7 @@
 	function setCountryParam(url, raw) {
 		if (!raw) return;
 		var trimmed = raw.trim();
+		if (!trimmed) return;
 		var code = COUNTRY_NAME_TO_CODE[trimmed.toLowerCase()] || '';
 		if (!code && /^[A-Za-z]{2}$/.test(trimmed)) code = trimmed.toUpperCase();
 		if (code) url.searchParams.set('country', code);
