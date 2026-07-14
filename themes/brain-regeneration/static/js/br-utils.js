@@ -90,6 +90,23 @@
 		} catch (e) { return '#'; }
 	}
 
+	// Fire a Umami custom event for an executed search, carrying the actual
+	// query words/expressions the visitor typed. No-ops when the query is
+	// empty (nothing to report) or Umami isn't loaded, and skips re-firing
+	// when the query is unchanged from the last call for this event name —
+	// feeds re-run their search function on every unrelated filter change
+	// (phase, status, sort…), and only a new/changed keyword is worth an event.
+	var _lastTrackedQuery = {};
+	function trackSearch(eventName, query, context) {
+		query = (query == null) ? '' : String(query).trim();
+		if (!query || _lastTrackedQuery[eventName] === query) return;
+		_lastTrackedQuery[eventName] = query;
+		if (typeof window.umami === 'undefined' || typeof window.umami.track !== 'function') return;
+		var payload = { query: query };
+		if (context) payload.context = context;
+		window.umami.track(eventName, payload);
+	}
+
 	// makeCache(prefix, ttlMs) → { get(key), set(key, data) }
 	// Namespaced, TTL-expiring localStorage wrapper. Keys are stored as
 	// prefix + key; entries carry a timestamp and expire after ttl. Tolerant of
@@ -129,6 +146,7 @@
 		formatDate: formatDate,
 		slugify: slugify,
 		safeLink: safeLink,
-		makeCache: makeCache
+		makeCache: makeCache,
+		trackSearch: trackSearch
 	});
 })(window);

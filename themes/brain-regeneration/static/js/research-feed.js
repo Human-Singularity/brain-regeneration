@@ -28,6 +28,7 @@
 	var sortSelect       = document.getElementById('papers-sort-select');
 	var relevantSelect   = document.getElementById('papers-relevant-select');
 	var searchBtn        = document.getElementById('papers-search-btn');
+	var searchContext    = searchBtn ? (searchBtn.dataset.searchContext || '') : '';
 	var resetBtn         = document.getElementById('papers-reset-btn');
 	var resultCount      = document.getElementById('papers-result-count');
 	var downloadToggle   = document.getElementById('papers-download-toggle');
@@ -909,6 +910,7 @@
 
 	function doSearch() {
 		state.keyword   = searchInput    ? searchInput.value.trim()    : '';
+		BR.trackSearch('Papers: Search', state.keyword, searchContext);
 		state.category  = categorySelect ? categorySelect.value        : '';
 		if (conditionChips || areaChips) {
 			state.conditionSubjects = collectDesktopConditions();
@@ -1297,6 +1299,7 @@
 		if (searchInput) searchInput.value = hint;
 		state.keyword = hint;
 		state.page = 1;
+		BR.trackSearch('Papers: Search', state.keyword, searchContext);
 		fetchPage(1, false);
 	});
 
@@ -1642,6 +1645,7 @@
 			state.keyword = mobileSearchInput.value.trim();
 			state.page = 1;
 			if (mobileClearBtn) mobileClearBtn.hidden = !state.keyword;
+			BR.trackSearch('Papers: Search', state.keyword, searchContext);
 			fetchPage(1, false);
 			renderTokens();
 		}, 200));

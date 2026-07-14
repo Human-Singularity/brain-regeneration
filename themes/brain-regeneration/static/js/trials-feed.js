@@ -18,6 +18,8 @@
 
 	// ── UI references ────────────────────────────────────────────────────────
 	var searchInput       = document.getElementById('search-input');
+	var searchBtn         = document.getElementById('search-btn');
+	var searchContext     = searchBtn ? (searchBtn.dataset.searchContext || '') : '';
 	var filterCategory    = document.getElementById('filter-category');
 	var filterIdentifiers = document.getElementById('filter-identifiers');
 	var filterAcronym     = document.getElementById('filter-acronym');
@@ -604,6 +606,7 @@
 
 	function applyFilters() {
 		state.keyword      = searchInput      ? searchInput.value.trim()      : '';
+		BR.trackSearch('Trials: Search', state.keyword, searchContext);
 		state.identifiers  = filterIdentifiers ? filterIdentifiers.value.trim() : '';
 		state.acronym      = filterAcronym     ? filterAcronym.value.trim()     : '';
 		state.phase        = filterPhase      ? filterPhase.value              : '';
@@ -1271,6 +1274,7 @@
 			state.keyword = trialsMobileSearch.value.trim();
 			if (searchInput) searchInput.value = state.keyword;
 			if (trialsMobileClear) trialsMobileClear.hidden = !state.keyword;
+			BR.trackSearch('Trials: Search', state.keyword, searchContext);
 			fetchPage(1, true);
 		}, 200));
 	}
