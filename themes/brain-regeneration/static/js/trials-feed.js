@@ -258,7 +258,7 @@
 		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
-		if (state.country)     url.searchParams.set('countries',          state.country);
+		if (state.country)     setCountryParam(url, state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
@@ -319,6 +319,94 @@
 		return t.phase || '';
 	}
 
+	// ── Country code/name lookup ─────────────────────────────────────────────
+	// The API's normalized country fields (countries_normalized, trial_countries)
+	// return ISO 3166-1 alpha-2 codes only, no display names — this maps codes to
+	// common names for rendering, and (reversed) resolves the country filter's
+	// free-text input to an exact code for the ?country= filter. Falls back to
+	// the legacy ?countries= (icontains on the raw per-registry string) when the
+	// typed text doesn't match a known name or a bare 2-letter code.
+	var COUNTRY_NAMES = {
+		AF: 'Afghanistan', AL: 'Albania', DZ: 'Algeria', AD: 'Andorra', AO: 'Angola',
+		AG: 'Antigua and Barbuda', AR: 'Argentina', AM: 'Armenia', AU: 'Australia', AT: 'Austria',
+		AZ: 'Azerbaijan', BS: 'Bahamas', BH: 'Bahrain', BD: 'Bangladesh', BB: 'Barbados',
+		BY: 'Belarus', BE: 'Belgium', BZ: 'Belize', BJ: 'Benin', BT: 'Bhutan',
+		BO: 'Bolivia', BA: 'Bosnia and Herzegovina', BW: 'Botswana', BR: 'Brazil', BN: 'Brunei',
+		BG: 'Bulgaria', BF: 'Burkina Faso', BI: 'Burundi', CV: 'Cabo Verde', KH: 'Cambodia',
+		CM: 'Cameroon', CA: 'Canada', CF: 'Central African Republic', TD: 'Chad', CL: 'Chile',
+		CN: 'China', CO: 'Colombia', KM: 'Comoros', CG: 'Congo', CD: 'DR Congo',
+		CR: 'Costa Rica', CI: "Cote d'Ivoire", HR: 'Croatia', CU: 'Cuba', CY: 'Cyprus',
+		CZ: 'Czech Republic', DK: 'Denmark', DJ: 'Djibouti', DM: 'Dominica', DO: 'Dominican Republic',
+		EC: 'Ecuador', EG: 'Egypt', SV: 'El Salvador', GQ: 'Equatorial Guinea', ER: 'Eritrea',
+		EE: 'Estonia', SZ: 'Eswatini', ET: 'Ethiopia', FJ: 'Fiji', FI: 'Finland',
+		FR: 'France', GA: 'Gabon', GM: 'Gambia', GE: 'Georgia', DE: 'Germany',
+		GH: 'Ghana', GR: 'Greece', GD: 'Grenada', GT: 'Guatemala', GN: 'Guinea',
+		GW: 'Guinea-Bissau', GY: 'Guyana', HT: 'Haiti', HN: 'Honduras', HK: 'Hong Kong',
+		HU: 'Hungary', IS: 'Iceland', IN: 'India', ID: 'Indonesia', IR: 'Iran',
+		IQ: 'Iraq', IE: 'Ireland', IL: 'Israel', IT: 'Italy', JM: 'Jamaica',
+		JP: 'Japan', JO: 'Jordan', KZ: 'Kazakhstan', KE: 'Kenya', KI: 'Kiribati',
+		KP: 'North Korea', KR: 'South Korea', XK: 'Kosovo', KW: 'Kuwait', KG: 'Kyrgyzstan',
+		LA: 'Laos', LV: 'Latvia', LB: 'Lebanon', LS: 'Lesotho', LR: 'Liberia',
+		LY: 'Libya', LI: 'Liechtenstein', LT: 'Lithuania', LU: 'Luxembourg', MO: 'Macau',
+		MG: 'Madagascar', MW: 'Malawi', MY: 'Malaysia', MV: 'Maldives', ML: 'Mali',
+		MT: 'Malta', MH: 'Marshall Islands', MR: 'Mauritania', MU: 'Mauritius', MX: 'Mexico',
+		FM: 'Micronesia', MD: 'Moldova', MC: 'Monaco', MN: 'Mongolia', ME: 'Montenegro',
+		MA: 'Morocco', MZ: 'Mozambique', MM: 'Myanmar', NA: 'Namibia', NR: 'Nauru',
+		NP: 'Nepal', NL: 'Netherlands', NZ: 'New Zealand', NI: 'Nicaragua', NE: 'Niger',
+		NG: 'Nigeria', MK: 'North Macedonia', NO: 'Norway', OM: 'Oman', PK: 'Pakistan',
+		PW: 'Palau', PS: 'Palestine', PA: 'Panama', PG: 'Papua New Guinea', PY: 'Paraguay',
+		PE: 'Peru', PH: 'Philippines', PL: 'Poland', PT: 'Portugal', PR: 'Puerto Rico',
+		QA: 'Qatar', RO: 'Romania', RU: 'Russia', RW: 'Rwanda', KN: 'Saint Kitts and Nevis',
+		LC: 'Saint Lucia', VC: 'Saint Vincent and the Grenadines', WS: 'Samoa', SM: 'San Marino', ST: 'Sao Tome and Principe',
+		SA: 'Saudi Arabia', SN: 'Senegal', RS: 'Serbia', SC: 'Seychelles', SL: 'Sierra Leone',
+		SG: 'Singapore', SK: 'Slovakia', SI: 'Slovenia', SB: 'Solomon Islands', SO: 'Somalia',
+		ZA: 'South Africa', SS: 'South Sudan', ES: 'Spain', LK: 'Sri Lanka', SD: 'Sudan',
+		SR: 'Suriname', SE: 'Sweden', CH: 'Switzerland', SY: 'Syria', TW: 'Taiwan',
+		TJ: 'Tajikistan', TZ: 'Tanzania', TH: 'Thailand', TL: 'Timor-Leste', TG: 'Togo',
+		TO: 'Tonga', TT: 'Trinidad and Tobago', TN: 'Tunisia', TR: 'Turkey', TM: 'Turkmenistan',
+		TV: 'Tuvalu', UG: 'Uganda', UA: 'Ukraine', AE: 'United Arab Emirates', GB: 'United Kingdom',
+		US: 'United States', UY: 'Uruguay', UZ: 'Uzbekistan', VU: 'Vanuatu', VA: 'Vatican City',
+		VE: 'Venezuela', VN: 'Vietnam', YE: 'Yemen', ZM: 'Zambia', ZW: 'Zimbabwe',
+	};
+
+	var COUNTRY_NAME_TO_CODE = (function () {
+		var map = {};
+		Object.keys(COUNTRY_NAMES).forEach(function (code) {
+			map[COUNTRY_NAMES[code].toLowerCase()] = code;
+		});
+		return map;
+	})();
+
+	function countryCodeToName(code) {
+		return COUNTRY_NAMES[(code || '').toUpperCase()] || code;
+	}
+
+	// Resolves free-text country input to an ISO alpha-2 code (by known name,
+	// or a bare 2-letter code typed/shared directly) and sets the appropriate
+	// query param — the new exact ?country= filter when resolved, otherwise the
+	// legacy ?countries= icontains filter as a best-effort fallback.
+	function setCountryParam(url, raw) {
+		if (!raw) return;
+		var trimmed = raw.trim();
+		if (!trimmed) return;
+		var code = COUNTRY_NAME_TO_CODE[trimmed.toLowerCase()] || '';
+		if (!code && /^[A-Za-z]{2}$/.test(trimmed)) code = trimmed.toUpperCase();
+		if (code) url.searchParams.set('country', code);
+		else url.searchParams.set('countries', trimmed);
+	}
+
+	// Prefers the normalized per-country breakdown (trial_countries), falling
+	// back to countries_normalized, then to the raw per-registry `countries`
+	// string when the trial hasn't been normalized yet (see rollout notes:
+	// ~48% of existing trials are null/[] until the prod backfill runs).
+	function formatCountries(t) {
+		var codes = (t.trial_countries && t.trial_countries.length)
+			? t.trial_countries.map(function (c) { return c.country; })
+			: (t.countries_normalized && t.countries_normalized.length ? t.countries_normalized : null);
+		if (codes && codes.length) return codes.map(countryCodeToName).join(', ');
+		return t.countries || '';
+	}
+
 	// ── View link label ───────────────────────────────────────────────────────
 	function viewLabel(link) {
 		if (!link) return 'View trial &rarr;';
@@ -349,7 +437,8 @@
 		var metaItems = [];
 		if (t.primary_sponsor) metaItems.push({ label: 'Sponsor',    value: escHtml(t.primary_sponsor) });
 		if (t.target_size)     metaItems.push({ label: 'Enrollment', value: escHtml(t.target_size) + ' participants' });
-		if (t.countries)       metaItems.push({ label: 'Countries',  value: escHtml(t.countries) });
+		var countriesDisplay = formatCountries(t);
+		if (countriesDisplay) metaItems.push({ label: 'Countries',  value: escHtml(countriesDisplay) });
 		var updDate = t.date_registration || t.published_date;
 		if (updDate)           metaItems.push({ label: 'Updated',    value: escHtml(formatShortDate(updDate)) });
 
@@ -727,7 +816,7 @@
 		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
-		if (state.country)     url.searchParams.set('countries',          state.country);
+		if (state.country)     setCountryParam(url, state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',  'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
 		if (state.studyType)   url.searchParams.set('study_type',              state.studyType);
