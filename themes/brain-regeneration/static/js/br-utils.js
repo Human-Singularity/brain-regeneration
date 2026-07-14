@@ -99,9 +99,13 @@
 	var _lastTrackedQuery = {};
 	function trackSearch(eventName, query, context) {
 		query = (query == null) ? '' : String(query).trim();
-		if (!query || _lastTrackedQuery[eventName] === query) return;
-		_lastTrackedQuery[eventName] = query;
+		if (!query) return;
+		// Umami's script is deferred and may not be loaded yet when an early
+		// search fires — bail out without touching the dedupe cache so that
+		// search still gets tracked once Umami becomes available.
 		if (typeof window.umami === 'undefined' || typeof window.umami.track !== 'function') return;
+		if (_lastTrackedQuery[eventName] === query) return;
+		_lastTrackedQuery[eventName] = query;
 		var payload = { query: query };
 		if (context) payload.context = context;
 		window.umami.track(eventName, payload);
