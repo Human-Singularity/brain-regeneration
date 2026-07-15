@@ -60,6 +60,20 @@
 		return authors.map(function (a) { return a.full_name || ''; }).filter(Boolean).join(', ');
 	}
 
+	// Same as formatAuthors, but links each name to its author profile page
+	// when the article's author record carries an ORCID (unlinked otherwise).
+	function formatAuthorsLinked(authors) {
+		if (!authors || !authors.length) return '';
+		return authors.map(function (a) {
+			var name = a && a.full_name ? String(a.full_name) : '';
+			if (!name) return '';
+			if (a.ORCID) {
+				return '<a href="/authors/' + encodeURIComponent(a.ORCID) + '/">' + escHtml(name) + '</a>';
+			}
+			return escHtml(name);
+		}).filter(Boolean).join(', ');
+	}
+
 	function stripHtml(str) {
 		if (str == null) return '';
 		return String(str)
@@ -299,7 +313,7 @@
 	function renderArticleHeader(a) {
 		var kind = a.article_type || a.kind || 'article';
 		var kindLabel = kind === 'science paper' || kind === 'science_paper' ? 'Science paper' : 'Article';
-		var authors   = formatAuthors(a.authors);
+		var authors   = formatAuthorsLinked(a.authors);
 		return '<header>' +
 			'<div class="article-eyebrow">' +
 				'<span>' + escHtml(kindLabel) + '</span>' +
@@ -309,7 +323,7 @@
 				'<span class="muted">ID #' + escHtml(String(a.article_id || a.id || '')) + '</span>' +
 			'</div>' +
 			'<h1 class="article-title">' + escHtml(a.title) + '</h1>' +
-			(authors ? '<p class="article-authors">' + escHtml(authors) + '</p>' : '') +
+			(authors ? '<p class="article-authors">' + authors + '</p>' : '') +
 			'<p class="article-source">' +
 				(a.container_title ? '<strong>' + escHtml(a.container_title) + '</strong> · ' : '') +
 				(a.publisher ? escHtml(a.publisher) + ' · ' : '') +

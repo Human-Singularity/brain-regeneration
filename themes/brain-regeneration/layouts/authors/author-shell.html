@@ -1,0 +1,41 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/author-profile.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
+
+<div id="author-shell" data-api-base="{{ $apiBase }}">
+
+	<main id="author-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
+		<div class="container">
+
+			<div id="author-loading" class="author-loading-skeleton">
+				<div class="skeleton skeleton--eyebrow"></div>
+				<div class="skeleton skeleton--title"></div>
+				<div class="skeleton skeleton--meta"></div>
+			</div>
+
+			<div id="author-notfound" class="author-empty-state" hidden>
+				<h1>Could not find this profile</h1>
+				<p>We could not find a tracked researcher matching this address. Check the link, or search for the author by name.</p>
+				<a class="btn-outline-teal" href="/search/">Go to advanced search</a>
+			</div>
+
+			<div id="author-error" class="author-empty-state" hidden>
+				<p>We could not load this profile.</p>
+				<button class="btn-outline-teal" id="author-retry-btn">Try again</button>
+			</div>
+
+			<div id="author-content" hidden></div>
+
+		</div>
+	</main>
+
+</div>
+{{ end }}
+
+{{ define "page-scripts" }}
+<script>window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};</script>
+<script src="{{ "js/author-profile.js" | relURL }}"></script>
+{{ end }}
