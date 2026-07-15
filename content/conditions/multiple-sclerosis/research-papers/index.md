@@ -65,6 +65,8 @@ category_groups:
         name: "Mitoxantrone"
   - label: "Cell-Based Therapies"
     categories:
+      - id: 30
+        name: Autologous hematopoietic stem cell transplant
       - id: 49
         name: "CAR-T Cell Therapy"
       - id: 9
