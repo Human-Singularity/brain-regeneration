@@ -23,10 +23,38 @@
 	var contentEl   = document.getElementById('author-content');
 	var apiBase     = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
 
+	// Safe local fallbacks mirroring br-utils.js, in case window.BR isn't
+	// present — these must not be no-ops, since API data is rendered via
+	// innerHTML below and unescaped values would be an XSS/open-redirect risk.
+	function fallbackEscHtml(str) {
+		if (str == null) return '';
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+	var _fallbackDecodeEl;
+	function fallbackDecodeEntities(str) {
+		if (str == null || str === '') return '';
+		if (!_fallbackDecodeEl) _fallbackDecodeEl = document.createElement('textarea');
+		_fallbackDecodeEl.innerHTML = String(str);
+		return _fallbackDecodeEl.value;
+	}
+	function fallbackSafeLink(url) {
+		if (!url) return '#';
+		try {
+			var parsed = new URL(String(url));
+			if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '#';
+			return parsed.href;
+		} catch (e) { return '#'; }
+	}
+
 	var BR             = window.BR || {};
-	var escHtml        = BR.escHtml        || function (s) { return s; };
-	var decodeEntities = BR.decodeEntities || function (s) { return s; };
-	var safeLink       = BR.safeLink       || function (s) { return s || '#'; };
+	var escHtml        = BR.escHtml        || fallbackEscHtml;
+	var decodeEntities = BR.decodeEntities || fallbackDecodeEntities;
+	var safeLink       = BR.safeLink       || fallbackSafeLink;
 
 	var ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 	var AGG_PAGE_SIZE = 100;
@@ -60,7 +88,7 @@
 		var url = new URL(apiBase + '/authors/');
 		url.searchParams.set('search', orcid);
 		url.searchParams.set('format', 'json');
-		url.searchParams.set('page_size', '10');
+		url.searchParams.set('page_size', '50');
 		return fetchJson(url.toString()).then(function (data) {
 			var results = data.results || [];
 			var match = results.filter(function (a) {
@@ -134,11 +162,12 @@
 				});
 			});
 
+			var selfName = (authorRecord.full_name || '').trim().toLowerCase();
 			(a.authors || []).forEach(function (au) {
 				if (!au || !au.full_name) return;
 				var isSelf = (au.author_id != null && authorRecord.author_id != null)
 					? au.author_id === authorRecord.author_id
-					: au.full_name.trim().toLowerCase() === authorRecord.full_name.trim().toLowerCase();
+					: (!!selfName && au.full_name.trim().toLowerCase() === selfName);
 				if (isSelf) return;
 				var key = au.author_id != null ? String(au.author_id) : au.full_name;
 				if (!collabMap[key]) collabMap[key] = { name: au.full_name, count: 0 };
@@ -292,6 +321,7 @@
 			state.bioOpen = !state.bioOpen;
 			bioEl.classList.toggle('clamped', !state.bioOpen);
 			btn.textContent = state.bioOpen ? 'Read less' : 'Read more';
+			btn.setAttribute('aria-expanded', String(state.bioOpen));
 		});
 	}
 
@@ -346,7 +376,7 @@
 						(author.biography ? (
 							'<div class="author-bio">' +
 								'<div class="author-bio__text clamped" id="author-bio-text">' + bioParagraphs + '</div>' +
-								'<button type="button" class="author-bio__toggle" id="author-bio-toggle">Read more</button>' +
+								'<button type="button" class="author-bio__toggle" id="author-bio-toggle" aria-controls="author-bio-text" aria-expanded="false">Read more</button>' +
 							'</div>'
 						) : '<p class="author-empty-note">No biography on file yet.</p>') +
 						'<div class="author-papers-head">' +
