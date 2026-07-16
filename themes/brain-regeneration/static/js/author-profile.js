@@ -75,7 +75,12 @@
 		if (contentEl)  contentEl.hidden  = which !== 'content';
 	}
 
-	if (!orcid) { showState('notfound'); return; }
+	function trackNotFound(reason) {
+		if (typeof window.umami === 'undefined' || typeof window.umami.track !== 'function') return;
+		window.umami.track('Author Profile: Not Found', { reason: reason });
+	}
+
+	if (!orcid) { showState('notfound'); trackNotFound('malformed-orcid'); return; }
 
 	function fetchJson(url) {
 		return fetch(url).then(function (r) {
@@ -235,7 +240,7 @@
 			chips += '<span class="author-chip">' + escHtml(decodeEntities(s.subject_name || s.name || '')) + '</span>';
 		});
 
-		return '<a class="author-paper-card" href="' + escHtml(url) + '">' +
+		return '<a class="author-paper-card" href="' + escHtml(url) + '" data-umami-event="Author Profile: View Paper">' +
 			'<div class="author-paper-card__badges">' +
 				'<span class="relevance-badge' + (rel.cls === 'medium' ? ' medium' : (rel.cls === 'unrated' ? ' unrated' : '')) + '"><span class="dot"></span>' + escHtml(rel.label) + '</span>' +
 				'<span class="access-badge ' + (accessOpen ? 'open' : 'restricted') + '">' + (accessOpen ? 'Open access' : 'Restricted') + '</span>' +
@@ -284,7 +289,7 @@
 		return collaborators.map(function (c, i) {
 			var hasOrcid = !!c.orcid;
 			var tag = hasOrcid ? 'a' : 'div';
-			var linkAttrs = hasOrcid ? ' href="/authors/' + escHtml(encodeURIComponent(c.orcid)) + '/"' : '';
+			var linkAttrs = hasOrcid ? ' href="/authors/' + escHtml(encodeURIComponent(c.orcid)) + '/" data-umami-event="Author Profile: View Collaborator"' : '';
 			var cls = 'author-collaborator' + (hasOrcid ? '' : ' author-collaborator--no-orcid');
 			var title = hasOrcid ? '' : ' title="No ORCID on file — no profile page yet"';
 			return '<' + tag + ' class="' + cls + '"' + linkAttrs + title + '>' +
@@ -368,10 +373,10 @@
 						(author.country ? '<div class="author-affiliation">' + escHtml(author.country) + '</div>' : '') +
 						'<div class="author-orcid-row">' +
 							'<span class="author-orcid-label">ORCID</span>' +
-							'<a class="author-orcid-pill" href="https://orcid.org/' + encodeURIComponent(author.ORCID) + '" target="_blank" rel="noopener noreferrer">' + escHtml(author.ORCID) + '</a>' +
+							'<a class="author-orcid-pill" href="https://orcid.org/' + encodeURIComponent(author.ORCID) + '" target="_blank" rel="noopener noreferrer" data-umami-event="Author Profile: View ORCID">' + escHtml(author.ORCID) + '</a>' +
 						'</div>' +
 					'</div>' +
-					'<a class="author-follow-btn" href="' + escHtml(rssHref) + '" target="_blank" rel="noopener noreferrer">' +
+					'<a class="author-follow-btn" href="' + escHtml(rssHref) + '" target="_blank" rel="noopener noreferrer" data-umami-event="Author Profile: Follow RSS">' +
 						'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5" cy="19" r="2.2" fill="currentColor"></circle><path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path><path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>' +
 						'Follow new papers' +
 					'</a>' +
@@ -382,19 +387,19 @@
 						(author.biography ? (
 							'<div class="author-bio">' +
 								'<div class="author-bio__text clamped" id="author-bio-text">' + bioParagraphs + '</div>' +
-								'<button type="button" class="author-bio__toggle" id="author-bio-toggle" aria-controls="author-bio-text" aria-expanded="false">Read more</button>' +
+								'<button type="button" class="author-bio__toggle" id="author-bio-toggle" aria-controls="author-bio-text" aria-expanded="false" data-umami-event="Author Profile: Toggle Bio">Read more</button>' +
 							'</div>'
 						) : '<p class="author-empty-note">No biography on file yet.</p>') +
 						'<div class="author-papers-head">' +
 							'<h2>Papers</h2>' +
 							'<div class="author-sort-toggle">' +
-								'<button type="button" id="author-sort-recent">Most recent</button>' +
-								'<button type="button" id="author-sort-relevant" class="active">Most relevant</button>' +
+								'<button type="button" id="author-sort-recent" data-umami-event="Author Profile: Sort Papers" data-umami-event-sort="recent">Most recent</button>' +
+								'<button type="button" id="author-sort-relevant" class="active" data-umami-event="Author Profile: Sort Papers" data-umami-event-sort="relevance">Most relevant</button>' +
 							'</div>' +
 						'</div>' +
 						'<div id="author-papers-list" class="author-papers-list"></div>' +
 						'<div class="author-search-more">' +
-							'<a href="' + escHtml(searchHref) + '">See all papers in advanced search <span aria-hidden="true">&rarr;</span></a>' +
+							'<a href="' + escHtml(searchHref) + '" data-umami-event="Author Profile: See All Papers">See all papers in advanced search <span aria-hidden="true">&rarr;</span></a>' +
 						'</div>' +
 					'</div>' +
 					'<div class="author-sidebar">' +
@@ -414,7 +419,7 @@
 	}
 
 	findAuthorByOrcid().then(function (author) {
-		if (!author) { showState('notfound'); return null; }
+		if (!author) { showState('notfound'); trackNotFound('no-match'); return null; }
 		state.author = author;
 		return Promise.all([
 			fetchAggregateArticles(author.author_id),
