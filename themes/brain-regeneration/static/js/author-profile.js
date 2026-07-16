@@ -21,6 +21,7 @@
 	var errorEl     = document.getElementById('author-error');
 	var retryBtn    = document.getElementById('author-retry-btn');
 	var contentEl   = document.getElementById('author-content');
+	var statusEl    = document.getElementById('author-status');
 	var apiBase     = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
 
 	// Safe local fallbacks mirroring br-utils.js, in case window.BR isn't
@@ -62,17 +63,25 @@
 
 	function parseOrcid() {
 		var parts = window.location.pathname.replace(/\/$/, '').split('/');
-		var id = parts[parts.length - 1];
+		var id = (parts[parts.length - 1] || '').toUpperCase();
 		return ORCID_RE.test(id) ? id : null;
 	}
 
 	var orcid = parseOrcid();
+
+	var STATUS_TEXT = {
+		loading: 'Loading author profile…',
+		notfound: 'Profile not found.',
+		error: 'Could not load this profile.',
+		content: 'Author profile loaded.'
+	};
 
 	function showState(which) {
 		if (loadingEl)  loadingEl.hidden  = which !== 'loading';
 		if (notfoundEl) notfoundEl.hidden = which !== 'notfound';
 		if (errorEl)    errorEl.hidden    = which !== 'error';
 		if (contentEl)  contentEl.hidden  = which !== 'content';
+		if (statusEl)   statusEl.textContent = STATUS_TEXT[which] || '';
 	}
 
 	function trackNotFound(reason) {
@@ -339,7 +348,8 @@
 	function renderPage(author, agg) {
 		var articlesCount = author.articles_count || 0;
 		var relevantCount = author.relevant_articles_count || 0;
-		var relevantPct = articlesCount ? Math.round((relevantCount / articlesCount) * 100) : 0;
+		var rawPct = articlesCount ? Math.round((relevantCount / articlesCount) * 100) : 0;
+		var relevantPct = Number.isFinite(rawPct) ? Math.min(100, Math.max(0, rawPct)) : 0;
 
 		var bioParagraphs = (author.biography || '').split(/\n\s*\n/).filter(Boolean)
 			.map(function (p) { return '<p>' + escHtml(p.trim()) + '</p>'; }).join('');
