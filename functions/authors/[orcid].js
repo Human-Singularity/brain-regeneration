@@ -13,16 +13,12 @@ const ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 
 async function findAuthorByOrcid(orcid) {
 	const url = new URL(`${API_BASE}/authors/`);
-	url.searchParams.set('search', orcid);
+	url.searchParams.set('orcid', orcid);
 	url.searchParams.set('format', 'json');
-	url.searchParams.set('page_size', '50');
 	const data = await fetchJson(url.toString(), 3600);
 	if (!data) return null;
 	const results = data.results || [];
-	return (
-		results.find((a) => a && a.ORCID && String(a.ORCID).toUpperCase() === orcid.toUpperCase()) ||
-		null
-	);
+	return results[0] || null;
 }
 
 function buildJsonLd(author, orcid) {
