@@ -33,14 +33,16 @@ Notes on the theme's git state:
 - It is **not** a Hugo Module and **not** a git submodule (`.gitmodules` is empty).
 - It is **committed directly into this repo** (the theme files are tracked here, not pulled from a separate repo or submodule). So theme edits are committed and shipped through this repo's normal flow, alongside content/config changes.
 
-The repo root `layouts/` is used only for **project-level overrides** of the theme. Currently the only override is `layouts/articles/article-shell.html`. Add files here when a change must be site-specific; otherwise edit the theme.
+There is currently no repo-root `layouts/` override directory — all templates live in the theme. If a change must be site-specific rather than theme-wide, create `layouts/` at the repo root to override the theme; Hugo prefers root `layouts/` over the theme's.
+
+Per-article and per-author SEO metadata is injected server-side by Cloudflare Pages Functions in `functions/` (see below), not by a template override.
 
 ## Running locally
 
 ```bash
 make hugo-dev        # hugo server -F -O -N -D  (drafts/future/expired, fast render)
 make hugo-dev-local  # same, but HUGO_PARAMS_APIBASE=http://localhost:8000 (local backend)
-make hugo-build      # hugo --minify  → ./public
+make hugo-build-local # hugo --minify → ./public (Cloudflare Pages builds production on push)
 make help            # list all Make targets
 ```
 
@@ -66,13 +68,14 @@ content/              Page content by section:
   supporters/   curators/        articles/
   + standalone pages (about.html, donate.html, contact.html, subscribe.md,
     transparency.html, privacy-policy.md, relevancy-scores.md, thank-you.md, …)
-layouts/              Project-level theme overrides (only article-shell.html so far)
 archetypes/           New-content templates per section
 data/                 social.json
 static/               Verbatim assets, incl. _redirects (Cloudflare Pages rules)
 themes/brain-regeneration/   The active theme — most frontend lives here
 django/, postgres-data/, docker-compose.yml   Optional local GregoryAI backend
-workers/              Cloudflare worker (see content/cloudflare-worker.md)
+functions/            Cloudflare Pages Functions — server-side head injection for /articles/{id}/
+                      and /authors/{orcid}/ (see below); deploys automatically with Pages, no
+                      separate build step or dashboard config
 .github/skills/hugo/  In-repo Hugo reference (setup, patterns, errors) worth consulting
 ```
 
@@ -106,6 +109,23 @@ static/
 
 Each script is self-invoking and **no-ops unless its mount element exists** (e.g. `#paper-list`, `#papers-list`, `#trials-list`, `#article-shell`, `#spotlight-papers`), so they're safe to load site-wide. Config comes from `data-*` attributes on those mounts.
 
+## Server-side metadata: `functions/` (Cloudflare Pages Functions)
+
+```
+functions/
+  _shared/meta.js       Entity decoding, HTML-escaping HTMLRewriter handlers, JSON-LD helpers.
+                         Underscore prefix excludes it from Pages' file-based routing.
+  articles/[id].js       GET /articles/{id}/ → rewrites <head> with real title/description/
+                          canonical/OG/Twitter/ScholarlyArticle JSON-LD
+  authors/[orcid].js     GET /authors/{orcid}/ → same pattern for author Person JSON-LD
+```
+
+This is **Cloudflare Pages Functions**, not a standalone Cloudflare Worker — it ships as part of this repo and deploys automatically whenever Pages builds (same push-to-deploy flow as everything else here). No `wrangler.toml`, no separate `wrangler deploy`, and nothing to configure in the Cloudflare dashboard. It is unrelated to the donation Stripe Worker described above, which *is* a separately deployed Worker.
+
+How it works: each function fetches the static shell via `env.ASSETS.fetch()`, fetches the matching record from the GregoryAI API, and uses `HTMLRewriter` to replace the `<title>`, `<meta name="description">`, canonical `<link>`, OG/Twitter tags, and appends JSON-LD — before the response reaches the browser. `article-single.js`/`author-profile.js` still hydrate the page body client-side exactly as before; only the `<head>` is server-rendered. Cloudflare Pages Functions take precedence over `static/_redirects` for matching routes, so the `_redirects` rewrite for `/articles/*` / `/authors/*` still serves as the fallback for paths the functions don't touch (non-numeric IDs, malformed ORCIDs, IDs the API doesn't recognize) — in those cases the function returns the unmodified shell (fail-open).
+
+Test locally with `wrangler pages dev public` after `hugo --minify` (not via `make hugo-dev`, which is a plain Hugo server with no Functions runtime).
+
 ## Configuration (`hugo.toml`)
 
 Single root file. Highlights:
@@ -121,16 +141,17 @@ Single root file. Highlights:
 ## Key frontend patterns
 
 - **Client-side data, not built content.** Articles/trials/charts are fetched from the GregoryAI API in the browser. The flow: a Hugo template renders a mount element with `data-*` attributes (endpoint, `team_id`, `subject_id`, etc.) → the matching script reads them → `fetch()` → renders HTML into the mount. Responses are paginated (`results`, `count`, `current_page`, `total_pages`) and queried with params like `team_id`, `subject_id`, `relevant`, `category_id`, `subjects`, `has_clinical_trials`, `ordering`, `page`, `format=json|csv`, `all_results=true`.
-- **Article detail is a client-rendered shell.** `static/_redirects` rewrites `/articles/* → /articles/ 200`; `article-single.js` parses the numeric ID from the URL and fetches `/articles/{id}/?format=json`. (`layouts/articles/article-shell.html` is the project override of that shell.) Internal article links use `/articles/{id}/`; external links go straight to the publisher/DOI.
+- **Article detail is a client-rendered shell, with server-side SEO metadata.** `static/_redirects` rewrites `/articles/* → /articles/ 200` so any `/articles/{id}/` path serves the shell; `article-single.js` parses the numeric ID from the URL and fetches `/articles/{id}/?format=json` to render the body. Cloudflare Pages Functions (`functions/articles/[id].js`, `functions/authors/[orcid].js`) take precedence over that `_redirects` rewrite and run first — they fetch the same API record and rewrite the shell's `<head>` (title, meta description, canonical, OG/Twitter tags, JSON-LD) before the response reaches the browser, so crawlers see real per-page metadata even without executing JS. Both fail open: on any API error, timeout, or unknown ID they return the unmodified shell rather than a 5xx. Internal article links use `/articles/{id}/`; external links go straight to the publisher/DOI.
 - **Aggressive localStorage caching.** All feeds/widgets cache through `BR.makeCache(prefix, ttl)` (in `br-utils.js`) under keys like `brPapers:`, `brTrialsFeed:`, `brTrialsStats:`, `brTrialStats:`, `brSpotlight:`, `brObsStats*` with TTLs (1–12h). If you're testing fresh API data and not seeing changes, clear localStorage.
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
 - **Subscribe forms** (all handled by `subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
-- **Donations** use a separate Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAI API. See `workers/` and `content/cloudflare-worker.md`.
+- **Donations** use a separate, independently-deployed Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAI API and not a Pages Function in this repo — its source is documented for reference in `content/cloudflare-worker.md`, but changing it means editing/deploying that Worker directly (its own repo/dashboard), not anything under `functions/`.
 - **Styling** is plain CSS in `themes/.../static/css/` (`main.css` + `feeds-mobile.css` site-wide, plus per-page `article-single.css` / `news-single.css`) — not SCSS/Hugo Pipes. Edit there.
 
 ## Conventions
 
 - Frontend changes (templates/CSS/JS) → `themes/brain-regeneration/`. Content/config → repo root. Override the theme via root `layouts/` only when the change must be site-specific.
+- Server-side per-page metadata for client-rendered detail pages → `functions/` (Cloudflare Pages Functions), not a template override.
 - Keep API/team/list identifiers consistent (`apiBase`, subscription `list_id`/`team_id`) with what GregoryAI expects.
 - Don't commit build output, `node_modules`, or `.env`.
 - When unsure about Hugo specifics, check `.github/skills/hugo/references/`.

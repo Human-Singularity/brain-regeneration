@@ -9,6 +9,9 @@
 # Node modules (if using npm/yarn for assets)
 /node_modules/
 
+# Cloudflare Pages Functions local dev (wrangler pages dev)
+/.wrangler/
+
 # OS generated files
 .DS_Store
 Thumbs.db
