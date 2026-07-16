@@ -296,7 +296,7 @@
 	}
 
 	// ── module state ──
-	var state = { sort: 'recent', bioOpen: false, author: null, aggregates: null };
+	var state = { sort: 'relevance', bioOpen: false, author: null, aggregates: null };
 
 	function wireSort() {
 		var recentBtn = document.getElementById('author-sort-recent');
@@ -388,8 +388,8 @@
 						'<div class="author-papers-head">' +
 							'<h2>Papers</h2>' +
 							'<div class="author-sort-toggle">' +
-								'<button type="button" id="author-sort-recent" class="active">Most recent</button>' +
-								'<button type="button" id="author-sort-relevant">Most relevant</button>' +
+								'<button type="button" id="author-sort-recent">Most recent</button>' +
+								'<button type="button" id="author-sort-relevant" class="active">Most relevant</button>' +
 							'</div>' +
 						'</div>' +
 						'<div id="author-papers-list" class="author-papers-list"></div>' +
@@ -418,7 +418,7 @@
 		state.author = author;
 		return Promise.all([
 			fetchAggregateArticles(author.author_id),
-			fetchDisplayPapers(author.author_id, 'recent')
+			fetchDisplayPapers(author.author_id, 'relevance')
 		]).then(function (results) {
 			var aggData = results[0];
 			var papers = results[1];
