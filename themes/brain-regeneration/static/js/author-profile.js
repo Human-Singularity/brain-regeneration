@@ -170,7 +170,8 @@
 					: (!!selfName && au.full_name.trim().toLowerCase() === selfName);
 				if (isSelf) return;
 				var key = au.author_id != null ? String(au.author_id) : au.full_name;
-				if (!collabMap[key]) collabMap[key] = { name: au.full_name, count: 0 };
+				if (!collabMap[key]) collabMap[key] = { name: au.full_name, orcid: au.ORCID || null, count: 0 };
+				if (!collabMap[key].orcid && au.ORCID) collabMap[key].orcid = au.ORCID;
 				collabMap[key].count++;
 			});
 
@@ -281,11 +282,16 @@
 	function renderCollaborators(collaborators) {
 		if (!collaborators.length) return '<p class="author-empty-note">No frequent collaborators found yet.</p>';
 		return collaborators.map(function (c, i) {
-			return '<div class="author-collaborator">' +
+			var hasOrcid = !!c.orcid;
+			var tag = hasOrcid ? 'a' : 'div';
+			var linkAttrs = hasOrcid ? ' href="/authors/' + escHtml(encodeURIComponent(c.orcid)) + '/"' : '';
+			var cls = 'author-collaborator' + (hasOrcid ? '' : ' author-collaborator--no-orcid');
+			var title = hasOrcid ? '' : ' title="No ORCID on file — no profile page yet"';
+			return '<' + tag + ' class="' + cls + '"' + linkAttrs + title + '>' +
 				'<div class="author-collaborator__avatar" style="background:' + PALETTE[i % PALETTE.length] + '">' + escHtml(collabInitials(c.name)) + '</div>' +
 				'<div><div class="author-collaborator__name">' + escHtml(decodeEntities(c.name)) + '</div>' +
 				'<div class="author-collaborator__meta">' + c.count + ' shared paper' + (c.count === 1 ? '' : 's') + '</div></div>' +
-			'</div>';
+			'</' + tag + '>';
 		}).join('');
 	}
 

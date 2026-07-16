@@ -345,7 +345,27 @@
 
 .author-collaborators { display: flex; flex-direction: column; gap: 13px; }
 
-.author-collaborator { display: flex; align-items: center; gap: 11px; }
+.author-collaborator {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	text-decoration: none;
+	color: inherit;
+	border-radius: var(--radius);
+	transition: background .15s ease;
+}
+
+a.author-collaborator:hover {
+	background: rgba(26, 107, 106, .06);
+	text-decoration: none;
+	color: inherit;
+}
+
+/* No ORCID on file: no profile to link to, so the row reads as inactive. */
+.author-collaborator--no-orcid {
+	opacity: .5;
+	cursor: default;
+}
 
 .author-collaborator__avatar {
 	width: 40px;
