@@ -1,6 +1,64 @@
 /* author-profile.css — /authors/{orcid}/ profile page. */
 
-.author-loading-skeleton { padding: 8px 0 24px; }
+/* ── loading skeleton ──
+ * Mirrors the real card's markup/classes (author-header, author-stats,
+ * author-body, author-paper-card, author-collaborator…) so it occupies the
+ * same shape before data arrives — swapping it out for #author-content
+ * shouldn't cause a layout jump, just a content fade-in. */
+
+.sk {
+	position: relative;
+	overflow: hidden;
+	border-radius: 4px;
+	background: rgba(45, 45, 45, .08);
+}
+
+.sk::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	transform: translateX(-100%);
+	background: linear-gradient(90deg, transparent, rgba(45, 45, 45, .06), transparent);
+	animation: sk-shimmer 1.4s infinite;
+}
+
+.sk--light { background: rgba(255, 255, 255, .16); }
+.sk--light::after { background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent); }
+
+@keyframes sk-shimmer {
+	100% { transform: translateX(100%); }
+}
+
+.sk-line { display: block; }
+.sk-line--eyebrow { width: 90px; height: 11px; margin-bottom: 12px; }
+.sk-line--title { width: 260px; height: 30px; margin-bottom: 10px; }
+.sk-line--meta { width: 340px; height: 14px; }
+.sk-line--stat-value { width: 46px; height: 20px; margin: 0 auto 8px; }
+.sk-line--stat-label { width: 76px; height: 11px; margin: 0 auto; }
+.sk-line--bio { width: 100%; height: 15px; margin-bottom: 10px; }
+.sk-line--bio-short { width: 60%; height: 15px; }
+.sk-line--h2 { width: 90px; height: 19px; }
+.sk-line--badges { width: 160px; height: 20px; margin-bottom: 12px; }
+.sk-line--paper-title { width: 85%; height: 16px; margin-bottom: 10px; }
+.sk-line--paper-meta { width: 55%; height: 13px; }
+.sk-line--eyebrow-sm { width: 120px; height: 12px; margin-bottom: 10px; }
+.sk-line--caption { width: 90%; height: 12px; margin-bottom: 18px; }
+.sk-line--subject { width: 55%; height: 15px; margin-bottom: 9px; }
+.sk-line--chips { width: 85%; height: 24px; }
+.sk-line--collab-name { width: 70%; height: 13px; margin-bottom: 6px; }
+.sk-line--collab-meta { width: 45%; height: 11px; }
+.sk-line--footer { width: 320px; height: 12px; }
+
+.sk-block { display: inline-block; }
+.sk-block--button { width: 168px; height: 44px; border-radius: var(--radius); flex: none; align-self: flex-start; }
+.sk-block--toggle { width: 176px; height: 33px; border-radius: 100px; }
+
+.sk-circle { width: 40px; height: 40px; flex: none; border-radius: 50%; }
+
+.author-mark--skeleton { box-shadow: none; background: rgba(45, 45, 45, .12); }
+
+.author-card--skeleton .author-collaborator,
+.author-card--skeleton .author-paper-card--skeleton { pointer-events: none; }
 
 .author-empty-state {
 	max-width: 520px;
