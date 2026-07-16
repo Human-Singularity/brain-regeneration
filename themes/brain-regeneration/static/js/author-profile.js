@@ -24,7 +24,6 @@
 	var statusEl    = document.getElementById('author-status');
 	var apiBase     = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
 	var siteTitle   = shell.dataset.siteTitle || 'Brain Regeneration Observatory';
-	var siteDesc    = shell.dataset.siteDescription || 'Brain Regeneration Observatory';
 
 	// Safe local fallbacks mirroring br-utils.js, in case window.BR isn't
 	// present — these must not be no-ops, since API data is rendered via
@@ -176,7 +175,7 @@
 	function updateRuntimeMetadata(author) {
 		var pageUrl = normalizedPageUrl();
 		var title = authorBrowserTitle(author);
-		var descriptionText = authorDescription(author) || siteDesc;
+		var descriptionText = authorDescription(author);
 
 		document.title = title;
 		upsertCanonical(pageUrl);
