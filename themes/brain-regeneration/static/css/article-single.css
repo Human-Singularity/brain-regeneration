@@ -138,6 +138,15 @@
 	text-wrap: pretty;
 }
 
+.article-authors a {
+	color: var(--color-primary);
+	text-decoration: none;
+}
+
+.article-authors a:hover {
+	text-decoration: underline;
+}
+
 .article-source {
 	font-family: var(--font-body);
 	font-style: italic;
