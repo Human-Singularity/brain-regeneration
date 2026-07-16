@@ -23,6 +23,8 @@
 	var contentEl   = document.getElementById('author-content');
 	var statusEl    = document.getElementById('author-status');
 	var apiBase     = (shell.dataset.apiBase || window.__API_BASE__ || 'https://api.brain-regeneration.com').replace(/\/$/, '');
+	var siteTitle   = shell.dataset.siteTitle || 'Brain Regeneration Observatory';
+	var siteDesc    = shell.dataset.siteDescription || 'Brain Regeneration Observatory';
 
 	// Safe local fallbacks mirroring br-utils.js, in case window.BR isn't
 	// present — these must not be no-ops, since API data is rendered via
@@ -51,11 +53,18 @@
 			return parsed.href;
 		} catch (e) { return '#'; }
 	}
+	function fallbackTruncate(str, limit) {
+		var s = String(str == null ? '' : str);
+		if (s.length <= limit) return s;
+		var cut = s.lastIndexOf(' ', limit);
+		return s.slice(0, cut > 0 ? cut : limit) + '…';
+	}
 
 	var BR             = window.BR || {};
 	var escHtml        = BR.escHtml        || fallbackEscHtml;
 	var decodeEntities = BR.decodeEntities || fallbackDecodeEntities;
 	var safeLink       = BR.safeLink       || fallbackSafeLink;
+	var truncate       = BR.truncate       || fallbackTruncate;
 
 	var ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 	var AGG_PAGE_SIZE = 100;
@@ -68,6 +77,124 @@
 	}
 
 	var orcid = parseOrcid();
+
+	// ── SEO: runtime <head> updates ──
+	// This page has no static noindex tag, so a valid /authors/{orcid}/ is
+	// indexable by default with generic site-wide meta until this JS fills in
+	// the real author's name/bio. The bare shell (bad ORCID, no match, or a
+	// fetch failure) has no content of its own, so those states mark
+	// themselves noindex at runtime instead.
+
+	function upsertMetaByName(name, value) {
+		if (!value) return;
+		var el = document.querySelector('meta[name="' + name + '"]');
+		if (!el) {
+			el = document.createElement('meta');
+			el.setAttribute('name', name);
+			document.head.appendChild(el);
+		}
+		el.setAttribute('content', value);
+	}
+
+	function upsertMetaByProperty(property, value) {
+		if (!value) return;
+		var el = document.querySelector('meta[property="' + property + '"]');
+		if (!el) {
+			el = document.createElement('meta');
+			el.setAttribute('property', property);
+			document.head.appendChild(el);
+		}
+		el.setAttribute('content', value);
+	}
+
+	function upsertCanonical(url) {
+		if (!url) return;
+		var el = document.querySelector('link[rel="canonical"]');
+		if (!el) {
+			el = document.createElement('link');
+			el.setAttribute('rel', 'canonical');
+			document.head.appendChild(el);
+		}
+		el.setAttribute('href', url);
+	}
+
+	// origin + pathname (trailing slash), stripped of query/hash so
+	// canonical/og:url/JSON-LD stay stable across ?utm_* variants.
+	function normalizedPageUrl() {
+		var path = window.location.pathname;
+		if (path.charAt(path.length - 1) !== '/') path += '/';
+		return window.location.origin + path;
+	}
+
+	function markNoindex() {
+		upsertMetaByName('robots', 'noindex, nofollow');
+	}
+
+	function authorBrowserTitle(author) {
+		var name = (author.full_name || '').trim() || 'Author profile';
+		return name + ' — ' + siteTitle;
+	}
+
+	function authorDescription(author) {
+		var bio = (author.biography || '').replace(/\s+/g, ' ').trim();
+		if (bio) return truncate(bio, 180);
+		var name = (author.full_name || '').trim() || 'This researcher';
+		return truncate(name + '’s tracked research on brain regeneration and myelin repair, ranked by GregoryAI.', 180);
+	}
+
+	function updateAuthorStructuredData(author, pageUrl, descriptionText) {
+		var el = document.getElementById('author-jsonld-dynamic');
+		if (!el) {
+			el = document.createElement('script');
+			el.type = 'application/ld+json';
+			el.id = 'author-jsonld-dynamic';
+			document.head.appendChild(el);
+		}
+
+		var person = {
+			'@type': 'Person',
+			'name': author.full_name || '',
+			'url': pageUrl
+		};
+		if (descriptionText) person.description = descriptionText;
+		if (author.ORCID) {
+			person.sameAs = ['https://orcid.org/' + author.ORCID];
+			person.identifier = { '@type': 'PropertyValue', 'propertyID': 'ORCID', 'value': author.ORCID };
+		}
+
+		var data = {
+			'@context': 'https://schema.org',
+			'@type': 'ProfilePage',
+			'url': pageUrl,
+			'mainEntity': person,
+			'isPartOf': { '@type': 'WebSite', 'name': siteTitle, 'url': window.location.origin + '/' }
+		};
+
+		el.textContent = JSON.stringify(data);
+	}
+
+	function updateRuntimeMetadata(author) {
+		var pageUrl = normalizedPageUrl();
+		var title = authorBrowserTitle(author);
+		var descriptionText = authorDescription(author) || siteDesc;
+
+		document.title = title;
+		upsertCanonical(pageUrl);
+
+		upsertMetaByName('description', descriptionText);
+		upsertMetaByName('twitter:title', title);
+		upsertMetaByName('twitter:description', descriptionText);
+		upsertMetaByName('twitter:url', pageUrl);
+
+		upsertMetaByProperty('og:title', title);
+		upsertMetaByProperty('og:description', descriptionText);
+		upsertMetaByProperty('og:url', pageUrl);
+		upsertMetaByProperty('og:type', 'profile');
+		if (author.given_name) upsertMetaByProperty('profile:first_name', author.given_name);
+		if (author.family_name) upsertMetaByProperty('profile:last_name', author.family_name);
+
+		updateAuthorStructuredData(author, pageUrl, descriptionText);
+	}
 
 	var STATUS_TEXT = {
 		loading: 'Loading author profile…',
@@ -82,6 +209,7 @@
 		if (errorEl)    errorEl.hidden    = which !== 'error';
 		if (contentEl)  contentEl.hidden  = which !== 'content';
 		if (statusEl)   statusEl.textContent = STATUS_TEXT[which] || '';
+		if (which === 'notfound' || which === 'error') markNoindex();
 	}
 
 	function trackNotFound(reason) {
@@ -431,6 +559,7 @@
 	findAuthorByOrcid().then(function (author) {
 		if (!author) { showState('notfound'); trackNotFound('no-match'); return null; }
 		state.author = author;
+		updateRuntimeMetadata(author);
 		return Promise.all([
 			fetchAggregateArticles(author.author_id),
 			fetchDisplayPapers(author.author_id, 'relevance')
