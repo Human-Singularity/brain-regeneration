@@ -9,10 +9,15 @@
 	{{ with .Err }}
 		{{ warnf "homepage hero stats: %s" . }}
 	{{ else with .Value }}
-		{{ $heroStats := . | transform.Unmarshal }}
-		{{ with $heroStats.articles }}{{ $heroArticles = lang.FormatNumber 0 . }}{{ end }}
-		{{ with $heroStats.trials }}{{ $heroTrials = lang.FormatNumber 0 . }}{{ end }}
-		{{ with $heroStats.sources }}{{ with .total }}{{ $heroSources = lang.FormatNumber 0 . }}{{ end }}{{ end }}
+		{{ with try (. | transform.Unmarshal) }}
+			{{ with .Err }}
+				{{ warnf "homepage hero stats: %s" . }}
+			{{ else with .Value }}
+				{{ with .articles }}{{ $heroArticles = lang.FormatNumber 0 . }}{{ end }}
+				{{ with .trials }}{{ $heroTrials = lang.FormatNumber 0 . }}{{ end }}
+				{{ with .sources }}{{ with .total }}{{ $heroSources = lang.FormatNumber 0 . }}{{ end }}{{ end }}
+			{{ end }}
+		{{ end }}
 	{{ else }}
 		{{ warnf "homepage hero stats: no data returned from %s" site.Params.apiBase }}
 	{{ end }}
