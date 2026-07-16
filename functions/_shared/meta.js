@@ -17,8 +17,21 @@ function decodeEntities(str) {
 		.replace(/&apos;/g, "'")
 		.replace(/&nbsp;/g, ' ');
 	return named
-		.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-		.replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
+		.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => codePointToChar(parseInt(hex, 16), match))
+		.replace(/&#(\d+);/g, (match, dec) => codePointToChar(parseInt(dec, 10), match));
+}
+
+// String.fromCodePoint throws RangeError on invalid code points (e.g. a malformed
+// numeric entity like "&#999999999;"). This must never throw — a thrown error here
+// would surface as an unhandled exception mid-HTMLRewriter-transform and turn a
+// cosmetic entity-decoding issue into a 5xx, defeating the fail-open design.
+function codePointToChar(codePoint, fallback) {
+	if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) return fallback;
+	try {
+		return String.fromCodePoint(codePoint);
+	} catch {
+		return fallback;
+	}
 }
 
 function stripHtml(html) {
@@ -38,6 +51,14 @@ function truncate(text, maxLen) {
 function buildDescription(rawHtmlOrText, maxLen = 155) {
 	const decoded = decodeEntities(stripHtml(rawHtmlOrText || ''));
 	return truncate(decoded, maxLen);
+}
+
+// Decodes entities and strips any embedded tags, without truncating. Titles and
+// author names from the API can carry markup (e.g. "<i>genus</i> species") or
+// entities — this yields plain text suitable for <title>/OG tags and JSON-LD
+// values, where literal "&lt;i&gt;" or unresolved entities would look broken.
+function cleanText(str) {
+	return decodeEntities(stripHtml(str || '')).replace(/\s+/g, ' ').trim();
 }
 
 // Safe to drop into a <script type="application/ld+json"> body: valid JSON with
@@ -107,6 +128,7 @@ export {
 	stripHtml,
 	truncate,
 	buildDescription,
+	cleanText,
 	toSafeJsonLd,
 	fetchJson,
 	SetText,

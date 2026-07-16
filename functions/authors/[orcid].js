@@ -2,11 +2,10 @@ import {
 	API_BASE,
 	SITE_ORIGIN,
 	buildDescription,
-	decodeEntities,
+	cleanText,
 	fetchJson,
 	SetText,
 	SetAttr,
-	RemoveElement,
 	AppendJsonLd,
 } from '../_shared/meta.js';
 
@@ -31,7 +30,7 @@ function buildJsonLd(author, orcid) {
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
-		name: decodeEntities(author.full_name || ''),
+		name: cleanText(author.full_name || ''),
 		url,
 		mainEntityOfPage: url,
 		sameAs: `https://orcid.org/${orcid}`,
@@ -53,10 +52,10 @@ export async function onRequest(context) {
 	// Unknown ORCID / API down / malformed response → fail open with the unmodified shell.
 	if (!author || !author.full_name) return shell;
 
-	const name = decodeEntities(author.full_name);
+	const name = cleanText(author.full_name);
 	const pageTitle = `${name} — Brain Regeneration Observatory`;
 	const description = buildDescription(
-		`${name} — researcher profile tracked by the Brain Regeneration Observatory, including publications and clinical trial involvement in neuro-degenerative disease research.`
+		`${name} — researcher profile tracked by the Brain Regeneration Observatory, including publications and clinical trial involvement in neurodegenerative disease research.`
 	);
 	const canonicalUrl = `${SITE_ORIGIN}/authors/${orcid}/`;
 
@@ -69,7 +68,8 @@ export async function onRequest(context) {
 		.on('meta[name="twitter:title"]', new SetAttr('content', name))
 		.on('meta[name="twitter:description"]', new SetAttr('content', description))
 		.on('link[rel="canonical"]', new SetAttr('href', canonicalUrl))
-		.on('meta[name="robots"]', new RemoveElement())
+		// noindex stays in place until Task 2 (removing it from content/authors/_index.md
+		// front matter) lands and this is verified live — do not strip it here.
 		.on('head', new AppendJsonLd([buildJsonLd(author, orcid)]))
 		.transform(shell);
 }

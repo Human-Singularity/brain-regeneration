@@ -2,20 +2,20 @@ import {
 	API_BASE,
 	SITE_ORIGIN,
 	buildDescription,
+	cleanText,
 	decodeEntities,
 	fetchJson,
 	SetText,
 	SetAttr,
-	RemoveElement,
 	AppendJsonLd,
 } from '../_shared/meta.js';
 
-function buildJsonLd(data, id) {
+function buildJsonLd(data, id, title) {
 	const url = `${SITE_ORIGIN}/articles/${id}/`;
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'ScholarlyArticle',
-		headline: data.title,
+		headline: title,
 		url,
 		mainEntityOfPage: url,
 	};
@@ -25,7 +25,7 @@ function buildJsonLd(data, id) {
 	if (Array.isArray(data.authors) && data.authors.length) {
 		jsonLd.author = data.authors
 			.filter((a) => a && a.full_name)
-			.map((a) => ({ '@type': 'Person', name: a.full_name }));
+			.map((a) => ({ '@type': 'Person', name: cleanText(a.full_name) }));
 	}
 
 	if (data.publisher) {
@@ -66,7 +66,9 @@ export async function onRequest(context) {
 	// Unknown id / API down / malformed response → fail open with the unmodified shell.
 	if (!data || !data.title) return shell;
 
-	const title = decodeEntities(data.title);
+	// Plain text, not just entity-decoded — titles can carry embedded tags (e.g.
+	// "<i>genus</i> species") which must not leak into <title>/OG text or JSON-LD.
+	const title = cleanText(data.title);
 	const pageTitle = `${title} — Brain Regeneration Observatory`;
 	const description = buildDescription(data.summary);
 	const canonicalUrl = `${SITE_ORIGIN}/articles/${id}/`;
@@ -80,7 +82,8 @@ export async function onRequest(context) {
 		.on('meta[name="twitter:title"]', new SetAttr('content', title))
 		.on('meta[name="twitter:description"]', new SetAttr('content', description))
 		.on('link[rel="canonical"]', new SetAttr('href', canonicalUrl))
-		.on('meta[name="robots"]', new RemoveElement())
-		.on('head', new AppendJsonLd([buildJsonLd(data, id)]))
+		// noindex stays in place until Task 2 (removing it from content/articles/_index.md
+		// front matter) lands and this is verified live — do not strip it here.
+		.on('head', new AppendJsonLd([buildJsonLd(data, id, title)]))
 		.transform(shell);
 }
