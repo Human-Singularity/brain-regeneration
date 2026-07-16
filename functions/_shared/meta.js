@@ -1,5 +1,7 @@
 // Shared helpers for Pages Functions that inject per-record <head> metadata.
-// Filename starts with an underscore so Cloudflare Pages excludes it from routing.
+// This file lives under a directory (_shared/) whose name starts with an
+// underscore, which is what excludes it from Cloudflare Pages' file-based
+// routing — it's not routable as its own request handler either way.
 
 const API_BASE = 'https://api.brain-regeneration.com';
 const SITE_ORIGIN = 'https://brain-regeneration.com';
@@ -48,17 +50,24 @@ function truncate(text, maxLen) {
 	return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trim() + '…';
 }
 
-function buildDescription(rawHtmlOrText, maxLen = 155) {
-	const decoded = decodeEntities(stripHtml(rawHtmlOrText || ''));
-	return truncate(decoded, maxLen);
+// Strips tags and decodes entities regardless of which order the source data
+// combined them in. A single stripHtml-then-decodeEntities pass misses tags
+// that were entity-encoded (e.g. "&lt;i&gt;text&lt;/i&gt;") — decoding after
+// the strip turns them into live "<i>...</i>" markup with nothing left to
+// remove it. Stripping again after decoding catches that case too, without
+// needing to know or assume which encoding a given field used.
+function toPlainText(str) {
+	return stripHtml(decodeEntities(stripHtml(str || '')));
 }
 
-// Decodes entities and strips any embedded tags, without truncating. Titles and
-// author names from the API can carry markup (e.g. "<i>genus</i> species") or
-// entities — this yields plain text suitable for <title>/OG tags and JSON-LD
-// values, where literal "&lt;i&gt;" or unresolved entities would look broken.
+function buildDescription(rawHtmlOrText, maxLen = 155) {
+	return truncate(toPlainText(rawHtmlOrText), maxLen);
+}
+
+// Plain text without truncating — for <title>/OG tags and JSON-LD values,
+// where literal "&lt;i&gt;" or leftover markup would look broken.
 function cleanText(str) {
-	return decodeEntities(stripHtml(str || '')).replace(/\s+/g, ' ').trim();
+	return toPlainText(str).replace(/\s+/g, ' ').trim();
 }
 
 // Safe to drop into a <script type="application/ld+json"> body: valid JSON with
@@ -67,16 +76,25 @@ function toSafeJsonLd(obj) {
 	return JSON.stringify(obj).replace(/</g, '\\u003c');
 }
 
-async function fetchJson(url, cacheTtl) {
+// A stalled/slow origin must never be allowed to run out the Pages Function's
+// own execution limit — that would surface as a hard error instead of the
+// unmodified shell, defeating fail-open. Bound the API call with an explicit
+// timeout well under that limit so a timeout is always our own graceful null.
+async function fetchJson(url, cacheTtl, timeoutMs = 5000) {
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), timeoutMs);
 	try {
 		const res = await fetch(url, {
 			headers: { Accept: 'application/json' },
 			cf: { cacheTtl, cacheEverything: true },
+			signal: controller.signal,
 		});
 		if (!res.ok) return null;
 		return await res.json();
 	} catch {
 		return null;
+	} finally {
+		clearTimeout(timer);
 	}
 }
 
