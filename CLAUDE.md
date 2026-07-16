@@ -77,6 +77,9 @@ functions/            Cloudflare Pages Functions — server-side head injection 
                       and /authors/{orcid}/ (see below); deploys automatically with Pages, no
                       separate build step or dashboard config
 .github/skills/hugo/  In-repo Hugo reference (setup, patterns, errors) worth consulting
+.github/workflows/nightly-rebuild.yml   Daily cron (03:00 UTC) that POSTs to a Cloudflare
+                      Pages deploy hook (secret: CF_PAGES_DEPLOY_HOOK) to refresh build-time
+                      data (e.g. homepage hero stats) even without a code push
 ```
 
 ### Inside the theme (`themes/brain-regeneration/`)
