@@ -8,7 +8,7 @@ A [Hugo](https://gohugo.io/) **extended** static site — the **Brain Regenerati
 
 - **Production domain:** `brain-regeneration.com` (`baseURL` in `hugo.toml`)
 - **Git remote:** `Human-Singularity/brain-regeneration`
-- **Hugo:** extended required (themes/styling). `.env` pins `HUGO_VERSION=0.154` for the build host.
+- **Hugo:** extended required (themes/styling). The Cloudflare Pages build is pinned to `HUGO_VERSION=0.164.0` (updated 2026-07-16). Match this locally when relying on version-specific template functions.
 
 ## We work on the frontend; the backend is GregoryAI
 
@@ -77,6 +77,9 @@ functions/            Cloudflare Pages Functions — server-side head injection 
                       and /authors/{orcid}/ (see below); deploys automatically with Pages, no
                       separate build step or dashboard config
 .github/skills/hugo/  In-repo Hugo reference (setup, patterns, errors) worth consulting
+.github/workflows/nightly-rebuild.yml   Daily cron (03:00 UTC) that POSTs to a Cloudflare
+                      Pages deploy hook (secret: CF_PAGES_DEPLOY_HOOK) to refresh build-time
+                      data (e.g. homepage hero stats) even without a code push
 ```
 
 ### Inside the theme (`themes/brain-regeneration/`)
