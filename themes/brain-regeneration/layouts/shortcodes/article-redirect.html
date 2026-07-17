@@ -3,6 +3,11 @@
   var match = window.location.hash.match(/^#\/articles\/(\d+)/);
   if (match) {
     window.location.replace('/articles/' + match[1] + '/');
+    return;
+  }
+  match = window.location.hash.match(/^#\/authors\/([^\/?#]+)/);
+  if (match) {
+    window.location.replace('/authors/' + match[1] + '/');
   }
 })();
 </script>
