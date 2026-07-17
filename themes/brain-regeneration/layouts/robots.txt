@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+
+Sitemap: {{ "sitemap.xml" | absURL }}
+{{- with .Site.Params.apiSitemapSiteId }}
+Sitemap: {{ $.Site.Params.apiBase }}/sitemap/sites/{{ . }}/index.xml
+{{- end }}
