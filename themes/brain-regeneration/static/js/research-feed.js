@@ -830,8 +830,9 @@
 		if (!authors.length) { hideAuthorSuggestions(); return; }
 		var q = authorInput ? authorInput.value.trim() : '';
 		var html = authors.map(function (a) {
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(displayName(a)) + '">' +
-				highlightMatch(displayName(a), q) +
+			var name = displayName(a);
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(name) + '">' +
+				highlightMatch(name, q) +
 			'</button>';
 		}).join('');
 		authorSuggestions.innerHTML = html;
@@ -1734,8 +1735,9 @@
 		if (!authors.length) { hideSheetAuthorSuggestions(); return; }
 		var q = sheetAuthorInput ? sheetAuthorInput.value.trim() : '';
 		var html = authors.map(function (a) {
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(displayName(a)) + '">' +
-				highlightMatch(displayName(a), q) +
+			var name = displayName(a);
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(name) + '">' +
+				highlightMatch(name, q) +
 			'</button>';
 		}).join('');
 		sheetAuthorSuggestions.innerHTML = html;
