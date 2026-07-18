@@ -235,7 +235,7 @@
 			{{ end }}
 		</div>
 		<div class="text-center mt-4">
-			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">ALS and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to suggest a condition.</a></p>
+			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">ALS and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary); text-decoration: underline;">Contact us to suggest a condition.</a></p>
 		</div>
 	</div>
 </section>
@@ -264,20 +264,20 @@
 					<!-- Research digests -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Research Digests</div>
-						{{ range $researchSubscribe }}
+						{{ range $i, $e := $researchSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
-							<label class="form-check-label" for="sub-feed-{{ .Slug }}">{{ .Title }} — weekly digest</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-research-{{ $i }}" name="list" value="{{ $e.Params.list_id }}">
+							<label class="form-check-label" for="sub-feed-research-{{ $i }}">{{ $e.Title }} — weekly digest</label>
 						</div>
 						{{ end }}
 					</div>
 					<!-- Clinical trial alerts -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Clinical Trial Alerts</div>
-						{{ range $trialsSubscribe }}
+						{{ range $i, $e := $trialsSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
-							<label class="form-check-label" for="sub-feed-trials-{{ .Slug }}">{{ .Title }}</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ $i }}" name="list" value="{{ $e.Params.list_id }}">
+							<label class="form-check-label" for="sub-feed-trials-{{ $i }}">{{ $e.Title }}</label>
 						</div>
 						{{ end }}
 					</div>

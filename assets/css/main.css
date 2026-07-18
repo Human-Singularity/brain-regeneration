@@ -173,7 +173,7 @@
 	--color-accent: #E8913A;
 	--color-text: #2D2D2D;
 	--color-text-light: #FFFFFF;
-	--color-muted: #8C8C8C;
+	--color-muted: #6B6B6B;
 	--color-tint: #E6F2F2;
 	--color-border: #D9D4CA;
 
@@ -293,7 +293,7 @@ a:hover {
 /* ── Buttons ── */
 .btn-amber {
 	background-color: var(--color-accent);
-	color: var(--color-text-light);
+	color: var(--color-text);
 	border: none;
 	padding: 12px 28px;
 	border-radius: var(--radius);
@@ -309,7 +309,7 @@ a:hover {
 
 .btn-amber:hover {
 	background-color: #D17E2F;
-	color: var(--color-text-light);
+	color: var(--color-text);
 	text-decoration: none;
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(232, 145, 58, 0.3);
