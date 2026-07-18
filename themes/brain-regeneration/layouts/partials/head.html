@@ -137,9 +137,15 @@
 {{- $bootstrap := resources.Get "vendor/bootstrap.min.css" | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $bootstrap.RelPermalink }}" integrity="{{ $bootstrap.Data.Integrity }}">
 
+<!-- Critical above-the-fold CSS, inlined so first paint doesn't wait on main.css -->
+{{- $critical := resources.Get "css/critical.css" | minify }}
+<style>{{ $critical.Content | safeCSS }}</style>
+
 <!-- Brand styles (includes self-hosted @font-face rules for Inter / JetBrains Mono / Source Serif 4) -->
+<!-- Loaded non-blocking: critical.css above already covers the above-the-fold rules -->
 {{- $mainCSS := resources.Get "css/main.css" | minify | fingerprint }}
-<link rel="stylesheet" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}">
+<link rel="preload" as="style" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}"></noscript>
 
 {{- $feedLayouts := slice "single" "research-papers" }}
 {{- $needsFeedsMobileCSS := or (in $feedLayouts .Params.layout) (and (eq .Section "research-areas") (eq .Kind "page")) }}
