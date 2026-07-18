@@ -16,10 +16,35 @@ what this site actually uses:
 This cut the vendored payload from ~293KB to ~72KB raw by removing ~95%
 unused CSS and ~45% unused JS that a stock Bootstrap build would ship.
 
-There is no build pipeline wired into `make`/Hugo for this — the files here
-are static, pre-built output. If Bootstrap usage changes (a new page needs
-a dropdown, modal, tooltip, etc.), regenerate both files following the
-steps below rather than hand-editing the minified output.
+These files are static, pre-built output — nothing regenerates them during a
+Hugo or Cloudflare Pages build (see [Why this isn't in the Hugo
+build](#why-this-isnt-in-the-hugo-build)). If Bootstrap usage changes (a new
+page needs a dropdown, modal, tooltip, etc.), regenerate both files rather
+than hand-editing the minified output:
+
+```bash
+make vendor-bootstrap
+```
+
+That target runs the whole procedure documented below — build, purge, bundle,
+leak-check — and reports the size change. Review `git diff assets/vendor/`,
+then **verify in a browser** (see [Verification](#verification)) before
+committing. The manual steps are kept below so the pipeline stays auditable
+and debuggable when something looks wrong.
+
+A companion target guards against the silent-failure mode:
+
+```bash
+make check-bootstrap
+```
+
+This fails if any template or theme script references a Bootstrap component
+that isn't in the bundle. `make vendor-bootstrap` runs it first, and CI runs
+it on every PR/push that touches `themes/brain-regeneration/layouts/`,
+`themes/brain-regeneration/static/js/`, or `content/`
+(`.github/workflows/check-bootstrap-usage.yml`) — so a PR adding an
+uncovered component fails before merge, not after someone notices the site
+looks broken.
 
 ## When to regenerate
 
@@ -31,7 +56,12 @@ steps below rather than hand-editing the minified output.
 
 **Symptom if you skip this:** the new markup will render unstyled (missing
 CSS) and/or inert (no JS behavior), because the class/component was purged
-out or never bundled.
+out or never bundled. Nothing errors — Hugo builds, Pages deploys, and the
+breakage only shows up in a browser. `make check-bootstrap` exists to turn
+that silent failure into a build-time one, but it only knows about
+`data-bs-toggle="…"` attributes and `bootstrap.Foo` API calls; a purged *CSS
+class* with no JS counterpart (e.g. `.carousel` styling) will still slip
+through, which is why the browser check below isn't optional.
 
 ## Prerequisites
 
@@ -57,33 +87,19 @@ out or never bundled.
    article rendering, etc.):
 
    ```bash
-   cat > /tmp/purgecss.config.cjs <<'EOF'
-   module.exports = {
-     content: [
-       'public/**/*.html',
-       'themes/brain-regeneration/layouts/**/*.html',
-       'themes/brain-regeneration/static/js/*.js',
-     ],
-     css: ['assets/vendor/bootstrap.min.css'],
-     safelist: {
-       standard: [
-         'collapsing',
-         'showing',
-         'hiding',
-         'offcanvas-backdrop',
-         'disabled',
-       ],
-     },
-     output: '/tmp/purge-output/',
-   };
-   EOF
-   npx --yes purgecss --config /tmp/purgecss.config.cjs
+   npx --yes purgecss --config scripts/purgecss.config.cjs
    ```
 
-   The safelist covers Bootstrap classes that its own JS toggles at
-   runtime (transition/backdrop states) and therefore never appear as a
-   literal `class="..."` in any static template or built HTML — PurgeCSS
-   would otherwise strip them as "unused."
+   The config lives at [`scripts/purgecss.config.cjs`](../../scripts/purgecss.config.cjs)
+   and writes to `/tmp/purge-output/`. Two things in it are load-bearing:
+
+   - The `themes/.../static/js/*.js` content glob. The feed and article
+     scripts build markup at runtime, so their class names appear in no
+     template and in no built HTML. Drop that glob and the feeds render
+     unstyled.
+   - The safelist, which covers classes Bootstrap's own JS toggles at
+     runtime (transition/backdrop states). These never appear as a literal
+     `class="..."` anywhere, so PurgeCSS would strip them as "unused."
 
 3. Sanity-check the output before replacing anything:
 
@@ -114,32 +130,34 @@ Only the modules actually used should be bundled. Currently that's
 `Collapse`, `Offcanvas`, and `Tab`. If a new component is needed, add its
 import to the entry file below.
 
-1. Set up a scratch project and install the exact Bootstrap version this
-   site vendors elsewhere (check the version banner at the top of the
-   current `bootstrap.min.css`/`.js` if unsure — currently `5.3.3`):
+1. Set up a scratch project and install the pinned Bootstrap version. The
+   version lives in the `BS_VERSION` variable in the `Makefile` (currently
+   `5.3.3`) — bump it there, not here, so `make vendor-bootstrap` and these
+   instructions can't disagree:
 
    ```bash
    rm -rf /tmp/bs-bundle && mkdir -p /tmp/bs-bundle && cd /tmp/bs-bundle
    npm init -y
    npm install bootstrap@5.3.3 esbuild --no-audit --no-fund
-   npm approve-scripts --allow-scripts-pending   # allows esbuild's postinstall to fetch its binary
    ```
 
-2. Write an entry file that imports only the components in use:
+   On some npm versions esbuild's postinstall is blocked from fetching its
+   binary; if the bundle step then fails, run
+   `npm approve-scripts --allow-scripts-pending` and reinstall.
+
+2. Copy in the entry file, which imports only the components in use:
 
    ```bash
-   cat > entry.js <<'EOF'
-   import Collapse from 'bootstrap/js/dist/collapse';
-   import Offcanvas from 'bootstrap/js/dist/offcanvas';
-   import Tab from 'bootstrap/js/dist/tab';
-
-   window.bootstrap = { Collapse, Offcanvas, Tab };
-   EOF
+   cp /path/to/repo/scripts/bootstrap-entry.js entry.js
    ```
 
+   It lives at [`scripts/bootstrap-entry.js`](../../scripts/bootstrap-entry.js).
    To add a component (e.g. a future page needs a modal), add
-   `import Modal from 'bootstrap/js/dist/modal';` and include it in the
-   `window.bootstrap` object. Each Bootstrap component module registers its
+   `import Modal from 'bootstrap/js/dist/modal';` there and include it in the
+   `window.bootstrap` object — and widen the allow-lists in
+   [`scripts/check-bootstrap-usage.sh`](../../scripts/check-bootstrap-usage.sh)
+   to match, or the guard will reject the markup that needs it. Each
+   Bootstrap component module registers its
    own `data-bs-toggle="..."` delegated event listeners at import time, so
    no extra wiring is needed beyond importing it.
 
@@ -194,11 +212,23 @@ observed as flaky in at least one browser-automation harness with the
 *stock*, unmodified Bootstrap JS too, i.e. it's not specific to the trimmed
 build.
 
-## Why not just wire this into the Hugo build?
+## Why this isn't in the Hugo build
 
-There's no Node/npm dependency in this repo's normal build (Hugo Pipes
-only, per `CLAUDE.md`), and adding one solely to regenerate an
-infrequently-changed vendor file didn't seem worth the added tooling
-surface. If Bootstrap usage starts changing often enough that manual
-regeneration becomes a chore, revisit that tradeoff — e.g. a `make
-vendor-bootstrap` target that runs the steps above.
+`make vendor-bootstrap` is a local, on-demand convenience. It is deliberately
+*not* part of the Cloudflare Pages build, and shouldn't become one:
+
+- The production build is pure Hugo (Hugo Pipes only, per `CLAUDE.md`) with
+  no Node/npm dependency. Wiring this in would add one to every deploy —
+  including the nightly cron rebuild in
+  `.github/workflows/nightly-rebuild.yml` — to regenerate a file that changes
+  maybe twice a year.
+- Purging is class-name matching, not semantic understanding. A bad purge
+  produces a *successful build* that renders a broken site. On an unattended
+  cron deploy there is no human to catch it. Keeping regeneration manual
+  means the output always arrives as a reviewable diff with a browser check
+  behind it.
+
+The tradeoff worth revisiting is the version bump, not the purge: if
+Bootstrap upgrades become frequent, a scheduled job that opens a PR with the
+regenerated files (rather than deploying them directly) would preserve the
+review step while removing the chore.
