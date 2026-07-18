@@ -1,5 +1,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Preload the two fonts used above the fold (h1 heading + body copy) -->
+<link rel="preload" as="font" type="font/woff2" href="{{ "fonts/inter-700-normal-latin.woff2" | relURL }}" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="{{ "fonts/source-serif-4-400-normal-latin.woff2" | relURL }}" crossorigin>
+
 <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
 {{- $description := .Description | default .Site.Params.description -}}
 {{ with $description }}<meta name="description" content="{{ . }}">{{ end }}
