@@ -3,6 +3,7 @@ import {
 	SITE_ORIGIN,
 	buildDescription,
 	cleanText,
+	authorName,
 	fetchJson,
 	SetText,
 	SetAttr,
@@ -26,7 +27,7 @@ function buildJsonLd(author, orcid) {
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
-		name: cleanText(author.full_name || ''),
+		name: cleanText(authorName(author)),
 		url,
 		mainEntityOfPage: url,
 		sameAs: `https://orcid.org/${orcid}`,
@@ -46,9 +47,9 @@ export async function onRequest(context) {
 	const author = await findAuthorByOrcid(orcid);
 
 	// Unknown ORCID / API down / malformed response → fail open with the unmodified shell.
-	if (!author || !author.full_name) return shell;
+	if (!author || !authorName(author)) return shell;
 
-	const name = cleanText(author.full_name);
+	const name = cleanText(authorName(author));
 	const pageTitle = `${name} — Brain Regeneration Observatory`;
 	const description = buildDescription(
 		`${name} — researcher profile tracked by the Brain Regeneration Observatory, including publications and clinical trial involvement in neurodegenerative disease research.`

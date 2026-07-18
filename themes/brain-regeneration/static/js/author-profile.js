@@ -67,6 +67,12 @@
 
 	var ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 	var AGG_PAGE_SIZE = 100;
+
+	function displayName(a) {
+		var credit = a && a.credit_name ? String(a.credit_name).trim() : '';
+		var full = a && a.full_name ? String(a.full_name).trim() : '';
+		return credit || full || '';
+	}
 	var AGG_MAX_PAGES = 5; // cap aggregation at 500 tracked papers
 
 	function parseOrcid() {
@@ -130,14 +136,14 @@
 	}
 
 	function authorBrowserTitle(author) {
-		var name = (author.full_name || '').trim() || 'Author profile';
+		var name = displayName(author).trim() || 'Author profile';
 		return name + ' — ' + siteTitle;
 	}
 
 	function authorDescription(author) {
 		var bio = (author.biography || '').replace(/\s+/g, ' ').trim();
 		if (bio) return truncate(bio, 180);
-		var name = (author.full_name || '').trim() || 'This researcher';
+		var name = displayName(author).trim() || 'This researcher';
 		return truncate(name + '’s tracked research on brain regeneration and myelin repair, ranked by GregoryAI.', 180);
 	}
 
@@ -152,7 +158,7 @@
 
 		var person = {
 			'@type': 'Person',
-			'name': author.full_name || '',
+			'name': displayName(author),
 			'url': pageUrl
 		};
 		if (descriptionText) person.description = descriptionText;
@@ -311,7 +317,7 @@
 					: (!!selfName && au.full_name.trim().toLowerCase() === selfName);
 				if (isSelf) return;
 				var key = au.author_id != null ? String(au.author_id) : au.full_name;
-				if (!collabMap[key]) collabMap[key] = { name: au.full_name, orcid: au.ORCID || null, count: 0 };
+				if (!collabMap[key]) collabMap[key] = { name: displayName(au), orcid: au.ORCID || null, count: 0 };
 				if (!collabMap[key].orcid && au.ORCID) collabMap[key].orcid = au.ORCID;
 				collabMap[key].count++;
 			});
@@ -346,7 +352,7 @@
 		var g = (a.given_name || '').trim().charAt(0);
 		var f = (a.family_name || '').trim().charAt(0);
 		if (g || f) return (g + f).toUpperCase();
-		var parts = (a.full_name || '').trim().split(/\s+/);
+		var parts = displayName(a).trim().split(/\s+/);
 		return ((parts[0] || '').charAt(0) + (parts[parts.length - 1] || '').charAt(0)).toUpperCase();
 	}
 
@@ -506,7 +512,7 @@
 					renderIdentityMark(relevantPct) +
 					'<div class="author-header__id">' +
 						'<div class="author-eyebrow">Author</div>' +
-						'<h1>' + escHtml(decodeEntities(author.full_name || '')) + '</h1>' +
+						'<h1>' + escHtml(decodeEntities(displayName(author))) + '</h1>' +
 						(author.country ? '<div class="author-affiliation">' + escHtml(author.country) + '</div>' : '') +
 						'<div class="author-orcid-row">' +
 							'<span class="author-orcid-label">ORCID</span>' +
