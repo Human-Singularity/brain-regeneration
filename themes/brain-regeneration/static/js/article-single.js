@@ -55,11 +55,10 @@
 		});
 	}
 
-	// An author's credit_name (their preferred publication byline) takes
-	// precedence over full_name whenever we display a name to a reader.
 	function displayName(a) {
 		var credit = a && a.credit_name ? String(a.credit_name).trim() : '';
-		return credit || (a && a.full_name) || '';
+		var full = a && a.full_name ? String(a.full_name).trim() : '';
+		return credit || full || '';
 	}
 
 	function formatAuthors(authors) {
