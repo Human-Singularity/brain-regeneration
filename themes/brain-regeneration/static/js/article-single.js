@@ -55,9 +55,16 @@
 		});
 	}
 
+	// An author's credit_name (their preferred publication byline) takes
+	// precedence over full_name whenever we display a name to a reader.
+	function displayName(a) {
+		var credit = a && a.credit_name ? String(a.credit_name).trim() : '';
+		return credit || (a && a.full_name) || '';
+	}
+
 	function formatAuthors(authors) {
 		if (!authors || !authors.length) return '';
-		return authors.map(function (a) { return a.full_name || ''; }).filter(Boolean).join(', ');
+		return authors.map(function (a) { return displayName(a); }).filter(Boolean).join(', ');
 	}
 
 	// Same as formatAuthors, but links each name to its author profile page
@@ -65,7 +72,7 @@
 	function formatAuthorsLinked(authors) {
 		if (!authors || !authors.length) return '';
 		return authors.map(function (a) {
-			var name = a && a.full_name ? String(a.full_name) : '';
+			var name = displayName(a);
 			if (!name) return '';
 			if (a.ORCID) {
 				return '<a href="/authors/' + encodeURIComponent(a.ORCID) + '/">' + escHtml(name) + '</a>';
@@ -175,9 +182,9 @@
 		}
 
 		var authors = (a.authors || []).map(function (author) {
-			var fullName = (author && author.full_name) ? String(author.full_name).trim() : '';
-			if (!fullName) return null;
-			return { '@type': 'Person', 'name': fullName };
+			var name = displayName(author).trim();
+			if (!name) return null;
+			return { '@type': 'Person', 'name': name };
 		}).filter(Boolean);
 
 		var data = {

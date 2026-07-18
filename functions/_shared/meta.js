@@ -70,6 +70,13 @@ function cleanText(str) {
 	return toPlainText(str).replace(/\s+/g, ' ').trim();
 }
 
+// An author's credit_name (their preferred publication byline) takes
+// precedence over full_name whenever we display a name to a reader.
+function authorName(author) {
+	const credit = author && author.credit_name ? String(author.credit_name).trim() : '';
+	return credit || (author && author.full_name) || '';
+}
+
 // Safe to drop into a <script type="application/ld+json"> body: valid JSON with
 // '<' escaped so a value like "</script>" cannot terminate the tag early.
 function toSafeJsonLd(obj) {
@@ -147,6 +154,7 @@ export {
 	truncate,
 	buildDescription,
 	cleanText,
+	authorName,
 	toSafeJsonLd,
 	fetchJson,
 	SetText,

@@ -124,9 +124,16 @@
 		return '<p>' + s + '</p>';
 	}
 
+	// An author's credit_name (their preferred publication byline) takes
+	// precedence over full_name whenever we display a name to a reader.
+	function displayName(a) {
+		var credit = a && a.credit_name ? String(a.credit_name).trim() : '';
+		return credit || (a && a.full_name) || '';
+	}
+
 	function formatAuthors(authors) {
 		if (!authors || !authors.length) return '';
-		var names = authors.map(function (a) { return a.full_name; });
+		var names = authors.map(function (a) { return displayName(a); });
 		return names.length > 3 ? names.slice(0, 3).join(', ') + ' et al.' : names.join(', ');
 	}
 
@@ -759,7 +766,7 @@
 	}
 
 	function articleToCSVRow(a) {
-		var authors    = (a.authors || []).map(function (x) { return x.full_name; }).join('; ');
+		var authors    = (a.authors || []).map(function (x) { return displayName(x); }).join('; ');
 		var date       = (a.published_date || '').slice(0, 10);
 		var abstract   = stripHtml(a.summary || '');
 		var categories = (a.team_categories || []).map(function (c) { return c.category_slug || c.slug || c; }).join('; ');
@@ -824,8 +831,8 @@
 		if (!authors.length) { hideAuthorSuggestions(); return; }
 		var q = authorInput ? authorInput.value.trim() : '';
 		var html = authors.map(function (a) {
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(a.full_name) + '">' +
-				highlightMatch(a.full_name, q) +
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(displayName(a)) + '">' +
+				highlightMatch(displayName(a), q) +
 			'</button>';
 		}).join('');
 		authorSuggestions.innerHTML = html;
@@ -1728,8 +1735,8 @@
 		if (!authors.length) { hideSheetAuthorSuggestions(); return; }
 		var q = sheetAuthorInput ? sheetAuthorInput.value.trim() : '';
 		var html = authors.map(function (a) {
-			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(a.full_name) + '">' +
-				highlightMatch(a.full_name, q) +
+			return '<button type="button" class="author-suggestion-item" data-id="' + escHtml(String(a.author_id)) + '" title="' + escHtml(displayName(a)) + '">' +
+				highlightMatch(displayName(a), q) +
 			'</button>';
 		}).join('');
 		sheetAuthorSuggestions.innerHTML = html;

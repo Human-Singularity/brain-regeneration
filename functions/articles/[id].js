@@ -4,6 +4,7 @@ import {
 	buildDescription,
 	cleanText,
 	decodeEntities,
+	authorName,
 	fetchJson,
 	SetText,
 	SetAttr,
@@ -24,8 +25,8 @@ function buildJsonLd(data, id, title) {
 
 	if (Array.isArray(data.authors) && data.authors.length) {
 		jsonLd.author = data.authors
-			.filter((a) => a && a.full_name)
-			.map((a) => ({ '@type': 'Person', name: cleanText(a.full_name) }));
+			.filter((a) => a && authorName(a))
+			.map((a) => ({ '@type': 'Person', name: cleanText(authorName(a)) }));
 	}
 
 	if (data.publisher) {
