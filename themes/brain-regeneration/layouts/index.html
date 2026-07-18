@@ -28,18 +28,24 @@
 {{- with .Params.hero_image -}}{{- $heroImg = resources.Get . -}}{{- end -}}
 <section class="hero{{ if $heroImg }} has-bg{{ end }}">
 {{- with $heroImg }}
-	{{- $w768  := .Resize "768x webp q80" -}}
-	{{- $w1280 := .Resize "1280x webp q80" -}}
-	{{- $w1920 := .Resize "1920x webp q80" -}}
-	<img class="hero-bg"
-	     src="{{ $w1280.RelPermalink }}"
-	     srcset="{{ $w768.RelPermalink }} 768w, {{ $w1280.RelPermalink }} 1280w, {{ $w1920.RelPermalink }} 1920w"
-	     sizes="100vw"
-	     alt=""
-	     aria-hidden="true"
-	     fetchpriority="high"
-	     decoding="async"
-	     width="{{ $w1280.Width }}" height="{{ $w1280.Height }}">
+	{{- $w768  := .Resize "768x webp q65" -}}
+	{{- $w1280 := .Resize "1280x webp q65" -}}
+	{{- $w1920 := .Resize "1920x webp q65" -}}
+	{{- $aw768  := .Resize "768x avif q50" -}}
+	{{- $aw1280 := .Resize "1280x avif q50" -}}
+	{{- $aw1920 := .Resize "1920x avif q50" -}}
+	<picture>
+		<source type="image/avif" srcset="{{ $aw768.RelPermalink }} 768w, {{ $aw1280.RelPermalink }} 1280w, {{ $aw1920.RelPermalink }} 1920w" sizes="100vw">
+		<img class="hero-bg"
+		     src="{{ $w1280.RelPermalink }}"
+		     srcset="{{ $w768.RelPermalink }} 768w, {{ $w1280.RelPermalink }} 1280w, {{ $w1920.RelPermalink }} 1920w"
+		     sizes="100vw"
+		     alt=""
+		     aria-hidden="true"
+		     fetchpriority="high"
+		     decoding="async"
+		     width="{{ $w1280.Width }}" height="{{ $w1280.Height }}">
+	</picture>
 {{- end }}
 	<div class="container">
 		<h1>{{ .Params.hero_heading | default .Title }}</h1>
