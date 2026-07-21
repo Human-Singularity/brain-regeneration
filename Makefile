@@ -23,8 +23,11 @@ PROD_PROJECT_DIR ?= /home/gregory/gregory-ai/
 PROD_SSH         := ssh $(PROD_SSH_USER)@$(PROD_HOST)
 BACKUP_DIR       := backups
 DUMP_FILE        := $(BACKUP_DIR)/db_pull_$(shell date +%Y%m%d_%H%M%S).sql
+# Bootstrap version vendored in assets/vendor/ — see assets/vendor/README.md
+BS_VERSION       ?= 5.3.3
 
 .PHONY: help h hugo-dev hugo-dev-local hugo-build dev setup status \
+	check-bootstrap vendor-bootstrap \
 	start-gregory stop-gregory logs-gregory status-gregory restart-gregory clean-gregory \
 	deploy-frontend deploy-backend remote-pull remote-deps remote-migrate remote-restart remote-status \
 	db-pull db-restore db-upgrade db-upgrade-finish
@@ -83,6 +86,51 @@ hugo-dev-local: ## Start Hugo dev server pointed at local Django API (localhost:
 hugo-build-local: ## Build the Hugo site locally (CF Pages builds production on push)
 	@echo "Building Hugo site..."
 	hugo --minify
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Vendored Bootstrap (assets/vendor/) — see assets/vendor/README.md
+#
+# Deliberately NOT part of the Cloudflare Pages build: it would add a Node
+# dependency to every deploy (including the nightly cron rebuild) to regenerate
+# a file that changes maybe twice a year, and a bad purge would ship a broken
+# site unattended. Run on demand, review the diff, commit the result.
+# ──────────────────────────────────────────────────────────────────────────────
+
+check-bootstrap: ## Verify the theme only uses components in the trimmed Bootstrap bundle
+	@sh scripts/check-bootstrap-usage.sh
+
+vendor-bootstrap: check-bootstrap ## Regenerate the trimmed assets/vendor/bootstrap.min.{css,js}
+	@command -v npx >/dev/null || { echo "✗ npx not found — Node is required to regenerate the bundle"; exit 1; }
+	@echo "▸ Building the site so PurgeCSS scans real output (-D for every page type)..."
+	@hugo --minify -D >/dev/null
+	@echo "▸ Purging unused Bootstrap CSS..."
+	@rm -rf /tmp/purge-output
+	@npx --yes purgecss --config scripts/purgecss.config.cjs
+	@test -s /tmp/purge-output/bootstrap.min.css || { echo "✗ PurgeCSS produced no output — check the content globs"; exit 1; }
+	@echo "▸ Bundling Bootstrap JS ($(BS_VERSION): Collapse, Offcanvas, Tab)..."
+	@rm -rf /tmp/bs-bundle && mkdir -p /tmp/bs-bundle
+	@cp scripts/bootstrap-entry.js /tmp/bs-bundle/entry.js
+	@cd /tmp/bs-bundle && npm init -y >/dev/null 2>&1 && \
+		npm install bootstrap@$(BS_VERSION) esbuild --no-audit --no-fund >/dev/null 2>&1 && \
+		node_modules/.bin/esbuild entry.js --bundle --minify --format=iife \
+			--target=es2018 --outfile=bootstrap.min.js >/dev/null
+	@echo "▸ Checking no unused components leaked into the bundle..."
+	@leaked=$$(grep -oE 'Popper|createPopper|Modal|Tooltip|Dropdown|Carousel|ScrollSpy|Toast' /tmp/bs-bundle/bootstrap.min.js | sort -u); \
+		if [ -n "$$leaked" ]; then \
+			echo "✗ Unexpected components in the bundle:"; echo "$$leaked" | sed 's/^/    /'; \
+			echo "  Expected only Collapse, Offcanvas, Tab — check scripts/bootstrap-entry.js"; exit 1; \
+		fi
+	@printf "▸ Sizes (old → new):\n"
+	@printf "    css  %7s → %7s bytes\n" \
+		$$(wc -c < assets/vendor/bootstrap.min.css) $$(wc -c < /tmp/purge-output/bootstrap.min.css)
+	@printf "    js   %7s → %7s bytes\n" \
+		$$(wc -c < assets/vendor/bootstrap.min.js) $$(wc -c < /tmp/bs-bundle/bootstrap.min.js)
+	@cp /tmp/purge-output/bootstrap.min.css assets/vendor/bootstrap.min.css
+	@cp /tmp/bs-bundle/bootstrap.min.js assets/vendor/bootstrap.min.js
+	@echo ""
+	@echo "✓ Regenerated. Review 'git diff --stat assets/vendor/' before committing."
+	@echo "  Then VERIFY IN A BROWSER — purging is name-matching, not semantic."
+	@echo "  See the Verification section of assets/vendor/README.md."
 
 # Combined operations
 dev: start-gregory h ## Start both GregoryAi and Hugo development server
