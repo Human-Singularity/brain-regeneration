@@ -81,6 +81,8 @@ category_groups:
         name: "Vafidemstat"
       - id: 100
         name: "Indapamide"
+      - id: 56
+        name: "PTD802"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
