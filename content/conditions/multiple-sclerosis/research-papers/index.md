@@ -83,6 +83,14 @@ category_groups:
         name: "Indapamide"
       - id: 56
         name: "PTD802"
+      - id: 104
+        name: "Honokiol"
+      - id: 105
+        name: "Valsartan"
+      - id: 106
+        name: "Temporin-GHaR6R Peptide"
+      - id: 107
+        name: "Fucoxanthin"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
