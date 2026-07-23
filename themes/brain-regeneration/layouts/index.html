@@ -1,7 +1,52 @@
 {{ define "main" }}
 
+<!-- Build-time hero stats: fetched once at `hugo` build so crawlers (and users before -->
+<!-- JS runs) see real numbers instead of em-dashes. Fails soft to "—" on any error. -->
+{{ $heroArticles := "" }}
+{{ $heroTrials := "" }}
+{{ $heroSources := "" }}
+{{ with try (resources.GetRemote (printf "%s/stats/?format=json&org=6" site.Params.apiBase)) }}
+	{{ with .Err }}
+		{{ warnf "homepage hero stats: %s" . }}
+	{{ else with .Value }}
+		{{ with try (. | transform.Unmarshal) }}
+			{{ with .Err }}
+				{{ warnf "homepage hero stats: %s" . }}
+			{{ else with .Value }}
+				{{ with .articles }}{{ $heroArticles = lang.FormatNumber 0 . }}{{ end }}
+				{{ with .trials }}{{ $heroTrials = lang.FormatNumber 0 . }}{{ end }}
+				{{ with .sources }}{{ with .total }}{{ $heroSources = lang.FormatNumber 0 . }}{{ end }}{{ end }}
+			{{ end }}
+		{{ end }}
+	{{ else }}
+		{{ warnf "homepage hero stats: no data returned from %s" site.Params.apiBase }}
+	{{ end }}
+{{ end }}
+
 <!-- ── HERO ── -->
-<section class="hero"{{ with .Params.hero_image }} style="background-image: url('{{ . | relURL }}');"{{ end }}>
+{{- $heroImg := "" -}}
+{{- with .Params.hero_image -}}{{- $heroImg = resources.Get . -}}{{- end -}}
+<section class="hero{{ if $heroImg }} has-bg{{ end }}">
+{{- with $heroImg }}
+	{{- $w768  := .Resize "768x webp q65" -}}
+	{{- $w1280 := .Resize "1280x webp q65" -}}
+	{{- $w1920 := .Resize "1920x webp q65" -}}
+	{{- $aw768  := .Resize "768x avif q50" -}}
+	{{- $aw1280 := .Resize "1280x avif q50" -}}
+	{{- $aw1920 := .Resize "1920x avif q50" -}}
+	<picture>
+		<source type="image/avif" srcset="{{ $aw768.RelPermalink }} 768w, {{ $aw1280.RelPermalink }} 1280w, {{ $aw1920.RelPermalink }} 1920w" sizes="100vw">
+		<img class="hero-bg"
+		     src="{{ $w1280.RelPermalink }}"
+		     srcset="{{ $w768.RelPermalink }} 768w, {{ $w1280.RelPermalink }} 1280w, {{ $w1920.RelPermalink }} 1920w"
+		     sizes="100vw"
+		     alt=""
+		     aria-hidden="true"
+		     fetchpriority="high"
+		     decoding="async"
+		     width="{{ $w1280.Width }}" height="{{ $w1280.Height }}">
+	</picture>
+{{- end }}
 	<div class="container">
 		<h1>{{ .Params.hero_heading | default .Title }}</h1>
 		<p>{{ .Params.hero_subheading | default .Params.subtitle }}</p>
@@ -11,17 +56,17 @@
 		</div>
 		<div class="hero-key-figures d-flex flex-wrap gap-4 mt-5 pt-4">
 			<div>
-				<div class="hero-stat-number" id="hero-articles-count">—</div>
+				<div class="hero-stat-number" id="hero-articles-count">{{ default "—" $heroArticles }}</div>
 				<div class="hero-stat-label">Articles indexed</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
 			<div>
-				<div class="hero-stat-number" id="hero-trials-count">—</div>
+				<div class="hero-stat-number" id="hero-trials-count">{{ default "—" $heroTrials }}</div>
 				<div class="hero-stat-label">Clinical trials tracked</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
 			<div>
-				<div class="hero-stat-number" id="hero-sources-count">—</div>
+				<div class="hero-stat-number" id="hero-sources-count">{{ default "—" $heroSources }}</div>
 				<div class="hero-stat-label">Sources monitored</div>
 			</div>
 			<div class="hero-key-figures-divider"></div>
@@ -43,22 +88,15 @@
 		return typeof n === 'number' ? n.toLocaleString('en') : '—';
 	}
 
-	function setLoading(el) {
-		if (!el) return;
-		el.textContent = '';
-		el.classList.add('is-loading');
-	}
-
 	function setLoaded(el, text) {
 		if (!el) return;
 		el.classList.remove('is-loading');
 		el.textContent = text;
 	}
 
-	// Mark hero numbers as loading immediately
-	['hero-articles-count', 'hero-trials-count', 'hero-sources-count'].forEach(function (id) {
-		setLoading(document.getElementById(id));
-	});
+	// Hero numbers are already rendered server-side (see the build-time fetch
+	// above this template's HTML), so we don't blank them while re-fetching —
+	// only replace them once fresh data actually arrives.
 	// Note: team-count-* elements are rendered later in the DOM, so we
 	// set the loading state after DOMContentLoaded instead of here.
 	document.addEventListener('DOMContentLoaded', function () {
@@ -101,9 +139,8 @@
 			setLoaded(document.getElementById('hero-sources-count'),  fmt(data.sources && data.sources.total));
 		},
 		function () {
-			['hero-articles-count', 'hero-trials-count', 'hero-sources-count'].forEach(function (id) {
-				setLoaded(document.getElementById(id), '—');
-			});
+			// Fetch failed — leave the server-rendered numbers in place rather
+			// than overwriting good data with an em-dash.
 		}
 	);
 
@@ -204,7 +241,7 @@
 			{{ end }}
 		</div>
 		<div class="text-center mt-4">
-			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">ALS and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary);">Contact us to suggest a condition.</a></p>
+			<p style="font-size: 15px; color: var(--color-muted); font-family: var(--font-heading); max-width: 580px; margin: 0 auto;">ALS and other conditions are being evaluated for inclusion. <a href="{{ "/contact/" | relURL }}" style="color: var(--color-primary); text-decoration: underline;">Contact us to suggest a condition.</a></p>
 		</div>
 	</div>
 </section>
@@ -233,20 +270,20 @@
 					<!-- Research digests -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Research Digests</div>
-						{{ range $researchSubscribe }}
+						{{ range $i, $e := $researchSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
-							<label class="form-check-label" for="sub-feed-{{ .Slug }}">{{ .Title }} — weekly digest</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-research-{{ $i }}" name="list" value="{{ $e.Params.list_id }}">
+							<label class="form-check-label" for="sub-feed-research-{{ $i }}">{{ $e.Title }} — weekly digest</label>
 						</div>
 						{{ end }}
 					</div>
 					<!-- Clinical trial alerts -->
 					<div class="col-12 col-md-6">
 						<div class="checkbox-group-label">Clinical Trial Alerts</div>
-						{{ range $trialsSubscribe }}
+						{{ range $i, $e := $trialsSubscribe }}
 						<div class="form-check mb-2">
-							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ .Slug }}" name="list" value="{{ .Params.list_id }}">
-							<label class="form-check-label" for="sub-feed-trials-{{ .Slug }}">{{ .Title }}</label>
+							<input class="form-check-input" type="checkbox" id="sub-feed-trials-{{ $i }}" name="list" value="{{ $e.Params.list_id }}">
+							<label class="form-check-label" for="sub-feed-trials-{{ $i }}">{{ $e.Title }}</label>
 						</div>
 						{{ end }}
 					</div>

@@ -1,0 +1,28 @@
+name: Check Bootstrap usage
+
+# Guards assets/vendor/bootstrap.min.{css,js} (see assets/vendor/README.md),
+# which ships only the Collapse, Offcanvas, and Tab components. Fails the
+# build if a template or theme script references any other Bootstrap
+# component — otherwise that breakage is silent: Hugo builds, Pages deploys,
+# and the markup just renders unstyled/inert in the browser.
+on:
+  pull_request:
+    paths:
+      - 'themes/brain-regeneration/layouts/**'
+      - 'themes/brain-regeneration/static/js/**'
+      - 'content/**'
+      - 'scripts/check-bootstrap-usage.sh'
+  push:
+    branches: [main]
+    paths:
+      - 'themes/brain-regeneration/layouts/**'
+      - 'themes/brain-regeneration/static/js/**'
+      - 'content/**'
+      - 'scripts/check-bootstrap-usage.sh'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh scripts/check-bootstrap-usage.sh

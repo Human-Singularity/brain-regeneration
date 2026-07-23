@@ -81,6 +81,36 @@ category_groups:
         name: "Vafidemstat"
       - id: 100
         name: "Indapamide"
+      - id: 56
+        name: "PTD802"
+      - id: 104
+        name: "Honokiol"
+      - id: 105
+        name: "Valsartan"
+      - id: 106
+        name: "Temporin-GHaR6R Peptide"
+      - id: 107
+        name: "Fucoxanthin"
+      - id: 108
+        name: "PIPE-791"
+      - id: 109
+        name: "Pinocembrin"
+      - id: 110
+        name: "Adenosine A2A receptor antagonist"
+      - id: 111
+        name: "Fractalkine"
+      - id: 112
+        name: "BMP-2/4 blockade"
+      - id: 113
+        name: "Integrated stress response (ISR)"
+      - id: 114
+        name: "Danazol"
+      - id: 115
+        name: "Parbendazole"
+      - id: 116
+        name: "p57kip2 (CDKN1C)"
+      - id: 117
+        name: "MYRF (myelin regulatory factor)"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.

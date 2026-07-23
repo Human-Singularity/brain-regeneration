@@ -1,5 +1,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Preload the two fonts used above the fold (h1 heading + body copy) -->
+<link rel="preload" as="font" type="font/woff2" href="{{ "fonts/inter-700-normal-latin.woff2" | relURL }}" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="{{ "fonts/source-serif-4-400-normal-latin.woff2" | relURL }}" crossorigin>
+
 <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
 {{- $description := .Description | default .Site.Params.description -}}
 {{ with $description }}<meta name="description" content="{{ . }}">{{ end }}
@@ -133,17 +138,26 @@
 <script type="application/ld+json">{{ $org | jsonify | safeJS }}</script>
 {{ end }}
 
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Bootstrap 5 (self-hosted) -->
+{{- $bootstrap := resources.Get "vendor/bootstrap.min.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $bootstrap.RelPermalink }}" integrity="{{ $bootstrap.Data.Integrity }}">
 
-<!-- Bootstrap 5 -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Critical above-the-fold CSS, inlined so first paint doesn't wait on main.css -->
+{{- $critical := resources.Get "css/critical.css" | minify }}
+<style>{{ $critical.Content | safeCSS }}</style>
 
-<!-- Brand styles -->
-<link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
-<link rel="stylesheet" href="{{ "css/feeds-mobile.css" | relURL }}">
+<!-- Brand styles (includes self-hosted @font-face rules for Inter / JetBrains Mono / Source Serif 4) -->
+<!-- Loaded non-blocking: critical.css above already covers the above-the-fold rules -->
+{{- $mainCSS := resources.Get "css/main.css" | minify | fingerprint }}
+<link rel="preload" as="style" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}"></noscript>
+
+{{- $feedLayouts := slice "single" "research-papers" }}
+{{- $needsFeedsMobileCSS := or (in $feedLayouts .Params.layout) (and (eq .Section "research-areas") (eq .Kind "page")) }}
+{{- if $needsFeedsMobileCSS }}
+	{{- $feedsMobileCSS := resources.Get "css/feeds-mobile.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $feedsMobileCSS.RelPermalink }}" integrity="{{ $feedsMobileCSS.Data.Integrity }}">
+{{- end }}
 
 <script>window.__API_BASE__ = {{ .Site.Params.apiBase | default "" | jsonify | safeJS }};</script>
 
@@ -154,4 +168,5 @@
 {{ $env := getenv "HUGO_ENV" }}
 {{ if and (ne $env "staging") (ne $env "development") }}
 <script defer src="https://analytics.brain-regeneration.com/script.js" data-website-id="0535e4a0-8c80-49e8-ba68-325478a631cb"></script>
+<script defer src="https://analytics.brain-regeneration.com/recorder.js" data-website-id="0535e4a0-8c80-49e8-ba68-325478a631cb"></script>
 {{ end }}

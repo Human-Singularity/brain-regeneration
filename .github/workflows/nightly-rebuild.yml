@@ -1,0 +1,18 @@
+name: Nightly rebuild
+
+# Triggers a fresh Cloudflare Pages build once a day, independent of any code
+# push. Needed because build-time data (e.g. the homepage hero stats baked in
+# by resources.GetRemote) only refreshes on a new build.
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Cloudflare Pages deploy hook
+        run: curl -fsS -X POST "$DEPLOY_HOOK_URL"
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}

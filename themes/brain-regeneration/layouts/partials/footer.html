@@ -63,5 +63,6 @@
 	</div>
 </footer>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+<!-- Bootstrap JS (self-hosted) -->
+{{- $bootstrapJS := resources.Get "vendor/bootstrap.min.js" | fingerprint }}
+<script src="{{ $bootstrapJS.RelPermalink }}" integrity="{{ $bootstrapJS.Data.Integrity }}" defer></script>

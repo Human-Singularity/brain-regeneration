@@ -3,6 +3,7 @@ import {
 	SITE_ORIGIN,
 	buildDescription,
 	cleanText,
+	authorName,
 	fetchJson,
 	SetText,
 	SetAttr,
@@ -13,16 +14,12 @@ const ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 
 async function findAuthorByOrcid(orcid) {
 	const url = new URL(`${API_BASE}/authors/`);
-	url.searchParams.set('search', orcid);
+	url.searchParams.set('orcid', orcid);
 	url.searchParams.set('format', 'json');
-	url.searchParams.set('page_size', '50');
 	const data = await fetchJson(url.toString(), 3600);
 	if (!data) return null;
 	const results = data.results || [];
-	return (
-		results.find((a) => a && a.ORCID && String(a.ORCID).toUpperCase() === orcid.toUpperCase()) ||
-		null
-	);
+	return results[0] || null;
 }
 
 function buildJsonLd(author, orcid) {
@@ -30,7 +27,7 @@ function buildJsonLd(author, orcid) {
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
-		name: cleanText(author.full_name || ''),
+		name: cleanText(authorName(author)),
 		url,
 		mainEntityOfPage: url,
 		sameAs: `https://orcid.org/${orcid}`,
@@ -50,9 +47,9 @@ export async function onRequest(context) {
 	const author = await findAuthorByOrcid(orcid);
 
 	// Unknown ORCID / API down / malformed response → fail open with the unmodified shell.
-	if (!author || !author.full_name) return shell;
+	if (!author || !authorName(author)) return shell;
 
-	const name = cleanText(author.full_name);
+	const name = cleanText(authorName(author));
 	const pageTitle = `${name} — Brain Regeneration Observatory`;
 	const description = buildDescription(
 		`${name} — researcher profile tracked by the Brain Regeneration Observatory, including publications and clinical trial involvement in neurodegenerative disease research.`

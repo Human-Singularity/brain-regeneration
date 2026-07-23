@@ -5,9 +5,11 @@
 {{ define "main" }}
 {{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
 
-<div id="author-shell" data-api-base="{{ $apiBase }}">
+<div id="author-shell"
+	data-api-base="{{ $apiBase }}"
+	data-site-title="{{ .Site.Title }}">
 
-	<main id="author-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
+	<div id="author-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
 		<div class="container">
 
 			<p id="author-status" class="visually-hidden" role="status" aria-live="polite">Loading author profile…</p>
@@ -105,7 +107,7 @@
 			<div id="author-content" hidden></div>
 
 		</div>
-	</main>
+	</div>
 
 </div>
 {{ end }}
