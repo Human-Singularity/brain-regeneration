@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinical Trials Around the World — lo-fi mockups (GregoryAI)</title>
+<style>
+	/* ---------------------------------------------------------------
+	   Lo-fi wireframe styling. Grayscale + one accent, so the point
+	   reads as "structure & flow", not final visual design.
+	   Built self-contained so it can be dropped onto a page and later
+	   wired to the live /trials/ API.
+	--------------------------------------------------------------- */
+	:root {
+		--ink: #1f2328;
+		--muted: #6b7280;
+		--line: #c9ced6;
+		--line-strong: #9aa1ac;
+		--paper: #ffffff;
+		--wash: #f4f5f7;
+		--wash2: #eceef1;
+		--accent: #2f7f7a;        /* selected / interactive */
+		--accent-soft: #cfe4e2;
+		--bubble: #2f7f7a;
+		--note: #b45309;          /* design-note callouts */
+		--note-bg: #fff7ed;
+		--danger: #b91c1c;
+		--radius: 10px;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	}
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		font-family: var(--sans);
+		color: var(--ink);
+		background: var(--wash);
+		line-height: 1.45;
+		-webkit-font-smoothing: antialiased;
+	}
+	.wrap { max-width: 1240px; margin: 0 auto; padding: 20px 20px 80px; }
+
+	/* Header */
+	header.page { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 24px; margin-bottom: 6px; }
+	header.page h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+	header.page .sub { color: var(--muted); font-size: 13px; margin-top: 2px; max-width: 640px; }
+	.badge { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 999px; padding: 2px 10px; }
+
+	/* Control bar */
+	.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+		background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+		padding: 12px 14px; margin: 14px 0 18px; }
+	.controls .group { display: flex; align-items: center; gap: 8px; }
+	.controls label.k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+	select, .pill-input {
+		font: inherit; font-size: 14px; color: var(--ink); background: var(--paper);
+		border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px;
+	}
+	select.slot { -webkit-appearance: none; appearance: none; background: transparent; font: inherit; }
+	.spacer { flex: 1 1 auto; }
+	.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+	.toggle input { accent-color: var(--note); }
+
+	/* View tabs */
+	.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+	.tab {
+		font: inherit; font-size: 13px; cursor: pointer; background: var(--wash2);
+		border: 1px solid var(--line); border-bottom: none; color: var(--muted);
+		padding: 9px 14px; border-radius: 10px 10px 0 0;
+	}
+	.tab .lead { font-weight: 600; color: var(--ink); }
+	.tab[aria-selected="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 -2px 0 var(--accent) inset; }
+	.viewframe { background: var(--paper); border: 1px solid var(--line); border-radius: 0 var(--radius) var(--radius) var(--radius); }
+	.view { display: none; padding: 16px; }
+	.view.active { display: block; }
+	.view h2.vt { margin: 2px 0 2px; font-size: 15px; }
+	.view p.vd { margin: 0 0 14px; color: var(--muted); font-size: 13px; max-width: 780px; }
+
+	/* Generic panels */
+	.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+	.panel h3 { margin: 0; padding: 10px 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+		color: var(--muted); border-bottom: 1px solid var(--line); }
+
+	/* Filters rail */
+	.fgroup { padding: 10px 12px; border-bottom: 1px dashed var(--line); }
+	.fgroup:last-child { border-bottom: none; }
+	.fgroup .flabel { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px; }
+	.check { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; cursor: pointer; }
+	.check input { accent-color: var(--accent); }
+	.check .cnt { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+	.chiprow { display: flex; flex-wrap: wrap; gap: 6px; }
+	.chip { font-size: 12px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 10px; background: var(--paper); cursor: pointer; color: var(--ink); }
+	.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+	/* Map */
+	.mapcard { position: relative; }
+	.mapwrap { position: relative; width: 100%; }
+	svg.map { display: block; width: 100%; height: auto; background: linear-gradient(#fbfcfd,#f6f8fa); border-radius: 8px; }
+	.land { fill: #e4e8ec; stroke: #d3d8de; stroke-width: 0.6; }
+	.grat { stroke: #e9edf1; stroke-width: 0.5; fill: none; }
+	.bubble { fill: var(--bubble); fill-opacity: 0.42; stroke: var(--bubble); stroke-width: 1; cursor: pointer; transition: fill-opacity .12s; }
+	.bubble:hover { fill-opacity: 0.68; }
+	.bubble.sel { fill: var(--note); stroke: var(--note); fill-opacity: 0.75; }
+	.blabel { font-size: 9px; fill: #33393f; pointer-events: none; }
+	.maplegend { display: flex; align-items: center; gap: 16px; padding: 8px 10px; color: var(--muted); font-size: 12px; flex-wrap: wrap; }
+	.legdot { display: inline-flex; align-items: baseline; gap: 6px; }
+	.legdot span.c { display: inline-block; border-radius: 50%; background: var(--bubble); opacity: 0.5; }
+	.mapmeta { font-size: 12px; color: var(--muted); }
+	.mapmeta b { color: var(--ink); }
+
+	/* Results list */
+	.results { display: flex; flex-direction: column; gap: 10px; max-height: 560px; overflow: auto; padding: 12px; }
+	.tcard { border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
+	.tcard .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+	.tcard .ttl { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+	.tcard .reg { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+	.tcard .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+	.tag { font-size: 11px; border-radius: 6px; padding: 2px 8px; background: var(--wash2); color: #40474e; border: 1px solid var(--line); }
+	.tag.rec { background: var(--accent-soft); border-color: #a9cfcb; color: #1f5a56; }
+	.tag.done { background: #eceef1; color: #6b7280; }
+	.tag.soon { background: #fdefd6; border-color: #f2d9a8; color: #8a5a12; }
+	.tcard .where { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+	/* Layout grids */
+	.gridA { display: grid; grid-template-columns: 232px 1fr 340px; gap: 14px; align-items: start; }
+	.gridB { display: grid; grid-template-columns: 1fr; gap: 14px; }
+	@media (max-width: 1080px) { .gridA { grid-template-columns: 1fr; } }
+
+	/* Atlas view (B) */
+	.atlas-ribbon { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+	.stat { flex: 1 1 150px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--wash); }
+	.stat .n { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+	.stat .l { font-size: 12px; color: var(--muted); }
+	.atlas-map { background: #12181d; border-radius: 10px; }
+	svg.map.dark { background: linear-gradient(#161d23,#0e1317); }
+	svg.map.dark .land { fill: #1e262d; stroke: #263039; }
+	svg.map.dark .grat { stroke: #202932; }
+	svg.map.dark .blabel { fill: #aab4bd; }
+	.dark .bubble { fill: #57c7bf; stroke: #7fded6; fill-opacity: 0.5; }
+	.dark .bubble.sel { fill: #f0b64f; stroke: #f7cd7f; }
+	.timeline { display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: var(--muted); font-size: 12px; }
+	.trackbar { flex: 1; height: 8px; background: var(--wash2); border-radius: 999px; position: relative; }
+	.trackbar .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: var(--accent); border-radius: 999px; }
+	.trackbar .knob { position: absolute; top: -4px; left: 62%; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); transform: translateX(-50%); }
+
+	/* Drawer */
+	.drawer { border: 1px solid var(--line); border-radius: 10px; margin-top: 12px; overflow: hidden; }
+	.drawer .dh { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--wash); border-bottom: 1px solid var(--line); }
+	.drawer .dh b { font-size: 14px; }
+	.drawer .db { padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+	@media (max-width: 720px){ .drawer .db { grid-template-columns: 1fr; } }
+
+	/* Patient view (C) */
+	.phone { max-width: 420px; margin: 0 auto; border: 1px solid var(--line-strong); border-radius: 22px; padding: 14px; background: var(--paper); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+	.phone .notch { width: 120px; height: 6px; border-radius: 999px; background: var(--line); margin: 2px auto 12px; }
+	.ask { font-size: 18px; line-height: 1.5; }
+	.ask .slot { display: inline-block; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 600; padding: 0 4px; cursor: pointer; }
+	.cbig { display: flex; align-items: center; gap: 10px; margin: 12px 0; font-size: 14px; }
+	.cbig input { width: 18px; height: 18px; accent-color: var(--accent); }
+	.miniwrap { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 10px 0 14px; }
+	.pcard { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+	.pcard.best { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+	.pcard .rank { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 700; }
+	.pcard h4 { margin: 4px 0 6px; font-size: 15px; }
+	.pcard .elig { font-size: 13px; color: #40474e; margin: 6px 0; }
+	.pcard .elig .ok { color: var(--accent); font-weight: 600; }
+	.cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+	.cta.ghost { background: var(--paper); color: var(--accent); border: 1px solid var(--accent); }
+
+	/* Design notes */
+	.note-callout { display: none; }
+	body.notes .note-callout {
+		display: block; background: var(--note-bg); border: 1px dashed var(--note);
+		color: #7c3f06; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin: 10px 0;
+	}
+	body.notes .note-callout b { color: var(--note); }
+	.note-inline { display: none; }
+	body.notes .note-inline { display: inline-block; background: var(--note); color: #fff; font-size: 10px;
+		border-radius: 999px; width: 16px; height: 16px; line-height: 16px; text-align: center; margin-left: 6px; vertical-align: middle; }
+
+	.foot { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }
+	.foot code { background: var(--wash2); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+	<header class="page">
+		<div>
+			<h1>Clinical Trials Around the World <span class="badge">lo-fi mockup</span></h1>
+			<div class="sub">Three layout directions for a map-driven trials explorer on brain-regeneration.com, seeded with a real sample from the GregoryAI <code>/trials/</code> API. Grayscale on purpose — this is about structure and flow, not final visual design.</div>
+		</div>
+		<div class="spacer"></div>
+		<label class="toggle"><input type="checkbox" id="notesToggle"> Show design notes</label>
+	</header>
+
+	<div class="controls">
+		<div class="group">
+			<label class="k" for="conditionSel">Condition</label>
+			<select id="conditionSel">
+				<option value="ms">Multiple Sclerosis</option>
+				<option value="pd">Parkinson's Disease</option>
+				<option value="ad">Alzheimer's Disease</option>
+			</select>
+		</div>
+		<div class="group">
+			<label class="k">Showing</label>
+			<div class="chiprow">
+				<button class="chip" id="metricAll" aria-pressed="true">All statuses</button>
+				<button class="chip" id="metricRec" aria-pressed="false">Recruiting only</button>
+			</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="mapmeta" id="globalMeta"></div>
+	</div>
+
+	<div class="tabs" role="tablist">
+		<button class="tab" role="tab" aria-selected="true" data-view="A"><span class="lead">A · Explorer</span> — filters + map + list</button>
+		<button class="tab" role="tab" aria-selected="false" data-view="B"><span class="lead">B · Atlas</span> — landscape scan</button>
+		<button class="tab" role="tab" aria-selected="false" data-view="C"><span class="lead">C · Find a trial near me</span> — patient path</button>
+	</div>
+
+	<div class="viewframe">
+
+		<!-- ============ VIEW A : EXPLORER ============ -->
+		<section class="view active" id="viewA">
+			<h2 class="vt">A · Explorer <span class="note-inline">1</span></h2>
+			<p class="vd">The balanced workhorse. Filters on the left, world map in the middle, matching trials on the right. Click a country bubble to focus the list. Serves the doctor scanning the landscape <em>and</em> the patient narrowing to something joinable.</p>
+			<div class="note-callout"><b>Design note.</b> One screen, two jobs. Doctors read the map first (where is the research?); patients lean on the filters + list (what can I join?). Everything cross-filters. Wired live: each filter maps to a <code>/trials/</code> query param (<code>recruitment_status_normalized</code>, <code>phase_normalized</code>, <code>subject_id</code>, <code>country</code>, <code>age_eligible</code>); status and phase both accept multiple picks, sent as one comma-separated OR query; the map is a proportional-symbol layer over the live per-country counts from <code>/trials/stats/</code>.</p></div>
+
+			<div class="gridA">
+				<!-- Filters -->
+				<aside class="panel">
+					<h3>Filter</h3>
+					<div class="fgroup">
+						<div class="flabel">Recruitment status</div>
+						<label class="check"><input type="checkbox" data-status="recruiting"> Recruiting <span class="cnt" data-cnt="rec">—</span></label>
+						<label class="check"><input type="checkbox" data-status="not_yet_recruiting"> Not yet recruiting <span class="cnt" data-cnt="soon">—</span></label>
+						<label class="check"><input type="checkbox" data-status="active_not_recruiting"> Active, not recruiting <span class="cnt" data-cnt="active">—</span></label>
+						<label class="check"><input type="checkbox" data-status="completed"> Completed <span class="cnt" data-cnt="done">—</span></label>
+					</div>
+					<div class="fgroup">
+						<div class="flabel">Phase</div>
+						<div class="chiprow">
+							<button class="chip" aria-pressed="false">Phase 1</button>
+							<button class="chip" aria-pressed="false">Phase 2</button>
+							<button class="chip" aria-pressed="false">Phase 3</button>
+							<button class="chip" aria-pressed="false">Phase 4</button>
+						</div>
+					</div>
+					<div class="fgroup">
+						<div class="flabel">Region</div>
+						<div class="chiprow">
+							<button class="chip" aria-pressed="false">EEA</button>
+							<button class="chip" aria-pressed="false">North America</button>
+							<button class="chip" aria-pressed="false">Asia</button>
+							<button class="chip" aria-pressed="false">Rest of world</button>
+						</div>
+					</div>
+					<div class="fgroup">
+						<div class="flabel">Eligibility</div>
+						<label class="check"><input type="checkbox" data-elig="adult18"> Accepts adults 18+</label>
+						<label class="check"><input type="checkbox" data-elig="allgenders"> Accepts all genders</label>
+						<label class="check"><input type="checkbox" data-elig="interventional"> Interventional only</label>
+					</div>
+					<div class="note-callout" style="margin:10px;"><b>2.</b> Filter counts update live from the API so a patient never wades into an empty result set. "Accepts adults 18+" is now a real server filter (<code>age_eligible=18</code>) — no client-side approximation.</div>
+				</aside>
+
+				<!-- Map -->
+				<div class="panel mapcard">
+					<h3>Where the trials are</h3>
+					<div class="mapwrap" id="mapA"></div>
+					<div class="maplegend">
+						<span class="legdot"><span class="c" style="width:8px;height:8px;"></span> 10</span>
+						<span class="legdot"><span class="c" style="width:16px;height:16px;"></span> 50</span>
+						<span class="legdot"><span class="c" style="width:26px;height:26px;"></span> 200+ trials</span>
+						<span class="spacer" style="flex:1"></span>
+						<span id="metaA" class="mapmeta"></span>
+					</div>
+				</div>
+
+				<!-- Results -->
+				<div class="panel">
+					<h3 id="resHeadA">Matching trials</h3>
+					<div class="results" id="resultsA"></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ VIEW B : ATLAS ============ -->
+		<section class="view" id="viewB">
+			<h2 class="vt">B · Atlas <span class="note-inline">3</span></h2>
+			<p class="vd">Map-forward, for scanning the global picture at a glance. Big headline stats, a dark full-width map that makes clusters pop, a time scrubber to watch activity build, and a slide-up drawer with a country's trials when you click it.</p>
+			<div class="note-callout"><b>Design note.</b> Optimised for the doctor / researcher "landscape" job and for embedding as a hero on a condition page. The scrubber is bound to <code>date_registration</code> for an animated build-up; a production pass would swap the proportional bubbles for choropleth country shading (needs country polygons).</div>
+
+			<div class="atlas-ribbon" id="ribbonB"></div>
+
+			<div class="panel atlas-map">
+				<div class="mapwrap" id="mapB"></div>
+				<div class="timeline">
+					<span id="yearMin">2005</span>
+					<div class="trackbar" id="trackbarB"><div class="fill" id="trackFill"></div><div class="knob" id="trackKnob"></div></div>
+					<span id="yearMax">today</span>
+					<span class="mapmeta" id="yearReadout" style="min-width:90px;"></span>
+					<button type="button" class="chip" id="playBtn" style="margin-left:10px;">▶ play build-up</button>
+				</div>
+			</div>
+
+			<div class="drawer" id="drawerB">
+				<div class="dh"><b id="drawerTitle">Click a country to see its trials</b><span class="mapmeta" id="drawerMeta"></span></div>
+				<div class="db" id="drawerBody">
+					<div class="mapmeta" style="grid-column:1/-1;">No country selected. The map above shows every country with at least one registered trial for the chosen condition.</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ VIEW C : PATIENT ============ -->
+		<section class="view" id="viewC">
+			<h2 class="vt">C · Find a trial near me <span class="note-inline">4</span></h2>
+			<p class="vd">The patient path, shown in a phone frame because most patients arrive on mobile. Plain-language question up top, a map zoomed to their country, then recruiting trials ranked with human-readable eligibility and a clear next step.</p>
+			<div class="note-callout"><b>Design note.</b> No jargon, no dead ends. Eligibility is translated from <code>inclusion_agemin/agemax/gender</code> into a sentence; "Recruiting now" is the only status that leads. Age is optional and, when given, filters server-side via <code>age_eligible</code> — leave it blank to see trials of every age range. The same page works as a full-width web layout — the phone frame just signals the primary context. CTA opens the trial's contact / registry link.</div>
+
+			<div class="phone">
+				<div class="notch"></div>
+				<div class="ask">
+					I'm looking for trials about <span class="slot" id="slotCond">Multiple Sclerosis</span> near <select class="slot" id="slotCountry"></select>, I'm <input class="slot" id="slotAge" type="number" min="0" max="120" placeholder="any age" style="width:64px;"> years old.
+				</div>
+				<label class="cbig"><input type="checkbox" checked> Only show trials recruiting now</label>
+				<div class="miniwrap"><div class="mapwrap" id="mapC"></div></div>
+				<div id="patientList"></div>
+			</div>
+		</section>
+
+	</div>
+
+	<div class="foot">
+		Lo-fi mockup, live-wired · data from <code id="apiBaseFoot"></code><code>/trials/</code> and <code>/trials/stats/</code> (GregoryAI) · country codes are ISO-2, mapped to names for display · maps are schematic placeholders for a production Leaflet/D3 layer.
+	</div>
+</div>
+
+<script>
+"use strict";
+
+/* ================= config ================= */
+const API_BASE = 'http://localhost:8000';           // DEV: local gregory container
+// const API_BASE = 'https://api.brain-regeneration.com';  // PROD
+
+const CONDITIONS = {
+	ms: { id: 1,  label: "Multiple Sclerosis" },
+	pd: { id: 14, label: "Parkinson's Disease" },
+	ad: { id: 13, label: "Alzheimer's Disease" },
+};
+
+/* phase_normalized and recruitment_status_normalized both accept comma-separated
+   OR values now, so a multi-bucket pick collapses to one call: union the canonical
+   slugs behind every selected bucket and join them with a comma (see phaseSlugParam). */
+const PHASE_BUCKETS = {
+	"Phase 1": ["early_phase_1","phase_1","phase_1_2"],
+	"Phase 2": ["phase_2","phase_2_3"],
+	"Phase 3": ["phase_3","phase_3_4"],
+	"Phase 4": ["phase_4","post_market"],
+};
+/* region is also a single-value filter; "Rest of world" has no clean slug, so
+   that chip stays visual-only (see LIVE-DATA-PLAN limitations). */
+const REGION_CHIP_SLUG = { "EEA": "europe", "North America": "north_america", "Asia": "asia" };
+
+const STATUS_LABEL = { recruiting:"Recruiting", not_yet_recruiting:"Not yet recruiting", active_not_recruiting:"Active, not recruiting", completed:"Completed" };
+const STATUS_CLASS = { recruiting:"rec", not_yet_recruiting:"soon", active_not_recruiting:"", completed:"done" };
+
+/* ISO 3166-1 alpha-2 -> display name, for the countries seen in this org's trial data. */
+const ISO2_TO_NAME = {
+	US:"United States", CA:"Canada", MX:"Mexico", BR:"Brazil", AR:"Argentina", CL:"Chile", CO:"Colombia", PE:"Peru",
+	EC:"Ecuador", PY:"Paraguay", UY:"Uruguay", VE:"Venezuela", CU:"Cuba", DO:"Dominican Republic", GT:"Guatemala",
+	HN:"Honduras", NI:"Nicaragua", CR:"Costa Rica", PA:"Panama", PR:"Puerto Rico", TT:"Trinidad and Tobago",
+	AG:"Antigua and Barbuda", KY:"Cayman Islands", GP:"Guadeloupe", MQ:"Martinique", AS:"American Samoa",
+	GB:"United Kingdom", IE:"Ireland", FR:"France", DE:"Germany", IT:"Italy", ES:"Spain", PT:"Portugal",
+	NL:"Netherlands", BE:"Belgium", PL:"Poland", CZ:"Czechia", HU:"Hungary", AT:"Austria", CH:"Switzerland",
+	SE:"Sweden", NO:"Norway", FI:"Finland", DK:"Denmark", GR:"Greece", BG:"Bulgaria", SK:"Slovakia", RS:"Serbia",
+	HR:"Croatia", RU:"Russia", UA:"Ukraine", TR:"Türkiye", IS:"Iceland", LU:"Luxembourg", MT:"Malta", CY:"Cyprus",
+	EE:"Estonia", LT:"Lithuania", LV:"Latvia", RO:"Romania", SI:"Slovenia", BA:"Bosnia and Herzegovina",
+	ME:"Montenegro", MK:"North Macedonia", AL:"Albania", MD:"Moldova", BY:"Belarus", GE:"Georgia", AM:"Armenia",
+	AD:"Andorra", MC:"Monaco", FO:"Faroe Islands",
+	IL:"Israel", IR:"Iran", TW:"Taiwan", CN:"China", JP:"Japan", KR:"South Korea", KP:"North Korea", IN:"India",
+	AU:"Australia", NZ:"New Zealand", ZA:"South Africa", SA:"Saudi Arabia", AE:"United Arab Emirates",
+	JO:"Jordan", LB:"Lebanon", KW:"Kuwait", QA:"Qatar", BH:"Bahrain", OM:"Oman", SY:"Syria",
+	EG:"Egypt", DZ:"Algeria", MA:"Morocco", TN:"Tunisia", LY:"Libya", ET:"Ethiopia", KE:"Kenya", GH:"Ghana",
+	NG:"Nigeria", UG:"Uganda", BW:"Botswana", ZM:"Zambia", BF:"Burkina Faso", KM:"Comoros", MU:"Mauritius",
+	KZ:"Kazakhstan", PK:"Pakistan", BD:"Bangladesh", LK:"Sri Lanka", TH:"Thailand", VN:"Vietnam", MY:"Malaysia",
+	ID:"Indonesia", SG:"Singapore", PH:"Philippines", HK:"Hong Kong", NC:"New Caledonia", VI:"Virgin Islands (U.S.)",
+};
+
+/* Approximate [lon, lat] centroids for the same country set — good enough for a proportional bubble map. */
+const ISO2_TO_CENTROID = {
+	US:[-98,39], CA:[-106,56], MX:[-102,23], BR:[-52,-10], AR:[-64,-34], CL:[-71,-35], CO:[-74,4], PE:[-76,-10],
+	EC:[-78.5,-1.5], PY:[-58,-23.4], UY:[-56,-33], VE:[-66,8], CU:[-79,21.5], DO:[-70.5,19], GT:[-90.5,15.5],
+	HN:[-86.5,15], NI:[-85,12.9], CR:[-84,10], PA:[-80,8.5], PR:[-66.5,18.2], TT:[-61.4,10.5],
+	AG:[-61.8,17.1], KY:[-81.2,19.3], GP:[-61.6,16.2], MQ:[-61,14.6], AS:[-170.7,-14.3],
+	GB:[-2,54], IE:[-8,53], FR:[2,46], DE:[10,51], IT:[12,42], ES:[-4,40], PT:[-8,39.5],
+	NL:[5,52], BE:[4,50.6], PL:[19,52], CZ:[15,50], HU:[19,47], AT:[14,47.5], CH:[8,47],
+	SE:[16,62], NO:[9,61], FI:[26,64], DK:[10,56], GR:[22,39], BG:[25,43], SK:[19,48.7], RS:[21,44],
+	HR:[16,45], RU:[90,61], UA:[32,49], TR:[35,39], IS:[-19,65], LU:[6.1,49.7], MT:[14.4,35.9], CY:[33,35],
+	EE:[26,59], LT:[24,55.2], LV:[25,57], RO:[25,46], SI:[15,46], BA:[17.8,44],
+	ME:[19.3,42.7], MK:[21.7,41.6], AL:[20,41], MD:[28.4,47.2], BY:[28,53.5], GE:[43.4,42.3], AM:[45,40],
+	AD:[1.5,42.5], MC:[7.4,43.7], FO:[-6.9,62],
+	IL:[35,31], IR:[53,32], TW:[121,24], CN:[104,35], JP:[138,36], KR:[127.7,36.5], KP:[127.5,40], IN:[79,22],
+	AU:[134,-25], NZ:[172,-41], ZA:[25,-29], SA:[45,24], AE:[54,24],
+	JO:[36.2,31.2], LB:[35.9,33.9], KW:[47.5,29.3], QA:[51.2,25.3], BH:[50.6,26], OM:[56,21], SY:[38.5,35],
+	EG:[30,27], DZ:[3,28], MA:[-6,32], TN:[9.5,34], LY:[18,27], ET:[39,8], KE:[37.9,0.02], GH:[-1,7.9],
+	NG:[8,9.6], UG:[32.3,1.4], BW:[24,-22], ZM:[28,-13.5], BF:[-1.5,12.3], KM:[43.3,-11.9], MU:[57.5,-20.3],
+	KZ:[67,48], PK:[69,30], BD:[90.4,23.7], LK:[80.8,7.9], TH:[101,15], VN:[106,16], MY:[112,3.5],
+	ID:[113.9,-0.8], SG:[103.8,1.35], PH:[122,13], HK:[114.2,22.3], NC:[165.6,-21.5], VI:[-64.8,18.3],
+};
+
+/* Very rough continent silhouettes, [lon,lat] rings — schematic backdrop only. */
+const LAND = [
+	[[-168,66],[-150,70],[-95,72],[-62,60],[-56,50],[-66,44],[-80,26],[-97,18],[-106,23],[-124,40],[-140,60],[-168,66]],
+	[[-92,14],[-83,9],[-77,8],[-70,11],[-52,4],[-35,-6],[-40,-23],[-58,-35],[-71,-52],[-75,-45],[-70,-18],[-81,-4],[-79,7],[-92,14]],
+	[[-11,36],[-9,44],[-2,49],[3,51],[6,58],[12,64],[26,71],[42,66],[46,50],[30,45],[28,40],[12,38],[-6,36],[-11,36]],
+	[[-17,15],[-16,28],[10,34],[32,31],[43,12],[51,12],[41,-4],[35,-20],[25,-34],[18,-35],[12,-17],[8,4],[-8,5],[-17,15]],
+	[[26,40],[40,46],[52,47],[62,56],[92,73],[140,73],[162,66],[145,50],[136,35],[122,30],[120,22],[106,10],[96,6],[80,8],[72,20],[60,25],[46,12],[44,25],[34,37],[26,40]],
+	[[114,-22],[129,-12],[142,-11],[150,-25],[148,-38],[135,-35],[123,-34],[114,-22]]
+];
+
+const VBW = 1000, VBH = 500;
+function project(lon, lat) { return [ (lon + 180) / 360 * VBW, (90 - lat) / 180 * VBH ]; }
+function landPaths() {
+	return LAND.map(ring => {
+		const d = ring.map((p,i) => {
+			const [x,y] = project(p[0], p[1]);
+			return (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1);
+		}).join(" ") + " Z";
+		return `<path class="land" d="${d}"/>`;
+	}).join("");
+}
+function graticule() {
+	let g = "";
+	for (let lon = -150; lon <= 150; lon += 30) { const [x] = project(lon, 0); g += `<line class="grat" x1="${x}" y1="0" x2="${x}" y2="${VBH}"/>`; }
+	for (let lat = -60; lat <= 60; lat += 30) { const [,y] = project(0, lat); g += `<line class="grat" x1="0" y1="${y}" x2="${VBW}" y2="${y}"/>`; }
+	return g;
+}
+
+/* ================= fetch layer ================= */
+const statsCache = new Map();
+const trialsCache = new Map();
+function buildQS(params) {
+	const usp = new URLSearchParams();
+	for (const k in params) {
+		const v = params[k];
+		if (v === undefined || v === null || v === "") continue;
+		usp.set(k, v);
+	}
+	usp.set("format", "json");
+	return usp.toString();
+}
+async function statsRaw(params) {
+	const qs = buildQS(params);
+	if (statsCache.has(qs)) return statsCache.get(qs);
+	const p = fetch(`${API_BASE}/trials/stats/?${qs}`).then(r => {
+		if (!r.ok) throw new Error(`API ${r.status} ${r.statusText}`);
+		return r.json();
+	});
+	statsCache.set(qs, p);
+	try { return await p; } catch (e) { statsCache.delete(qs); throw e; }
+}
+async function trialsRaw(params) {
+	const qs = buildQS(params);
+	if (trialsCache.has(qs)) return trialsCache.get(qs);
+	const p = fetch(`${API_BASE}/trials/?${qs}`).then(r => {
+		if (!r.ok) throw new Error(`API ${r.status} ${r.statusText}`);
+		return r.json();
+	});
+	trialsCache.set(qs, p);
+	try { return await p; } catch (e) { trialsCache.delete(qs); throw e; }
+}
+
+/* Union the canonical slugs behind every selected phase bucket into one comma-separated
+   OR value for phase_normalized — a single request now covers any combination of buckets. */
+function phaseSlugParam(phaseLabels) {
+	if (!phaseLabels || !phaseLabels.length) return undefined;
+	const slugs = [];
+	phaseLabels.forEach(label => (PHASE_BUCKETS[label] || []).forEach(slug => { if (!slugs.includes(slug)) slugs.push(slug); }));
+	return slugs.join(",") || undefined;
+}
+function statusSlugParam(statuses) {
+	return (statuses && statuses.length) ? statuses.join(",") : undefined;
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch])); }
+function loadingMsg() { return `<div class="mapmeta" style="padding:16px;text-align:center;">Loading…</div>`; }
+function errorMsg(err) { return `<div class="mapmeta" style="padding:16px;color:var(--danger);">Couldn't load data from ${escapeHtml(API_BASE)} — ${escapeHtml((err && err.message) || err)}.</div>`; }
+
+/* ================= state ================= */
+let state = {
+	cond: "ms", metric: "all", view: "A", selected: null,
+	statusFilters: [], phaseFilters: [], regionFilter: null,
+	eligAdult: false, eligGender: false, eligInterventional: false,
+	pageA: 1, listA: [], countA: 0, hasNextA: false,
+	patientCountry: "PT", patientRecruitingOnly: true, patientAge: null,
+	year: null, yearMin: null, yearMax: new Date().getFullYear(), playing: null,
+};
+
+function currentSubjectId() { return CONDITIONS[state.cond].id; }
+function metricStatusParam() { return state.metric === "rec" ? "recruiting" : undefined; }
+function effectiveStatusA() { return state.metric === "rec" ? "recruiting" : statusSlugParam(state.statusFilters); }
+
+/* ================= map + card rendering ================= */
+function renderMapInto(containerId, byCountry, opts) {
+	opts = opts || {};
+	const entries = (byCountry || []).filter(e => e.country && ISO2_TO_CENTROID[e.country]);
+	const max = entries.reduce((m, e) => Math.max(m, e.count), 1);
+	const dark = opts.dark ? "dark" : "";
+	let bubbles = "";
+	entries.slice().sort((a, b) => b.count - a.count).forEach(e => {
+		const [lon, lat] = ISO2_TO_CENTROID[e.country];
+		const [x, y] = project(lon, lat);
+		const r = Math.max(3.5, 3 + Math.sqrt(e.count) * (26 / Math.sqrt(max)));
+		const name = ISO2_TO_NAME[e.country] || e.country;
+		const sel = (state.selected === e.country) ? " sel" : "";
+		const showLabel = opts.labels !== false && (r > 9 || state.selected === e.country);
+		bubbles += `<circle class="bubble${sel}" data-country="${e.country}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${escapeHtml(name)}: ${e.count} trials</title></circle>`;
+		if (showLabel) bubbles += `<text class="blabel" x="${x.toFixed(1)}" y="${(y - r - 2).toFixed(1)}" text-anchor="middle">${escapeHtml(name)}</text>`;
+	});
+	const el = document.getElementById(containerId);
+	el.innerHTML = `<svg class="map ${dark}" viewBox="0 0 ${VBW} ${VBH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map of trial counts">
+		${graticule()}${landPaths()}${bubbles}</svg>`;
+	if (opts.onClick) {
+		el.querySelectorAll(".bubble").forEach(b => b.addEventListener("click", () => opts.onClick(b.getAttribute("data-country"))));
+	}
+}
+
+function displayId(t) { const ids = t.identifiers || {}; return ids.nct || ids.euct || ids.eudract || t.trial_id; }
+function sponsorName(t) { return (t.sponsor && t.sponsor.name) || t.primary_sponsor || "Unknown sponsor"; }
+function detailLink(t) { return t.link || (t.links && Object.values(t.links)[0]) || null; }
+function formatYears(y) { return (y % 1 === 0) ? String(y) : y.toFixed(1); }
+function eligibilitySentence(t) {
+	const min = t.inclusion_age_min_years, max = t.inclusion_age_max_years;
+	let age = "any age";
+	if (min != null && max != null) age = `ages ${formatYears(min)}–${formatYears(max)}`;
+	else if (min != null) age = `ages ${formatYears(min)}+`;
+	else if (max != null) age = `up to age ${formatYears(max)}`;
+	const gender = t.inclusion_gender_normalized === "all" ? "all genders" : (t.inclusion_gender_normalized || "unspecified gender");
+	return `${age} · ${gender}`;
+}
+function statusTagClass(t) { return STATUS_CLASS[t.recruitment_status_normalized] || ""; }
+function statusTagLabel(t) { return STATUS_LABEL[t.recruitment_status_normalized] || t.recruitment_status || "Unknown"; }
+function phaseLabelOf(t) {
+	const slug = t.phase_normalized;
+	for (const label in PHASE_BUCKETS) if (PHASE_BUCKETS[label].includes(slug)) return label;
+	return t.phase || "Phase n/a";
+}
+function countryNames(t, limit) {
+	const list = (t.countries_normalized || []).map(c => ISO2_TO_NAME[c] || c);
+	return limit ? list.slice(0, limit) : list;
+}
+function trialCard(t) {
+	const link = detailLink(t);
+	return `<div class="tcard">
+		<div class="top">
+			<div><div class="ttl">${escapeHtml(t.title || "Untitled trial")}</div><span class="tag ${statusTagClass(t)}">${escapeHtml(statusTagLabel(t))}</span></div>
+			<div class="reg">${escapeHtml(String(displayId(t)))}<br>${escapeHtml(t.source_register || "")}</div>
+		</div>
+		<div class="meta">
+			<span class="tag">${escapeHtml(phaseLabelOf(t))}</span>
+			<span class="tag">n=${escapeHtml(t.target_size || "—")}</span>
+			<span class="tag">${escapeHtml(eligibilitySentence(t))}</span>
+			<span class="tag">${escapeHtml(sponsorName(t))}</span>
+		</div>
+		<div class="where">Sites: ${escapeHtml(countryNames(t).join(" · ") || "—")}${link ? ` · <a href="${escapeHtml(link)}" target="_blank" rel="noopener">registry link ↗</a>` : ""}</div>
+	</div>`;
+}
+
+/* ================= VIEW A · Explorer ================= */
+function statusBaseParamsA() {
+	return {
+		subject_id: currentSubjectId(),
+		phase_normalized: phaseSlugParam(state.phaseFilters),
+		region: (state.regionFilter && REGION_CHIP_SLUG[state.regionFilter]) || undefined,
+		inclusion_gender_normalized: state.eligGender ? "all" : undefined,
+		study_type_normalized: state.eligInterventional ? "interventional" : undefined,
+		age_eligible: state.eligAdult ? 18 : undefined,
+	};
+}
+let tokenA = 0;
+async function renderA() {
+	const token = ++tokenA;
+	document.getElementById("mapA").innerHTML = loadingMsg();
+	document.getElementById("resultsA").innerHTML = loadingMsg();
+	const base = statusBaseParamsA();
+	try {
+		const [mapStats, baseStats, list] = await Promise.all([
+			statsRaw({ ...base, recruitment_status_normalized: effectiveStatusA() }),
+			statsRaw(base),
+			trialsRaw({ ...base, recruitment_status_normalized: effectiveStatusA(), country: state.selected || undefined, page: 1, page_size: 10 }),
+		]);
+		if (token !== tokenA) return;
+		state.pageA = 1;
+		state.countA = list.count;
+		state.hasNextA = !!list.next;
+		state.listA = list.results || [];
+
+		renderMapInto("mapA", mapStats.by_country, { onClick: pickCountry });
+		document.querySelectorAll('#viewA [data-cnt]').forEach(el => {
+			const statusKey = { rec:"recruiting", soon:"not_yet_recruiting", active:"active_not_recruiting", done:"completed" }[el.getAttribute("data-cnt")];
+			el.textContent = baseStats[statusKey] != null ? baseStats[statusKey] : "—";
+		});
+		paintResultsA();
+		const nC = (mapStats.by_country || []).filter(e => e.country).length;
+		const total = (mapStats.by_country || []).reduce((a, e) => a + e.count, 0);
+		document.getElementById("metaA").innerHTML = `<b>${nC}</b> countries · <b>${total}</b> trial–country records`;
+	} catch (err) {
+		if (token !== tokenA) return;
+		document.getElementById("mapA").innerHTML = errorMsg(err);
+		document.getElementById("resultsA").innerHTML = errorMsg(err);
+	}
+}
+function paintResultsA() {
+	const head = document.getElementById("resHeadA");
+	const place = state.selected ? (ISO2_TO_NAME[state.selected] || state.selected) : null;
+	head.textContent = place ? `Trials in ${place} (${state.countA})` : `Matching trials (${state.countA})`;
+	const box = document.getElementById("resultsA");
+	const clearBtn = place ? `<button class="chip" id="clearSel" aria-pressed="true">✕ ${escapeHtml(place)}</button>` : "";
+	const cards = state.listA.length ? state.listA.map(trialCard).join("") : `<div class="mapmeta" style="padding:8px;">No trials match the current filters.</div>`;
+	const more = state.hasNextA ? `<button class="chip" id="loadMoreA">Load more</button>` : "";
+	box.innerHTML = clearBtn + cards + more;
+	const cs = document.getElementById("clearSel");
+	if (cs) cs.addEventListener("click", () => pickCountry(null));
+	const lm = document.getElementById("loadMoreA");
+	if (lm) lm.addEventListener("click", loadMoreA);
+}
+async function loadMoreA() {
+	const base = statusBaseParamsA();
+	const nextPage = state.pageA + 1;
+	try {
+		const list = await trialsRaw({ ...base, recruitment_status_normalized: effectiveStatusA(), country: state.selected || undefined, page: nextPage, page_size: 10 });
+		state.pageA = nextPage;
+		state.hasNextA = !!list.next;
+		state.listA = state.listA.concat(list.results || []);
+		paintResultsA();
+	} catch (err) {
+		document.getElementById("resultsA").insertAdjacentHTML("beforeend", errorMsg(err));
+	}
+}
+function pickCountry(name) {
+	state.selected = (name === state.selected) ? null : name;
+	renderA();
+}
+function initFilterRailA() {
+	document.querySelectorAll('#viewA [data-status]').forEach(cb => {
+		cb.addEventListener("change", () => {
+			state.statusFilters = [...document.querySelectorAll('#viewA [data-status]')]
+				.filter(o => o.checked)
+				.map(o => o.getAttribute("data-status"));
+			renderA();
+		});
+	});
+	document.querySelectorAll('#viewA .fgroup .chiprow').forEach(row => {
+		const groupLabel = row.closest('.fgroup').querySelector('.flabel').textContent.trim();
+		const isPhase = groupLabel === "Phase";
+		row.querySelectorAll('.chip').forEach(ch => {
+			ch.addEventListener("click", () => {
+				const pressed = ch.getAttribute("aria-pressed") === "true";
+				if (isPhase) {
+					// Phase is multi-select: several buckets OR together in one request.
+					ch.setAttribute("aria-pressed", String(!pressed));
+					state.phaseFilters = [...row.querySelectorAll('.chip[aria-pressed="true"]')].map(c => c.textContent.trim());
+				} else {
+					// Region stays single-select — no server-side negation/union yet.
+					row.querySelectorAll('.chip').forEach(o => o.setAttribute("aria-pressed", "false"));
+					state.regionFilter = pressed ? null : ch.textContent.trim();
+					if (!pressed) ch.setAttribute("aria-pressed", "true");
+				}
+				renderA();
+			});
+		});
+	});
+	document.querySelectorAll('#viewA [data-elig]').forEach(cb => {
+		cb.addEventListener("change", () => {
+			const key = cb.getAttribute("data-elig");
+			if (key === "adult18") state.eligAdult = cb.checked;
+			else if (key === "allgenders") state.eligGender = cb.checked;
+			else if (key === "interventional") state.eligInterventional = cb.checked;
+			renderA();
+		});
+	});
+}
+
+/* ================= VIEW B · Atlas ================= */
+async function ensureYearBounds() {
+	if (state.yearMin != null) return;
+	try {
+		const r = await statsRaw({ subject_id: currentSubjectId() });
+		const years = (r.by_year || []).map(y => y.year).filter(y => y != null);
+		state.yearMin = years.length ? Math.min(...years) : (state.yearMax - 20);
+	} catch (e) {
+		state.yearMin = state.yearMax - 20;
+	}
+	if (state.year == null) state.year = state.yearMax;
+}
+function trackbarParamsForYear() {
+	return state.year >= state.yearMax ? {} : { date_registration_before: `${state.year}-12-31` };
+}
+function paintTrackbar() {
+	document.getElementById("yearMin").textContent = state.yearMin;
+	const span = Math.max(1, state.yearMax - state.yearMin);
+	const pct = Math.round(((state.year - state.yearMin) / span) * 100);
+	document.getElementById("trackFill").style.width = pct + "%";
+	document.getElementById("trackKnob").style.left = pct + "%";
+	document.getElementById("yearReadout").textContent = state.year >= state.yearMax ? "through today" : `through ${state.year}`;
+}
+let tokenB = 0;
+async function renderB() {
+	await ensureYearBounds();
+	paintTrackbar();
+	const token = ++tokenB;
+	document.getElementById("mapB").innerHTML = loadingMsg();
+	const base = { subject_id: currentSubjectId(), recruitment_status_normalized: metricStatusParam(), ...trackbarParamsForYear() };
+	try {
+		const r = await statsRaw(base);
+		if (token !== tokenB) return;
+		renderMapInto("mapB", r.by_country, { dark: true, onClick: pickCountryB });
+		const countryEntries = (r.by_country || []).filter(e => e.country);
+		const top = countryEntries[0];
+		const openOrSoon = (r.recruiting || 0) + (r.not_yet_recruiting || 0);
+		document.getElementById("ribbonB").innerHTML = `
+			<div class="stat"><div class="n">${(r.total || 0).toLocaleString()}</div><div class="l">registered trials · ${escapeHtml(CONDITIONS[state.cond].label)}</div></div>
+			<div class="stat"><div class="n">${countryEntries.length}</div><div class="l">countries with activity</div></div>
+			<div class="stat"><div class="n">${top ? escapeHtml(ISO2_TO_NAME[top.country] || top.country) : "—"}</div><div class="l">most active${top ? ` — ${top.count} in scope` : ""}</div></div>
+			<div class="stat"><div class="n">${openOrSoon}</div><div class="l">open or opening soon</div></div>`;
+		updateDrawer(r.by_country);
+	} catch (err) {
+		if (token !== tokenB) return;
+		document.getElementById("mapB").innerHTML = errorMsg(err);
+		document.getElementById("ribbonB").innerHTML = "";
+	}
+}
+function pickCountryB(name) {
+	state.selected = (name === state.selected) ? null : name;
+	renderB();
+}
+async function updateDrawer(byCountry) {
+	const title = document.getElementById("drawerTitle");
+	const body = document.getElementById("drawerBody");
+	const meta = document.getElementById("drawerMeta");
+	if (!state.selected) {
+		title.textContent = "Click a country to see its trials";
+		meta.textContent = "";
+		body.innerHTML = `<div class="mapmeta" style="grid-column:1/-1;">No country selected. Bubbles size by trial count for ${escapeHtml(CONDITIONS[state.cond].label)}.</div>`;
+		return;
+	}
+	const entry = (byCountry || []).find(e => e.country === state.selected);
+	title.textContent = ISO2_TO_NAME[state.selected] || state.selected;
+	meta.innerHTML = `<b>${entry ? entry.count : 0}</b> trials in scope`;
+	body.innerHTML = loadingMsg();
+	try {
+		const list = await trialsRaw({ subject_id: currentSubjectId(), recruitment_status_normalized: metricStatusParam(), country: state.selected, ...trackbarParamsForYear(), page_size: 10 });
+		body.innerHTML = (list.results || []).length ? list.results.map(trialCard).join("")
+			: `<div class="mapmeta" style="grid-column:1/-1;">No trials found for ${escapeHtml(ISO2_TO_NAME[state.selected] || state.selected)} in this scope.</div>`;
+	} catch (err) {
+		body.innerHTML = errorMsg(err);
+	}
+}
+function seekYearFromEvent(e) {
+	const bar = document.getElementById("trackbarB");
+	const rect = bar.getBoundingClientRect();
+	const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+	const pct = rect.width ? x / rect.width : 0;
+	state.year = Math.round(state.yearMin + pct * (state.yearMax - state.yearMin));
+	renderB();
+}
+function togglePlay() {
+	const btn = document.getElementById("playBtn");
+	if (state.playing) {
+		clearInterval(state.playing);
+		state.playing = null;
+		btn.textContent = "▶ play build-up";
+		return;
+	}
+	btn.textContent = "❙❙ pause";
+	state.playing = setInterval(() => {
+		state.year = state.year >= state.yearMax ? state.yearMin : state.year + 1;
+		renderB();
+		if (state.year >= state.yearMax) { clearInterval(state.playing); state.playing = null; btn.textContent = "▶ play build-up"; }
+	}, 260);
+}
+
+/* ================= VIEW C · Find a trial near me ================= */
+let patientCountryOptions = [];
+async function ensurePatientCountries() {
+	const r = await statsRaw({ subject_id: currentSubjectId() });
+	patientCountryOptions = (r.by_country || []).filter(e => e.country).map(e => e.country);
+	if (!patientCountryOptions.includes(state.patientCountry)) {
+		state.patientCountry = patientCountryOptions.includes("PT") ? "PT" : (patientCountryOptions[0] || "PT");
+	}
+	return r;
+}
+function paintCountrySelect() {
+	const sel = document.getElementById("slotCountry");
+	sel.innerHTML = patientCountryOptions.map(c => `<option value="${c}"${c === state.patientCountry ? " selected" : ""}>${escapeHtml(ISO2_TO_NAME[c] || c)}</option>`).join("");
+}
+let tokenC = 0;
+async function renderC() {
+	const token = ++tokenC;
+	document.getElementById("slotCond").textContent = CONDITIONS[state.cond].label;
+	document.getElementById("patientList").innerHTML = loadingMsg();
+	try {
+		const stats0 = await ensurePatientCountries();
+		if (token !== tokenC) return;
+		paintCountrySelect();
+		renderMapInto("mapC", stats0.by_country, { labels: false, onClick: null });
+		const list = await trialsRaw({
+			subject_id: currentSubjectId(),
+			country: state.patientCountry,
+			recruitment_status_normalized: state.patientRecruitingOnly ? "recruiting" : undefined,
+			age_eligible: state.patientAge || undefined,
+			page_size: 5,
+		});
+		if (token !== tokenC) return;
+		const rows = list.results || [];
+		document.getElementById("patientList").innerHTML = rows.length ? rows.map((t, i) => `
+			<div class="pcard ${i === 0 ? "best" : ""}">
+				<div class="rank">${i === 0 ? "Best match" : "Also matches"}${state.patientRecruitingOnly ? " · recruiting now" : ""}</div>
+				<h4>${escapeHtml(t.title || "Untitled trial")}</h4>
+				<div class="elig"><span class="ok">✓ ${escapeHtml(statusTagLabel(t))}</span> · ${escapeHtml(eligibilitySentence(t))}</div>
+				<div class="elig">Nearest sites: ${escapeHtml(countryNames(t, 3).join(", ") || "—")}</div>
+				<div>${detailLink(t) ? `<a class="cta" href="${escapeHtml(detailLink(t))}" target="_blank" rel="noopener">See if you qualify</a>` : ""} <button class="cta ghost" type="button">Save</button></div>
+			</div>`).join("") : `<div class="mapmeta" style="padding:8px;">No trials found for ${escapeHtml(ISO2_TO_NAME[state.patientCountry] || state.patientCountry)} with the current filters.</div>`;
+	} catch (err) {
+		if (token !== tokenC) return;
+		document.getElementById("patientList").innerHTML = errorMsg(err);
+	}
+}
+
+/* ================= shell ================= */
+async function renderCurrent() {
+	if (state.view === "A") await renderA();
+	else if (state.view === "B") await renderB();
+	else await renderC();
+	updateGlobalMeta();
+}
+async function updateGlobalMeta() {
+	try {
+		const r = await statsRaw({ subject_id: currentSubjectId(), recruitment_status_normalized: metricStatusParam() });
+		document.getElementById("globalMeta").innerHTML = `${escapeHtml(CONDITIONS[state.cond].label)} · <b>${(r.total || 0).toLocaleString()}</b> trials in the API`;
+	} catch (err) {
+		document.getElementById("globalMeta").textContent = "Couldn't load totals.";
+	}
+}
+
+function init() {
+	document.getElementById("apiBaseFoot").textContent = API_BASE;
+	document.getElementById("conditionSel").addEventListener("change", e => {
+		state.cond = e.target.value;
+		state.selected = null;
+		state.statusFilters = []; state.phaseFilters = []; state.regionFilter = null;
+		state.yearMin = null; state.year = null;
+		document.querySelectorAll('#viewA [data-status]').forEach(cb => { cb.checked = false; });
+		document.querySelectorAll('#viewA .fgroup .chiprow .chip').forEach(ch => ch.setAttribute("aria-pressed", "false"));
+		renderCurrent();
+	});
+	document.getElementById("metricAll").addEventListener("click", () => setMetric("all"));
+	document.getElementById("metricRec").addEventListener("click", () => setMetric("rec"));
+	document.getElementById("notesToggle").addEventListener("change", e => {
+		document.body.classList.toggle("notes", e.target.checked);
+	});
+	document.querySelectorAll(".tab").forEach(tab => {
+		tab.addEventListener("click", () => {
+			document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", "false"));
+			tab.setAttribute("aria-selected", "true");
+			state.view = tab.getAttribute("data-view");
+			document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+			document.getElementById("view" + state.view).classList.add("active");
+			renderCurrent();
+		});
+	});
+	initFilterRailA();
+	document.getElementById("trackbarB").addEventListener("click", seekYearFromEvent);
+	document.getElementById("playBtn").addEventListener("click", togglePlay);
+	document.getElementById("slotCountry").addEventListener("change", e => {
+		state.patientCountry = e.target.value;
+		renderC();
+	});
+	document.getElementById("slotAge").addEventListener("change", e => {
+		const v = parseInt(e.target.value, 10);
+		state.patientAge = Number.isFinite(v) ? v : null;
+		renderC();
+	});
+	document.querySelector('.cbig input').addEventListener("change", e => {
+		state.patientRecruitingOnly = e.target.checked;
+		renderC();
+	});
+	renderCurrent();
+}
+
+function setMetric(m) {
+	state.metric = m;
+	document.getElementById("metricAll").setAttribute("aria-pressed", m === "all");
+	document.getElementById("metricRec").setAttribute("aria-pressed", m === "rec");
+	renderCurrent();
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
