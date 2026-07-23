@@ -132,6 +132,12 @@ h1, h2, h3, h4, h5, h6 {
 	margin-top: 0;
 }
 
+/* <scp> isn't a native HTML element, so it carries no default rendering —
+   give it the small-caps styling publishers use it for in article/trial titles. */
+scp {
+	font-variant: small-caps;
+}
+
 h1 { font-weight: 700; }
 h2 { font-weight: 600; }
 h3 { font-weight: 600; }

@@ -97,6 +97,7 @@
 
 	// ── Helpers (generic ones shared via window.BR; see js/br-utils.js) ─────
 	var escHtml         = BR.escHtml;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || escHtml;
 	var decodeEntities  = BR.decodeEntities;
 	var stripHtml       = BR.stripHtml;
 	var truncate        = BR.truncate;
@@ -440,7 +441,7 @@
 		var rawUrl = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		return '<article class="paper-card">' +
 			'<div class="paper-card-title">' +
-				'<a href="' + escHtml(rawUrl) + '">' + escHtml(decodeEntities(a.title)) + '</a>' +
+				'<a href="' + escHtml(rawUrl) + '">' + escHtmlSafeTags(decodeEntities(a.title)) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
 				(mlScores    ? ' ' + mlScores    : '') +
 			'</div>' +

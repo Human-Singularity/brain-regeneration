@@ -1,0 +1,641 @@
+---
+layout: wide-page
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trials Analytics — lo-fi mockups (GregoryAI)</title>
+<style>
+	:root{
+		--ink:#1f2328;--muted:#6b7280;--line:#c9ced6;--line2:#9aa1ac;--paper:#fff;--wash:#f4f5f7;--wash2:#eceef1;
+		--accent:#2f7f7a;--note:#b45309;--note-bg:#fff7ed;
+		--p1:#cfe4e2;--p2:#8fc4bf;--p3:#4f9d96;--p4:#2f7f7a;
+		--tIndustry:#2f7f7a;--tAcademic:#5b74b4;--tGovernment:#a06a2c;--tPatient:#a65a8e;--tOther:#9aa1ac;
+		--stActive:#2f7f7a;--stRecruit:#57b8b0;--stDone:#9aa1ac;--stOther:#d8dce1;
+		--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+	}
+	*{box-sizing:border-box}
+	body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--wash);line-height:1.45;-webkit-font-smoothing:antialiased}
+	.wrap{max-width:1200px;margin:0 auto;padding:20px 20px 80px}
+	header.page{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 24px}
+	header.page h1{font-size:20px;margin:0}
+	.badge{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border:1px dashed var(--line2);border-radius:999px;padding:2px 10px}
+	.sub{color:var(--muted);font-size:13px;margin-top:4px;max-width:730px}
+	.spacer{flex:1 1 auto}
+	.toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
+	.toggle input{accent-color:var(--note)}
+	.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+	.tab{font:inherit;font-size:13px;cursor:pointer;background:var(--wash2);border:1px solid var(--line);border-bottom:none;color:var(--muted);padding:9px 14px;border-radius:10px 10px 0 0}
+	.tab .lead{font-weight:600;color:var(--ink)}
+	.tab[aria-selected=true]{background:var(--paper);color:var(--ink);box-shadow:0 -2px 0 var(--accent) inset}
+	.viewframe{background:var(--paper);border:1px solid var(--line);border-radius:0 10px 10px 10px;padding:16px}
+	.view{display:none}.view.active{display:block}
+	.vt{margin:2px 0;font-size:15px}
+	.vd{margin:0 0 12px;color:var(--muted);font-size:13px;max-width:840px}
+	.ctl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+	.ctl.primary{border-color:var(--accent);background:#f2f8f7}
+	.ctl .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-right:8px}
+	input[type=range]{width:300px;max-width:50vw;accent-color:var(--accent);vertical-align:middle}
+	.yearval{font-variant-numeric:tabular-nums;font-weight:700;font-size:16px;min-width:46px;display:inline-block}
+	button.mini{font:inherit;font-size:12px;border:1px solid var(--line2);background:var(--paper);border-radius:8px;padding:6px 12px;cursor:pointer}
+	button.mini.on{background:var(--accent);border-color:var(--accent);color:#fff}
+	select{font:inherit;font-size:13px;border:1px solid var(--line2);border-radius:8px;padding:6px 9px;background:var(--paper);max-width:200px}
+	select:disabled{opacity:.55}
+	.chip{font:inherit;font-size:12px;border:1px solid var(--line2);border-radius:999px;padding:4px 11px;background:var(--paper);cursor:pointer}
+	.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+	.chiprow{display:flex;gap:6px;flex-wrap:wrap;max-width:640px}
+	.scope-tag{font-size:12px;color:var(--muted)}
+	.scope-tag b{color:var(--ink)}
+
+	.tblwrap{overflow:auto}
+	.pmatrix,.smatrix{width:100%;border-collapse:collapse}
+	.pmatrix th,.pmatrix td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:left}
+	.pmatrix th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+	.pmatrix td.cond{font-weight:600;font-size:13px;white-space:nowrap}
+	.cellbar{position:relative;height:22px;background:var(--wash2);border-radius:5px;min-width:64px}
+	.cellbar>i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;display:block}
+	.cellbar>b{position:absolute;right:6px;top:0;line-height:22px;font-size:11px;font-variant-numeric:tabular-nums;color:#20303a}
+	td.low .cellbar{outline:2px solid var(--note);outline-offset:1px}
+	.lowtag{font-size:9px;color:var(--note);display:block;margin-top:2px}
+	td.aside{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+	.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0 4px;font-size:12px;color:var(--muted)}
+	.legend .sw{display:inline-block;width:14px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+	.callout{margin-top:12px;background:var(--wash);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:13px}
+
+	.smatrix{font-size:13px}
+	.smatrix th,.smatrix td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+	.smatrix th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+	.smatrix td.sname{text-align:left;cursor:pointer}
+	.smatrix tr.sel td{background:#f0f7f6}
+	.smatrix td.num{font-variant-numeric:tabular-nums}
+	.tdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+	.detail{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--wash)}
+	.detail h4{margin:0 0 8px;font-size:14px}
+	.kv{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;margin-bottom:10px}
+	.dgrid{display:grid;grid-template-columns:1fr 1.1fr;gap:16px;margin-bottom:12px}
+	@media(max-width:760px){.dgrid{grid-template-columns:1fr}}
+	.dcap{font-size:12px;color:var(--muted);margin-bottom:6px}
+	.geobar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+	.geobar .nm{width:118px;text-align:right;color:#40474e}
+	.geobar .track{flex:1;height:12px;background:var(--wash2);border-radius:999px;overflow:hidden}
+	.geobar .track>i{display:block;height:100%;background:var(--accent);border-radius:999px}
+	.geobar .vv{width:26px;font-variant-numeric:tabular-nums;color:var(--muted)}
+	.phrow{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+	.phrow .nm{width:66px;color:#40474e}
+	.phrow .track{flex:1;height:12px;background:var(--wash2);border-radius:999px;overflow:hidden}
+	.phrow .track>i{display:block;height:100%;border-radius:999px}
+	.phrow .vv{width:26px;font-variant-numeric:tabular-nums;color:var(--muted)}
+	.statwide{display:flex;height:20px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:4px 0 8px}
+	.statwide>i{display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff}
+	.statkey{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+	.statkey .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+	.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+	.tg{font-size:11px;border:1px solid var(--line2);border-radius:6px;padding:2px 8px;background:var(--paper)}
+	.tg .grp{color:var(--muted)}
+	svg.mini{display:block;width:100%;height:auto;background:linear-gradient(#fbfcfd,#f6f8fa);border-radius:8px;border:1px solid var(--line)}
+	.mini .land{fill:#e4e8ec;stroke:#d3d8de;stroke-width:.6}
+	.mini .bub{fill:var(--accent);fill-opacity:.45;stroke:var(--accent);stroke-width:1}
+	.note-callout{display:none}
+	body.notes .note-callout{display:block;background:var(--note-bg);border:1px dashed var(--note);color:#7c3f06;border-radius:8px;padding:8px 10px;font-size:12px;margin:10px 0}
+	body.notes .note-callout b{color:var(--note)}
+	.foot{color:var(--muted);font-size:12px;margin-top:18px;text-align:center}
+	.foot code{background:var(--wash2);padding:1px 5px;border-radius:4px}
+	.loadmsg{padding:14px;color:var(--muted)}
+	.errmsg{padding:14px;color:var(--note)}
+</style>
+</head>
+<body>
+<div class="wrap">
+	<header class="page">
+		<div>
+			<h1>Trials Analytics <span class="badge">lo-fi mockup</span></h1>
+			<div class="sub">Two companion views for brain-regeneration.com, wired live to the GregoryAI <code>/trials/stats/</code> API. View 1: which conditions lag by phase, scoped to a place. View 2: who sponsors what, where, at which phase and status. Grayscale on purpose.</div>
+		</div>
+		<div class="spacer"></div>
+		<label class="toggle"><input type="checkbox" id="notesToggle"> Show design notes</label>
+	</header>
+
+	<div class="tabs" role="tablist">
+		<button class="tab" role="tab" aria-selected="true" data-view="P"><span class="lead">1 · Phase pipeline</span> — funnel + time + place</button>
+		<button class="tab" role="tab" aria-selected="false" data-view="S"><span class="lead">2 · Sponsor landscape</span> — who funds what, where</button>
+	</div>
+
+	<div class="viewframe">
+		<!-- ===== VIEW P ===== -->
+		<section class="view active" id="viewP">
+			<h2 class="vt">Phase pipeline by condition</h2>
+			<p class="vd">Absolute trial counts at each phase, conditions side by side. Scope by continent or country, slide the year, and watch which condition falls behind — the amber outline marks the lowest count in each phase column.</p>
+			<div class="note-callout"><b>Design note.</b> Every cell is an exact, filtered call to <code>/trials/stats/</code> — subject + place + a cumulative <code>date_registration_before</code> cutoff — read from <code>by_phase</code> and collapsed into the phase buckets shown here. No client-side approximation. Only Multiple Sclerosis, Parkinson's and Alzheimer's have trial data in this org today.</div>
+
+			<div class="ctl primary">
+				<span><span class="k">Continent</span><select id="pCont"></select></span>
+				<span><span class="k">Country</span><select id="pCountry"></select></span>
+				<span class="scope-tag" id="pScopeTag"></span>
+			</div>
+			<div class="ctl">
+				<span><span class="k">Year</span><span class="yearval" id="yearVal">—</span></span>
+				<input type="range" id="yearSlider">
+				<button class="mini" id="playBtn">▶ Play build-up</button>
+				<span class="spacer"></span>
+				<label class="toggle"><input type="checkbox" id="asideToggle" checked> Show N/A &amp; Unknown</label>
+			</div>
+			<div class="legend">
+				<span><span class="sw" style="background:var(--p1)"></span>Phase 1</span>
+				<span><span class="sw" style="background:var(--p2)"></span>Phase 2</span>
+				<span><span class="sw" style="background:var(--p3)"></span>Phase 3</span>
+				<span><span class="sw" style="background:var(--p4)"></span>Phase 4</span>
+				<span class="spacer"></span><span id="pTotal"></span>
+			</div>
+			<div class="tblwrap"><table class="pmatrix" id="pmatrix"></table></div>
+			<div class="callout" id="pCallout"></div>
+		</section>
+
+		<!-- ===== VIEW S ===== -->
+		<section class="view" id="viewS">
+			<h2 class="vt">Who sponsors what, and where</h2>
+			<p class="vd">Choose the condition(s) first; the matrix follows. Then narrow by place (continent or several countries), by what kind of intervention they fund, and by trial phase and status. Click a sponsor for its full profile.</p>
+			<div class="note-callout"><b>Design note.</b> Condition is the primary control. Sponsor counts and type come straight from the <code>by_sponsor</code> / <code>by_sponsor_type</code> facets for the current filters — no client-side inference. Intervention modality is the API's own <code>category_modality</code> field. The matrix shows counts and type only; phase mix, status split, geography and modalities load in the detail panel when you click a sponsor.</div>
+
+			<div class="ctl primary">
+				<span><span class="k">Condition</span><span id="condChips"></span></span>
+			</div>
+			<div class="ctl">
+				<span><span class="k">Continent</span><select id="sCont"></select></span>
+				<span><span class="k">Countries</span><span class="chiprow" id="countryChips"></span></span>
+			</div>
+			<div class="ctl">
+				<span><span class="k">Intervention</span><select id="catSel"></select></span>
+				<span><span class="k">Phase</span><span id="phaseChips"></span></span>
+				<span><span class="k">Status</span><span id="statusChips"></span></span>
+				<span class="spacer"></span>
+				<span><span class="k">Sort</span><select id="sortSel"></select></span>
+			</div>
+			<div class="legend" id="typeLegend"></div>
+			<div class="tblwrap"><table class="smatrix" id="smatrix"></table></div>
+			<p class="vd" style="margin-top:8px">Each condition column reflects that condition's top 25 sponsors by trial count (the API's <code>by_sponsor</code> facet cap). A sponsor outside a condition's top 25 shows a blank cell there even if it runs trials in that condition.</p>
+			<div class="detail" id="sDetail"></div>
+		</section>
+	</div>
+	<div class="foot">Lo-fi mockup · live from <code id="apiBaseFoot"></code> · phase, status, sponsor-type &amp; modality are normalised fields on the API, not inferred client-side.</div>
+</div>
+
+<script>
+"use strict";
+
+/* ================= config ================= */
+const API_BASE = 'https://api.brain-regeneration.com';           // DEV: local gregory container
+// const API_BASE = 'https://api.brain-regeneration.com';  // PROD
+
+const SUBJECTS = [
+	{id:1,  name:"Multiple Sclerosis"},
+	{id:14, name:"Parkinson's Disease"},
+	{id:13, name:"Alzheimer's Disease"},
+];
+const SUBJECTS_ANY = SUBJECTS.map(s=>s.id).join(",");
+
+const REGIONS = [
+	{v:"",  l:"All world"},
+	{v:"africa", l:"Africa"},
+	{v:"asia", l:"Asia"},
+	{v:"europe", l:"Europe"},
+	{v:"north_america", l:"North America"},
+	{v:"south_america", l:"South America"},
+	{v:"oceania", l:"Oceania"},
+];
+
+const PHASE_KEYS = ["Phase 1","Phase 2","Phase 3","Phase 4"];
+const PHASE_BUCKET_SLUGS = {
+	"Phase 1": ["early_phase_1","phase_1","phase_1_2"],
+	"Phase 2": ["phase_2","phase_2_3"],
+	"Phase 3": ["phase_3","phase_3_4"],
+	"Phase 4": ["phase_4","post_market"],
+};
+const ASIDE_BUCKET_SLUGS = {
+	"N/A": ["not_applicable"],
+	"Unknown": ["no_phase","other"],
+};
+const STATUS_FILTERS = ["Recruiting","Active","Completed","Other"];
+// Underlying recruitment_status_normalized enum values per mockup bucket, for filtering.
+const STATUS_BUCKET_SLUGS = {
+	Recruiting: ["recruiting","not_yet_recruiting","enrolling_by_invitation"],
+	Active: ["active_not_recruiting","not_recruiting"],
+	Completed: ["completed"],
+	Other: ["suspended","terminated","withdrawn","unknown","other"],
+};
+// Top-level response keys per bucket, for collapsing totals (includes no_status, which isn't filterable).
+const STATUS_TOTAL_KEYS = {
+	Recruiting: ["recruiting","not_yet_recruiting","enrolling_by_invitation"],
+	Active: ["active_not_recruiting","not_recruiting"],
+	Completed: ["completed"],
+	Other: ["suspended","terminated","withdrawn","unknown","other","no_status"],
+};
+
+const SPONSOR_TYPE_LABELS = {industry:"Industry", academic_medical:"Academic", government:"Government", nonprofit:"Patient org", other:"Other"};
+const TYPES = ["Industry","Academic","Government","Patient org","Other"];
+
+const MODALITY_LABELS = {
+	small_molecule:"Small-molecule drug",
+	biologic_antibody:"Antibody / biologic",
+	cell_gene_therapy:"Cell / gene therapy",
+	rehabilitation:"Rehabilitation / physical",
+	device_neuromodulation:"Device / neuromodulation",
+	natural_product:"Natural product / supplement",
+	research_topic:"Research topic",
+	other:"Other",
+};
+const MODALITY_KEYS = Object.keys(MODALITY_LABELS);
+
+const PC={"Phase 1":"var(--p1)","Phase 2":"var(--p2)","Phase 3":"var(--p3)","Phase 4":"var(--p4)"};
+const PCHEX=["#cfe4e2","#8fc4bf","#4f9d96","#2f7f7a"];
+const TC={"Industry":"var(--tIndustry)","Academic":"var(--tAcademic)","Government":"var(--tGovernment)","Patient org":"var(--tPatient)","Other":"var(--tOther)"};
+
+/* ISO 3166-1 alpha-2 -> display name, for the ~120 countries seen in this org's trial data. */
+const ISO2_TO_NAME = {
+	US:"United States", CA:"Canada", MX:"Mexico", BR:"Brazil", AR:"Argentina", CL:"Chile", CO:"Colombia", PE:"Peru",
+	EC:"Ecuador", PY:"Paraguay", UY:"Uruguay", VE:"Venezuela", CU:"Cuba", DO:"Dominican Republic", GT:"Guatemala",
+	HN:"Honduras", NI:"Nicaragua", CR:"Costa Rica", PA:"Panama", PR:"Puerto Rico", TT:"Trinidad and Tobago",
+	AG:"Antigua and Barbuda", KY:"Cayman Islands", GP:"Guadeloupe", MQ:"Martinique", AS:"American Samoa",
+	GB:"United Kingdom", IE:"Ireland", FR:"France", DE:"Germany", IT:"Italy", ES:"Spain", PT:"Portugal",
+	NL:"Netherlands", BE:"Belgium", PL:"Poland", CZ:"Czechia", HU:"Hungary", AT:"Austria", CH:"Switzerland",
+	SE:"Sweden", NO:"Norway", FI:"Finland", DK:"Denmark", GR:"Greece", BG:"Bulgaria", SK:"Slovakia", RS:"Serbia",
+	HR:"Croatia", RU:"Russia", UA:"Ukraine", TR:"Türkiye", IS:"Iceland", LU:"Luxembourg", MT:"Malta", CY:"Cyprus",
+	EE:"Estonia", LT:"Lithuania", LV:"Latvia", RO:"Romania", SI:"Slovenia", BA:"Bosnia and Herzegovina",
+	ME:"Montenegro", MK:"North Macedonia", AL:"Albania", MD:"Moldova", BY:"Belarus", GE:"Georgia", AM:"Armenia",
+	AD:"Andorra", MC:"Monaco", FO:"Faroe Islands",
+	IL:"Israel", IR:"Iran", TW:"Taiwan", CN:"China", JP:"Japan", KR:"South Korea", KP:"North Korea", IN:"India",
+	AU:"Australia", NZ:"New Zealand", ZA:"South Africa", SA:"Saudi Arabia", AE:"United Arab Emirates",
+	JO:"Jordan", LB:"Lebanon", KW:"Kuwait", QA:"Qatar", BH:"Bahrain", OM:"Oman", SY:"Syria",
+	EG:"Egypt", DZ:"Algeria", MA:"Morocco", TN:"Tunisia", LY:"Libya", ET:"Ethiopia", KE:"Kenya", GH:"Ghana",
+	NG:"Nigeria", UG:"Uganda", BW:"Botswana", ZM:"Zambia", BF:"Burkina Faso", KM:"Comoros", MU:"Mauritius",
+	KZ:"Kazakhstan", PK:"Pakistan", BD:"Bangladesh", LK:"Sri Lanka", TH:"Thailand", VN:"Vietnam", MY:"Malaysia",
+	ID:"Indonesia", SG:"Singapore", PH:"Philippines", HK:"Hong Kong", NC:"New Caledonia", VI:"Virgin Islands (U.S.)",
+};
+
+/* Approximate [lon, lat] centroids for the same country set — good enough for a proportional bubble map. */
+const ISO2_TO_CENTROID = {
+	US:[-98,39], CA:[-106,56], MX:[-102,23], BR:[-52,-10], AR:[-64,-34], CL:[-71,-35], CO:[-74,4], PE:[-76,-10],
+	EC:[-78.5,-1.5], PY:[-58,-23.4], UY:[-56,-33], VE:[-66,8], CU:[-79,21.5], DO:[-70.5,19], GT:[-90.5,15.5],
+	HN:[-86.5,15], NI:[-85,12.9], CR:[-84,10], PA:[-80,8.5], PR:[-66.5,18.2], TT:[-61.4,10.5],
+	AG:[-61.8,17.1], KY:[-81.2,19.3], GP:[-61.6,16.2], MQ:[-61,14.6], AS:[-170.7,-14.3],
+	GB:[-2,54], IE:[-8,53], FR:[2,46], DE:[10,51], IT:[12,42], ES:[-4,40], PT:[-8,39.5],
+	NL:[5,52], BE:[4,50.6], PL:[19,52], CZ:[15,50], HU:[19,47], AT:[14,47.5], CH:[8,47],
+	SE:[16,62], NO:[9,61], FI:[26,64], DK:[10,56], GR:[22,39], BG:[25,43], SK:[19,48.7], RS:[21,44],
+	HR:[16,45], RU:[90,61], UA:[32,49], TR:[35,39], IS:[-19,65], LU:[6.1,49.7], MT:[14.4,35.9], CY:[33,35],
+	EE:[26,59], LT:[24,55.2], LV:[25,57], RO:[25,46], SI:[15,46], BA:[17.8,44],
+	ME:[19.3,42.7], MK:[21.7,41.6], AL:[20,41], MD:[28.4,47.2], BY:[28,53.5], GE:[43.4,42.3], AM:[45,40],
+	AD:[1.5,42.5], MC:[7.4,43.7], FO:[-6.9,62],
+	IL:[35,31], IR:[53,32], TW:[121,24], CN:[104,35], JP:[138,36], KR:[127.7,36.5], KP:[127.5,40], IN:[79,22],
+	AU:[134,-25], NZ:[172,-41], ZA:[25,-29], SA:[45,24], AE:[54,24],
+	JO:[36.2,31.2], LB:[35.9,33.9], KW:[47.5,29.3], QA:[51.2,25.3], BH:[50.6,26], OM:[56,21], SY:[38.5,35],
+	EG:[30,27], DZ:[3,28], MA:[-6,32], TN:[9.5,34], LY:[18,27], ET:[39,8], KE:[37.9,0.02], GH:[-1,7.9],
+	NG:[8,9.6], UG:[32.3,1.4], BW:[24,-22], ZM:[28,-13.5], BF:[-1.5,12.3], KM:[43.3,-11.9], MU:[57.5,-20.3],
+	KZ:[67,48], PK:[69,30], BD:[90.4,23.7], LK:[80.8,7.9], TH:[101,15], VN:[106,16], MY:[112,3.5],
+	ID:[113.9,-0.8], SG:[103.8,1.35], PH:[122,13], HK:[114.2,22.3], NC:[165.6,-21.5], VI:[-64.8,18.3],
+};
+
+/* Rough continent silhouettes, [lon,lat] rings — schematic backdrop only, for the footprint map. */
+const LAND=[
+	[[-168,66],[-150,70],[-95,72],[-62,60],[-56,50],[-66,44],[-80,26],[-97,18],[-106,23],[-124,40],[-140,60],[-168,66]],
+	[[-92,14],[-83,9],[-77,8],[-70,11],[-52,4],[-35,-6],[-40,-23],[-58,-35],[-71,-52],[-75,-45],[-70,-18],[-81,-4],[-79,7],[-92,14]],
+	[[-11,36],[-9,44],[-2,49],[3,51],[6,58],[12,64],[26,71],[42,66],[46,50],[30,45],[28,40],[12,38],[-6,36],[-11,36]],
+	[[-17,15],[-16,28],[10,34],[32,31],[43,12],[51,12],[41,-4],[35,-20],[25,-34],[18,-35],[12,-17],[8,4],[-8,5],[-17,15]],
+	[[26,40],[40,46],[52,47],[62,56],[92,73],[140,73],[162,66],[145,50],[136,35],[122,30],[120,22],[106,10],[96,6],[80,8],[72,20],[60,25],[46,12],[44,25],[34,37],[26,40]],
+	[[114,-22],[129,-12],[142,-11],[150,-25],[148,-38],[135,-35],[123,-34],[114,-22]]
+];
+const VBW=1000,VBH=500;
+function project(lon,lat){return [(lon+180)/360*VBW,(90-lat)/180*VBH];}
+function landPaths(){return LAND.map(r=>'<path class="land" d="'+r.map((p,i)=>{const q=project(p[0],p[1]);return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1);}).join(' ')+' Z"/>').join('');}
+function miniMap(counts){
+	const ent=Object.entries(counts).filter(e=>ISO2_TO_CENTROID[e[0]]);const max=ent.reduce((m,e)=>Math.max(m,e[1]),1);let b='';
+	ent.sort((a,c)=>c[1]-a[1]).forEach(([code,v])=>{const c=project(ISO2_TO_CENTROID[code][0],ISO2_TO_CENTROID[code][1]);const r=Math.max(3,3+Math.sqrt(v)*(15/Math.sqrt(max)));const nm=ISO2_TO_NAME[code]||code;b+=`<circle class="bub" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${r.toFixed(1)}"><title>${nm}: ${v}</title></circle>`;});
+	return `<svg class="mini" viewBox="0 0 ${VBW} ${VBH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Trial locations">${landPaths()}${b}</svg>`;
+}
+
+/* ================= fetch layer ================= */
+const statsCache = new Map();
+async function stats(params){
+	const usp = new URLSearchParams();
+	for (const k in params){
+		const v = params[k];
+		if (v===undefined || v===null || v==="") continue;
+		usp.set(k, v);
+	}
+	usp.set("format","json");
+	const qs = usp.toString();
+	if (statsCache.has(qs)) return statsCache.get(qs);
+	const p = fetch(`${API_BASE}/trials/stats/?${qs}`).then(r=>{
+		if(!r.ok) throw new Error(`API ${r.status} ${r.statusText}`);
+		return r.json();
+	});
+	statsCache.set(qs, p);
+	try { return await p; } catch(e){ statsCache.delete(qs); throw e; }
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function setLoading(id){document.getElementById(id).innerHTML = `<tr><td class="loadmsg">Loading…</td></tr>`;}
+function showError(id, err){document.getElementById(id).innerHTML = `<tr><td class="errmsg">Couldn't load data from ${escapeHtml(API_BASE)} — ${escapeHtml(err && err.message || err)}.</td></tr>`;}
+function regionLabel(slug){const r=REGIONS.find(x=>x.v===slug);return r?r.l:slug;}
+
+/* ================= phase / status collapsing ================= */
+function collapsePhase(byPhase){
+	byPhase = byPhase || {};
+	const b = PHASE_KEYS.map(k=>PHASE_BUCKET_SLUGS[k].reduce((s,slug)=>s+(byPhase[slug]||0),0));
+	const a = ["N/A","Unknown"].map(k=>ASIDE_BUCKET_SLUGS[k].reduce((s,slug)=>s+(byPhase[slug]||0),0));
+	return b.concat(a); // [p1,p2,p3,p4,na,unknown]
+}
+function collapseStatusTotals(resp){
+	const g={};
+	for(const bucket in STATUS_TOTAL_KEYS) g[bucket]=STATUS_TOTAL_KEYS[bucket].reduce((s,k)=>s+(resp[k]||0),0);
+	return g; // {Recruiting,Active,Completed,Other}
+}
+
+/* ================= shared state ================= */
+let Y0=2000, Y1=new Date().getFullYear(), PHASE_SCALE=1;
+let state={year:Y1,view:"P",showAside:true,
+	pCont:"",pCountry:"",
+	catGroup:"",sCont:"",sLocs:[],phases:[],statuses:[],
+	sort:"total",sponsor:null,conds:SUBJECTS.map(s=>s.name),playing:null};
+let lastPRows=null, lastPerCondition=null;
+
+function fillSelect(el,opts,val){el.innerHTML=opts.map(o=>`<option value="${o.v}"${o.v===val?" selected":""}>${o.l}</option>`).join("");}
+function shortCond(c){return c.replace("'s Disease","").replace(" Disease","");}
+function buildPlaceParams(cont, locs){
+	if(locs && locs.length) return {country: locs.join(",")};
+	if(cont) return {region: cont};
+	return {};
+}
+function bucketSlugs(map, keys){const out=[];keys.forEach(k=>(map[k]||[]).forEach(s=>{if(!out.includes(s))out.push(s);}));return out;}
+/* phase_normalized / recruitment_status_normalized both take comma-separated OR values now,
+   so multi-bucket picks collapse into one param each instead of a per-combo call fan-out. */
+function phaseStatusParams(){
+	return {
+		phase: state.phases.length ? bucketSlugs(PHASE_BUCKET_SLUGS, state.phases).join(",") : undefined,
+		status: state.statuses.length ? bucketSlugs(STATUS_BUCKET_SLUGS, state.statuses).join(",") : undefined,
+	};
+}
+
+/* ================= VIEW P ================= */
+async function bootstrapYears(){
+	const results = await Promise.all(SUBJECTS.map(s=>stats({subject_id:s.id})));
+	let lo=Infinity;
+	results.forEach(r=>{
+		(r.by_year||[]).forEach(y=>{if(y.year!=null && y.year<lo) lo=y.year;});
+		const c=collapsePhase(r.by_phase);
+		for(let i=0;i<4;i++) PHASE_SCALE=Math.max(PHASE_SCALE, c[i]);
+	});
+	Y0 = Number.isFinite(lo) ? lo : 2000;
+	Y1 = new Date().getFullYear();
+	if (Y0 > Y1) Y0 = Y1;
+}
+async function refreshPCountry(){
+	const sel=document.getElementById("pCountry");
+	sel.disabled=true;
+	try{
+		const results = await Promise.all(SUBJECTS.map(s=>stats({subject_id:s.id, region: state.pCont})));
+		const freq={};
+		results.forEach(r=>(r.by_country||[]).forEach(c=>{if(c.country) freq[c.country]=(freq[c.country]||0)+c.count;}));
+		const list = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
+		const label = state.pCont ? "All in "+regionLabel(state.pCont) : "All countries";
+		if(!list.includes(state.pCountry)) state.pCountry="";
+		fillSelect(sel, [{v:"",l:label}].concat(list.map(c=>({v:c,l:ISO2_TO_NAME[c]||c}))), state.pCountry);
+	} finally { sel.disabled=false; }
+}
+let pToken=0;
+async function renderP(){
+	const token=++pToken;
+	document.getElementById("yearVal").textContent=state.year;
+	setLoading("pmatrix");
+	try{
+		const results = await Promise.all(SUBJECTS.map(s=>stats({
+			subject_id: s.id,
+			region: state.pCountry ? "" : state.pCont,
+			country: state.pCountry,
+			date_registration_before: `${state.year}-12-31`,
+		})));
+		if(token!==pToken) return;
+		const rows = SUBJECTS.map((s,i)=>({name:s.name, a:collapsePhase(results[i].by_phase)}));
+		lastPRows=rows;
+		paintP(rows);
+	} catch(err){
+		if(token!==pToken) return;
+		showError("pmatrix", err);
+	}
+}
+function paintP(rows){
+	const lowIdx=[0,1,2,3].map(pi=>{let mn=Infinity,who=-1;rows.forEach((r,ri)=>{if(r.a[pi]<mn){mn=r.a[pi];who=ri;}});return who;});
+	let html="<tr><th>Condition</th>";PHASE_KEYS.forEach(p=>html+=`<th>${p}</th>`);if(state.showAside)html+=`<th>N/A</th><th>Unknown</th>`;html+="</tr>";
+	rows.forEach((r,ri)=>{
+		html+=`<tr><td class="cond">${r.name}</td>`;
+		PHASE_KEYS.forEach((p,pi)=>{const v=r.a[pi],w=Math.round(v/PHASE_SCALE*100),low=(lowIdx[pi]===ri);html+=`<td class="${low?'low':''}"><div class="cellbar"><i style="width:${w}%;background:${PC[p]}"></i><b>${v}</b></div>${low?'<span class="lowtag">▼ lowest</span>':''}</td>`;});
+		if(state.showAside)html+=`<td class="aside">${r.a[4]}</td><td class="aside">${r.a[5]}</td>`;
+		html+="</tr>";
+	});
+	document.getElementById("pmatrix").innerHTML=html;
+	const grand=rows.reduce((s,r)=>s+r.a[0]+r.a[1]+r.a[2]+r.a[3],0);
+	document.getElementById("pTotal").innerHTML=`<b>${grand}</b> phased trials through ${state.year}`;
+	const place=state.pCountry?(ISO2_TO_NAME[state.pCountry]||state.pCountry):(state.pCont?regionLabel(state.pCont):"the whole world");
+	document.getElementById("pScopeTag").innerHTML=`Showing: <b>${place}</b>`;
+	const p3=rows.map(r=>[r.name,r.a[2]]).sort((a,b)=>a[1]-b[1])[0];
+	const p4=rows.map(r=>[r.name,r.a[3]]).sort((a,b)=>a[1]-b[1])[0];
+	document.getElementById("pCallout").innerHTML=`In <b>${place}</b> through <b>${state.year}</b>, the thinnest late-phase pipelines are <b>${p3[0]}</b> (Phase 3: ${p3[1]}) and <b>${p4[0]}</b> (Phase 4: ${p4[1]}).`;
+}
+
+/* ================= VIEW S ================= */
+function mergeSponsorFacets(results){
+	const bySponsor=new Map();
+	results.forEach(r=>{
+		(r.by_sponsor||[]).forEach(sp=>{
+			const cur=bySponsor.get(sp.sponsor_id) || {sponsor_id:sp.sponsor_id, slug:sp.slug, name:sp.name, sponsor_type:sp.sponsor_type, count:0};
+			cur.count += sp.count;
+			bySponsor.set(sp.sponsor_id, cur);
+		});
+	});
+	return bySponsor;
+}
+function mergeDetailResponses(results){
+	let total=0, name="", sponsorType="";
+	const byPhaseDict={}, statusTotals={}, countryMap=new Map(), modalityDict={};
+	results.forEach(r=>{
+		total += r.total || 0;
+		if(r.by_sponsor && r.by_sponsor.length){name=r.by_sponsor[0].name; sponsorType=r.by_sponsor[0].sponsor_type;}
+		for(const k in (r.by_phase||{})) byPhaseDict[k]=(byPhaseDict[k]||0)+r.by_phase[k];
+		Object.values(STATUS_TOTAL_KEYS).flat().forEach(k=>{statusTotals[k]=(statusTotals[k]||0)+(r[k]||0);});
+		(r.by_country||[]).forEach(c=>{if(!c.country) return; countryMap.set(c.country,(countryMap.get(c.country)||0)+c.count);});
+		for(const k in (r.by_modality||{})) modalityDict[k]=(modalityDict[k]||0)+r.by_modality[k];
+	});
+	const status=collapseStatusTotals(statusTotals);
+	const byCountry=[...countryMap.entries()].sort((a,b)=>b[1]-a[1]);
+	return {total, name, sponsorType, byPhase:collapsePhase(byPhaseDict), status, byCountry, byModality:modalityDict};
+}
+async function refreshSCountryChips(){
+	const box=document.getElementById("countryChips");
+	const subjIds=state.conds.map(c=>SUBJECTS.find(s=>s.name===c).id);
+	if(!subjIds.length){box.innerHTML="";return;}
+	const results=await Promise.all(subjIds.map(id=>stats({subject_id:id, region: state.sCont})));
+	const freq={};
+	results.forEach(r=>(r.by_country||[]).forEach(c=>{if(c.country) freq[c.country]=(freq[c.country]||0)+c.count;}));
+	let list=Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
+	const allWorld=!state.sCont;
+	if(allWorld) list=list.slice(0,14);
+	box.innerHTML=list.map(c=>`<button class="chip" data-ctry="${encodeURIComponent(c)}" aria-pressed="${state.sLocs.includes(c)}">${ISO2_TO_NAME[c]||c}</button>`).join(" ")
+		+ (allWorld ? ` <span class="scope-tag">top countries — pick a continent for the full list</span>` : "");
+}
+let sToken=0;
+async function renderS(){
+	const token=++sToken;
+	setLoading("smatrix");
+	try{
+		const filters=buildPlaceParams(state.sCont, state.sLocs);
+		const combo=phaseStatusParams();
+		const perCondition = await Promise.all(state.conds.map(async condName=>{
+			const subj=SUBJECTS.find(s=>s.name===condName);
+			const r = await stats({
+				subject_id: subj.id,
+				category_modality: state.catGroup,
+				phase_normalized: combo.phase,
+				recruitment_status_normalized: combo.status,
+				...filters,
+			});
+			return mergeSponsorFacets([r]);
+		}));
+		if(token!==sToken) return;
+		lastPerCondition=perCondition;
+		paintS(perCondition);
+		renderDetailIfNeeded();
+	} catch(err){
+		if(token!==sToken) return;
+		showError("smatrix", err);
+	}
+}
+function paintS(perCondition){
+	const sponsorMap=new Map();
+	state.conds.forEach((condName, idx)=>{
+		perCondition[idx].forEach((sp, sid)=>{
+			let row=sponsorMap.get(sid);
+			if(!row){row={sponsor_id:sid, name:sp.name, slug:sp.slug, sponsor_type:sp.sponsor_type, byCondition:{}};sponsorMap.set(sid,row);}
+			row.byCondition[condName]=sp.count;
+		});
+	});
+	const rowTotal=r=>state.conds.reduce((a,c)=>a+(r.byCondition[c]||0),0);
+	let list=[...sponsorMap.values()];
+	list.sort((a,b)=> state.sort==="total" ? rowTotal(b)-rowTotal(a) : (b.byCondition[state.sort]||0)-(a.byCondition[state.sort]||0));
+	let maxCell=1;list.forEach(r=>state.conds.forEach(c=>{maxCell=Math.max(maxCell, r.byCondition[c]||0);}));
+	let html="<tr><th style='text-align:left'>Sponsor</th><th>Type</th>";
+	state.conds.forEach(c=>html+=`<th>${shortCond(c)}</th>`);
+	html+="<th>Total</th></tr>";
+	if(!list.length)html+=`<tr><td colspan="${2+state.conds.length+1}" style="color:var(--muted);padding:14px">No sponsors match these filters.</td></tr>`;
+	list.forEach(r=>{
+		const typeLabel=SPONSOR_TYPE_LABELS[r.sponsor_type]||"Other";
+		html+=`<tr class="${state.sponsor===r.sponsor_id?'sel':''}" data-sid="${r.sponsor_id}"><td class="sname"><span class="tdot" style="background:${TC[typeLabel]}"></span>${escapeHtml(r.name)}</td><td>${typeLabel}</td>`;
+		state.conds.forEach(c=>{const v=r.byCondition[c],a=(0.10+0.62*((v||0)/maxCell)).toFixed(2);html+=`<td class="num" style="background:${v?`rgba(47,127,122,${a})`:'transparent'}">${v!=null?v:"·"}</td>`;});
+		html+=`<td class="num"><b>${rowTotal(r)}</b></td></tr>`;
+	});
+	document.getElementById("smatrix").innerHTML=html;
+}
+let dToken=0;
+async function renderDetailIfNeeded(){
+	const box=document.getElementById("sDetail");
+	if(!state.sponsor){
+		box.innerHTML=`<span style="color:var(--muted);font-size:13px">Click a sponsor row to see its interventions, phases, status split and where it runs trials.</span>`;
+		return;
+	}
+	const token=++dToken;
+	box.innerHTML=`<span style="color:var(--muted);font-size:13px">Loading…</span>`;
+	try{
+		const filters=buildPlaceParams(state.sCont, state.sLocs);
+		const combo=phaseStatusParams();
+		const r=await stats({
+			sponsor_id: state.sponsor,
+			subjects_any: SUBJECTS_ANY,
+			category_modality: state.catGroup,
+			phase_normalized: combo.phase,
+			recruitment_status_normalized: combo.status,
+			...filters,
+		});
+		if(token!==dToken) return;
+		paintDetail(mergeDetailResponses([r]));
+	} catch(err){
+		if(token!==dToken) return;
+		box.innerHTML=`<span style="color:var(--note);font-size:13px">Couldn't load sponsor detail — ${escapeHtml(err && err.message || err)}</span>`;
+	}
+}
+function paintDetail(m){
+	const box=document.getElementById("sDetail");
+	const geo=m.byCountry;
+	const gmax=Math.max(1, ...geo.map(e=>e[1]));
+	const geobars=geo.slice(0,12).map(([code,v])=>`<div class="geobar"><span class="nm">${ISO2_TO_NAME[code]||code}</span><span class="track"><i style="width:${Math.round(v/gmax*100)}%"></i></span><span class="vv">${v}</span></div>`).join("");
+	const mapCounts={};geo.forEach(([code,v])=>{mapCounts[code]=v;});
+	const pmax=Math.max(1, ...m.byPhase.slice(0,4));
+	const phbars=PHASE_KEYS.map((p,i)=>`<div class="phrow"><span class="nm">${p}</span><span class="track"><i style="width:${Math.round(m.byPhase[i]/pmax*100)}%;background:${PCHEX[i]}"></i></span><span class="vv">${m.byPhase[i]}</span></div>`).join("");
+	const g=m.status, tot=Object.values(g).reduce((a,b)=>a+b,0)||1;
+	const seg=[["Recruiting","var(--stRecruit)"],["Active","var(--stActive)"],["Completed","var(--stDone)"],["Other","var(--stOther)"]];
+	const statwide=seg.map(([k,col])=>g[k]?`<i style="width:${(g[k]/tot*100).toFixed(0)}%;background:${col}">${g[k]/tot>0.10?k:""}</i>`:"").join("");
+	const statkey=seg.map(([k,col])=>`<span><span class="sw" style="background:${col}"></span>${k} ${g[k]||0}</span>`).join("");
+	const modTags=MODALITY_KEYS.map(k=>{const v=m.byModality[k]||0;return v?`<span class="tg">${MODALITY_LABELS[k]} <span class="grp">${v}</span></span>`:"";}).filter(Boolean).join("");
+	const typeLabel=SPONSOR_TYPE_LABELS[m.sponsorType]||"Other";
+	box.innerHTML=`<h4><span class="tdot" style="background:${TC[typeLabel]}"></span>${escapeHtml(m.name)}</h4>
+		<div class="kv"><span><b>${m.total}</b> trials matching current filters</span><span>Type: <b>${typeLabel}</b></span><span>Runs trials in <b>${geo.length}</b> countries</span></div>
+		<div class="dgrid">
+			<div><div class="dcap">Where they run trials — top countries</div>${geobars || '<span style="color:var(--muted);font-size:12px">No country data</span>'}</div>
+			<div><div class="dcap">Global footprint</div>${miniMap(mapCounts)}</div>
+		</div>
+		<div class="dgrid">
+			<div><div class="dcap">Trial phases</div>${phbars}</div>
+			<div><div class="dcap">Status — recruiting vs completed</div><div class="statwide">${statwide}</div><div class="statkey">${statkey}</div></div>
+		</div>
+		<div class="dcap">Interventions funded — by modality</div>
+		<div class="tags">${modTags || '<span class="tg" style="color:var(--muted)">— no modality data —</span>'}</div>`;
+}
+
+/* ================= shell ================= */
+function renderCurrent(){state.view==="P"?renderP():renderS();}
+function rebuildSort(){const sel=document.getElementById("sortSel");sel.innerHTML=[`<option value="total">Total (selected)</option>`].concat(state.conds.map(c=>`<option value="${c}">${c}</option>`)).join("");if(state.sort!=="total"&&!state.conds.includes(state.sort))state.sort="total";sel.value=state.sort;}
+
+async function init(){
+	document.getElementById("apiBaseFoot").textContent=API_BASE+"/trials/";
+
+	// phase geo controls
+	fillSelect(document.getElementById("pCont"), REGIONS, "");
+	await bootstrapYears();
+	state.year=Y1;
+	const sl=document.getElementById("yearSlider");sl.min=Y0;sl.max=Y1;sl.value=Y1;sl.step=1;
+	document.getElementById("yearVal").textContent=state.year;
+	await refreshPCountry();
+	document.getElementById("pCont").addEventListener("change", async e=>{state.pCont=e.target.value;state.pCountry="";await refreshPCountry();renderP();});
+	document.getElementById("pCountry").addEventListener("change", e=>{state.pCountry=e.target.value;renderP();});
+	sl.addEventListener("input",e=>{state.year=+e.target.value;stopPlay();renderP();});
+	document.getElementById("playBtn").addEventListener("click",togglePlay);
+	document.getElementById("asideToggle").addEventListener("change",e=>{state.showAside=e.target.checked;if(lastPRows)paintP(lastPRows);else renderP();});
+	document.getElementById("notesToggle").addEventListener("change",e=>document.body.classList.toggle("notes",e.target.checked));
+
+	// sponsor controls
+	document.getElementById("condChips").innerHTML=SUBJECTS.map(s=>`<button class="chip" data-cond="${encodeURIComponent(s.name)}" aria-pressed="true">${s.name}</button>`).join(" ");
+	fillSelect(document.getElementById("sCont"), REGIONS, "");
+	fillSelect(document.getElementById("catSel"),[{v:"",l:"All interventions"}].concat(MODALITY_KEYS.map(k=>({v:k,l:MODALITY_LABELS[k]}))),"");
+	document.getElementById("phaseChips").innerHTML=PHASE_KEYS.map(p=>`<button class="chip" data-ph="${encodeURIComponent(p)}" aria-pressed="false">${p.replace("Phase ","P")}</button>`).join(" ");
+	document.getElementById("statusChips").innerHTML=STATUS_FILTERS.map(s=>`<button class="chip" data-st="${s}" aria-pressed="false">${s}</button>`).join(" ");
+	document.getElementById("typeLegend").innerHTML=TYPES.map(t=>`<span><span class="sw" style="background:${TC[t]};border-radius:50%"></span>${t}</span>`).join("")+`<span class="spacer"></span><span>darker cell = more trials</span>`;
+	await refreshSCountryChips();
+	rebuildSort();
+
+	document.getElementById("condChips").addEventListener("click", async e=>{const b=e.target.closest(".chip");if(!b)return;const c=decodeURIComponent(b.getAttribute("data-cond"));const on=b.getAttribute("aria-pressed")==="true";if(on&&state.conds.length===1)return;if(on){state.conds=state.conds.filter(x=>x!==c);b.setAttribute("aria-pressed","false");}else{state.conds=SUBJECTS.map(s=>s.name).filter(x=>state.conds.includes(x)||x===c);b.setAttribute("aria-pressed","true");}rebuildSort();await refreshSCountryChips();renderS();});
+	document.getElementById("sCont").addEventListener("change", async e=>{state.sCont=e.target.value;state.sLocs=[];await refreshSCountryChips();renderS();});
+	document.getElementById("countryChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const c=decodeURIComponent(b.getAttribute("data-ctry"));if(state.sLocs.includes(c))state.sLocs=state.sLocs.filter(x=>x!==c);else state.sLocs.push(c);b.setAttribute("aria-pressed",state.sLocs.includes(c));renderS();});
+	document.getElementById("catSel").addEventListener("change",e=>{state.catGroup=e.target.value;renderS();});
+	document.getElementById("phaseChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const p=decodeURIComponent(b.getAttribute("data-ph"));if(state.phases.includes(p))state.phases=state.phases.filter(x=>x!==p);else state.phases.push(p);b.setAttribute("aria-pressed",state.phases.includes(p));renderS();});
+	document.getElementById("statusChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const st=b.getAttribute("data-st");if(state.statuses.includes(st))state.statuses=state.statuses.filter(x=>x!==st);else state.statuses.push(st);b.setAttribute("aria-pressed",state.statuses.includes(st));renderS();});
+	document.getElementById("sortSel").addEventListener("change",e=>{state.sort=e.target.value;if(lastPerCondition)paintS(lastPerCondition);else renderS();});
+	document.getElementById("smatrix").addEventListener("click",e=>{const tr=e.target.closest("tr[data-sid]");if(!tr)return;const sid=+tr.getAttribute("data-sid");state.sponsor=state.sponsor===sid?null:sid;document.querySelectorAll("#smatrix tr[data-sid]").forEach(r=>r.classList.toggle("sel", +r.getAttribute("data-sid")===state.sponsor));renderDetailIfNeeded();});
+
+	document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected","false"));t.setAttribute("aria-selected","true");state.view=t.getAttribute("data-view");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view"+state.view).classList.add("active");renderCurrent();}));
+	renderP();renderS();
+}
+function togglePlay(){state.playing?stopPlay():startPlay();}
+function startPlay(){const btn=document.getElementById("playBtn");btn.classList.add("on");btn.textContent="❚❚ Pause";if(state.year>=Y1)state.year=Y0;state.playing=setInterval(()=>{state.year++;if(state.year>=Y1){state.year=Y1;renderP();stopPlay();return;}document.getElementById("yearSlider").value=state.year;renderP();},240);}
+function stopPlay(){if(state.playing){clearInterval(state.playing);state.playing=null;}const b=document.getElementById("playBtn");if(b){b.classList.remove("on");b.textContent="▶ Play build-up";}}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
