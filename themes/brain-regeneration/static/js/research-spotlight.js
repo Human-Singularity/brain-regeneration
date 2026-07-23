@@ -16,7 +16,7 @@
 
 	// Generic helpers shared via window.BR; see js/br-utils.js
 	var escHtml         = BR.escHtml;
-	var escHtmlSafeTags = BR.escHtmlAllowSafeTags;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || escHtml;
 	var decodeEntities  = BR.decodeEntities;
 	var formatDate     = BR.formatDate;
 

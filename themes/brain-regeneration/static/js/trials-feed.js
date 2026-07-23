@@ -246,7 +246,7 @@
 	// ── Helpers ──────────────────────────────────────────────────────────────
 	var debounce  = BR.debounce;
 	var escHtml   = BR.escHtml;
-	var escHtmlSafeTags = BR.escHtmlAllowSafeTags;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || escHtml;
 	var stripHtml = BR.stripHtml;
 	var truncate  = BR.truncate;  // pure truncate \u2014 strip HTML at the call site
 

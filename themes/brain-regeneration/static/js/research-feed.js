@@ -97,7 +97,7 @@
 
 	// ── Helpers (generic ones shared via window.BR; see js/br-utils.js) ─────
 	var escHtml         = BR.escHtml;
-	var escHtmlSafeTags = BR.escHtmlAllowSafeTags;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || escHtml;
 	var decodeEntities  = BR.decodeEntities;
 	var stripHtml       = BR.stripHtml;
 	var truncate        = BR.truncate;
