@@ -36,6 +36,18 @@
 		return _decodeEl.value;
 	}
 
+	// Escape a string like escHtml, but let a small allowlist of attribute-free
+	// inline tags through unescaped — the API sometimes carries <i>/<sup>/<sub>/
+	// <s>/<b>/<scp> in titles (species names, isotopes, corrections, small-caps
+	// acronyms). Safe by construction: everything is escaped first, then only
+	// exact "&lt;tag&gt;"/"&lt;/tag&gt;" sequences (no attributes possible) are
+	// unescaped back into real tags, so no other markup can slip through.
+	var SAFE_INLINE_TAGS = ['b', 'i', 's', 'sup', 'sub', 'scp'];
+	var safeInlineTagPattern = new RegExp('&lt;(/?)(' + SAFE_INLINE_TAGS.join('|') + ')&gt;', 'gi');
+	function escHtmlAllowSafeTags(str) {
+		return escHtml(str).replace(safeInlineTagPattern, '<$1$2>');
+	}
+
 	// Strip HTML tags, decode the handful of entities our API returns, collapse whitespace.
 	function stripHtml(str) {
 		if (!str) return '';
@@ -143,6 +155,7 @@
 
 	window.BR = Object.assign(window.BR || {}, {
 		escHtml: escHtml,
+		escHtmlAllowSafeTags: escHtmlAllowSafeTags,
 		decodeEntities: decodeEntities,
 		stripHtml: stripHtml,
 		truncate: truncate,

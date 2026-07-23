@@ -15,8 +15,9 @@
 	function setCached(key, data) { cache.set(key, data); }
 
 	// Generic helpers shared via window.BR; see js/br-utils.js
-	var escHtml        = BR.escHtml;
-	var decodeEntities = BR.decodeEntities;
+	var escHtml         = BR.escHtml;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags;
+	var decodeEntities  = BR.decodeEntities;
 	var formatDate     = BR.formatDate;
 
 	function shortAuthors(authors) {
@@ -30,7 +31,7 @@
 
 	function renderCard(a) {
 		var link    = escHtml(a.link || '');
-		var title   = escHtml(decodeEntities(a.title || ''));
+		var title   = escHtmlSafeTags(decodeEntities(a.title || ''));
 		var journal = escHtml(decodeEntities(a.container_title || ''));
 		var authors = escHtml(decodeEntities(shortAuthors(a.authors)));
 		var date    = escHtml(formatDate(a.published_date));

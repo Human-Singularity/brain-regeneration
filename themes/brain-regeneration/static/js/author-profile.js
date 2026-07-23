@@ -37,6 +37,11 @@
 			.replace(/"/g, '&quot;')
 			.replace(/'/g, '&#39;');
 	}
+	var FALLBACK_SAFE_INLINE_TAGS = ['b', 'i', 's', 'sup', 'sub', 'scp'];
+	var fallbackSafeInlineTagPattern = new RegExp('&lt;(/?)(' + FALLBACK_SAFE_INLINE_TAGS.join('|') + ')&gt;', 'gi');
+	function fallbackEscHtmlAllowSafeTags(str) {
+		return fallbackEscHtml(str).replace(fallbackSafeInlineTagPattern, '<$1$2>');
+	}
 	var _fallbackDecodeEl;
 	function fallbackDecodeEntities(str) {
 		if (str == null || str === '') return '';
@@ -59,11 +64,12 @@
 		return s.slice(0, cut > 0 ? cut : limit) + '…';
 	}
 
-	var BR             = window.BR || {};
-	var escHtml        = BR.escHtml        || fallbackEscHtml;
-	var decodeEntities = BR.decodeEntities || fallbackDecodeEntities;
-	var safeLink       = BR.safeLink       || fallbackSafeLink;
-	var truncate       = BR.truncate       || fallbackTruncate;
+	var BR              = window.BR || {};
+	var escHtml         = BR.escHtml              || fallbackEscHtml;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
+	var decodeEntities  = BR.decodeEntities       || fallbackDecodeEntities;
+	var safeLink        = BR.safeLink             || fallbackSafeLink;
+	var truncate        = BR.truncate             || fallbackTruncate;
 
 	var ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 	var AGG_PAGE_SIZE = 100;
@@ -387,7 +393,7 @@
 				'<span class="relevance-badge' + (rel.cls === 'medium' ? ' medium' : (rel.cls === 'unrated' ? ' unrated' : '')) + '"><span class="dot"></span>' + escHtml(rel.label) + '</span>' +
 				'<span class="access-badge ' + (accessOpen ? 'open' : 'restricted') + '">' + (accessOpen ? 'Open access' : 'Restricted') + '</span>' +
 			'</div>' +
-			'<div class="author-paper-card__title">' + escHtml(decodeEntities(a.title || '')) + '</div>' +
+			'<div class="author-paper-card__title">' + escHtmlSafeTags(decodeEntities(a.title || '')) + '</div>' +
 			'<div class="author-paper-card__meta">' +
 				(a.container_title ? '<span class="author-paper-card__journal">' + escHtml(decodeEntities(a.container_title)) + '</span> · ' : '') +
 				(year ? year + ' · ' : '') +

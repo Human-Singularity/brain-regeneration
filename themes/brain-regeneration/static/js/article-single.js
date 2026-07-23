@@ -39,6 +39,17 @@
 			.replace(/'/g,  '&#39;');
 	}
 
+	// Escape like escHtml, but let a small allowlist of attribute-free inline
+	// tags through unescaped (titles sometimes carry <i>/<sup>/<sub>/<s>/<b>/
+	// <scp> for species names, isotopes, corrections, small-caps acronyms).
+	// Safe by construction: escape everything first, then unescape only exact
+	// "&lt;tag&gt;"/"&lt;/tag&gt;" sequences — no attributes can slip through.
+	var SAFE_INLINE_TAGS = ['b', 'i', 's', 'sup', 'sub', 'scp'];
+	var safeInlineTagPattern = new RegExp('&lt;(/?)(' + SAFE_INLINE_TAGS.join('|') + ')&gt;', 'gi');
+	function escHtmlAllowSafeTags(str) {
+		return escHtml(str).replace(safeInlineTagPattern, '<$1$2>');
+	}
+
 	function safeLink(url) {
 		if (!url) return '#';
 		try {
@@ -328,7 +339,7 @@
 				'<span class="dot" aria-hidden="true"></span>' +
 				'<span class="muted">ID #' + escHtml(String(a.article_id || a.id || '')) + '</span>' +
 			'</div>' +
-			'<h1 class="article-title">' + escHtml(a.title) + '</h1>' +
+			'<h1 class="article-title">' + escHtmlAllowSafeTags(a.title) + '</h1>' +
 			(authors ? '<p class="article-authors">' + authors + '</p>' : '') +
 			'<p class="article-source">' +
 				(a.container_title ? '<strong>' + escHtml(a.container_title) + '</strong> · ' : '') +
@@ -483,7 +494,7 @@
 
 			return '<a class="related-trial" href="' + escHtml(href) + '" target="_blank" rel="noopener noreferrer">' +
 				'<div class="related-trial__head">' +
-					'<p class="related-trial__title">' + escHtml(title) + '</p>' +
+					'<p class="related-trial__title">' + escHtmlAllowSafeTags(title) + '</p>' +
 				'</div>' +
 				(nct ? '<p class="related-trial__nct">' + escHtml(nct) + '</p>' : '') +
 			'</a>';

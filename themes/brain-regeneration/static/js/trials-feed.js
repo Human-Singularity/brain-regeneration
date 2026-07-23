@@ -246,6 +246,7 @@
 	// ── Helpers ──────────────────────────────────────────────────────────────
 	var debounce  = BR.debounce;
 	var escHtml   = BR.escHtml;
+	var escHtmlSafeTags = BR.escHtmlAllowSafeTags;
 	var stripHtml = BR.stripHtml;
 	var truncate  = BR.truncate;  // pure truncate \u2014 strip HTML at the call site
 
@@ -454,7 +455,7 @@
 		return '<article class="trial-card">' +
 			(badges ? '<div class="d-flex flex-wrap gap-2 mb-3">' + badges + '</div>' : '') +
 			'<div class="trial-title">' +
-				'<a href="' + escHtml(t.link) + '" target="_blank" rel="noopener noreferrer">' + escHtml(t.title) + '</a>' +
+				'<a href="' + escHtml(t.link) + '" target="_blank" rel="noopener noreferrer">' + escHtmlSafeTags(t.title) + '</a>' +
 			'</div>' +
 			(displayId ? '<div class="trial-nct">' + escHtml(displayId) + '</div>' : '') +
 			(summary   ? '<p class="trial-description">' + escHtml(summary) + '</p>' : '') +
