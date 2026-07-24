@@ -111,6 +111,8 @@ category_groups:
         name: "p57kip2 (CDKN1C)"
       - id: 117
         name: "MYRF (myelin regulatory factor)"
+      - id: 118
+        name: "N-acetylcysteine"
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
