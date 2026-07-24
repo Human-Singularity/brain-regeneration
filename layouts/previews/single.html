@@ -1,0 +1,5 @@
+{{/* Standalone passthrough: these pages are complete, self-contained HTML
+     documents (own <html>/<head>/<body>). Skip baseof/nav/footer so they
+     render full-width with no site chrome instead of being nested inside
+     the site's <html> and width-constrained .container. */}}
+{{ .Content }}
