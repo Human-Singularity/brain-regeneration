@@ -65,8 +65,6 @@ export async function onRequest(context) {
 		.on('meta[name="twitter:title"]', new SetAttr('content', name))
 		.on('meta[name="twitter:description"]', new SetAttr('content', description))
 		.on('link[rel="canonical"]', new SetAttr('href', canonicalUrl))
-		// noindex stays in place until Task 2 (removing it from content/authors/_index.md
-		// front matter) lands and this is verified live — do not strip it here.
 		.on('head', new AppendJsonLd([buildJsonLd(author, orcid)]))
 		.transform(shell);
 }

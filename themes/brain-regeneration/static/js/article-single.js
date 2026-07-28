@@ -29,7 +29,10 @@
 
 	// ── Helpers ───────────────────────────────────────────────────────────
 
-	function escHtml(str) {
+	// Safe local fallbacks mirroring br-utils.js, in case window.BR isn't
+	// present — these must not be no-ops, since API data is rendered via
+	// innerHTML below and unescaped values would be an XSS/open-redirect risk.
+	function fallbackEscHtml(str) {
 		if (str == null) return '';
 		return String(str)
 			.replace(/&/g,  '&amp;')
@@ -44,11 +47,29 @@
 	// <scp> for species names, isotopes, corrections, small-caps acronyms).
 	// Safe by construction: escape everything first, then unescape only exact
 	// "&lt;tag&gt;"/"&lt;/tag&gt;" sequences — no attributes can slip through.
-	var SAFE_INLINE_TAGS = ['b', 'i', 's', 'sup', 'sub', 'scp'];
-	var safeInlineTagPattern = new RegExp('&lt;(/?)(' + SAFE_INLINE_TAGS.join('|') + ')&gt;', 'gi');
-	function escHtmlAllowSafeTags(str) {
-		return escHtml(str).replace(safeInlineTagPattern, '<$1$2>');
+	var FALLBACK_SAFE_INLINE_TAGS = ['b', 'i', 's', 'sup', 'sub', 'scp'];
+	var fallbackSafeInlineTagPattern = new RegExp('&lt;(/?)(' + FALLBACK_SAFE_INLINE_TAGS.join('|') + ')&gt;', 'gi');
+	function fallbackEscHtmlAllowSafeTags(str) {
+		return fallbackEscHtml(str).replace(fallbackSafeInlineTagPattern, '<$1$2>');
 	}
+
+	// Decode HTML entities in API-provided text (the API returns e.g. journal
+	// names as "Leukemia &amp; Lymphoma"). Run this BEFORE escHtml at the
+	// insertion point — escaping a raw API value directly would double-encode it
+	// and render the literal "&amp;". Uses a detached <textarea>, which is safe:
+	// it is never inserted into the document and the result is always re-escaped.
+	var _fallbackDecodeEl;
+	function fallbackDecodeEntities(str) {
+		if (str == null || str === '') return '';
+		if (!_fallbackDecodeEl) _fallbackDecodeEl = document.createElement('textarea');
+		_fallbackDecodeEl.innerHTML = String(str);
+		return _fallbackDecodeEl.value;
+	}
+
+	var BR                   = window.BR || {};
+	var escHtml              = BR.escHtml              || fallbackEscHtml;
+	var escHtmlAllowSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
+	var decodeEntities       = BR.decodeEntities       || fallbackDecodeEntities;
 
 	function safeLink(url) {
 		if (!url) return '#';
@@ -82,12 +103,12 @@
 	function formatAuthorsLinked(authors) {
 		if (!authors || !authors.length) return '';
 		return authors.map(function (a) {
-			var name = displayName(a);
+			var name = escHtml(decodeEntities(displayName(a)));
 			if (!name) return '';
 			if (a.ORCID) {
-				return '<a href="/authors/' + encodeURIComponent(a.ORCID) + '/">' + escHtml(name) + '</a>';
+				return '<a href="/authors/' + encodeURIComponent(a.ORCID) + '/">' + name + '</a>';
 			}
-			return escHtml(name);
+			return name;
 		}).filter(Boolean).join(', ');
 	}
 
@@ -95,6 +116,12 @@
 		if (str == null) return '';
 		return String(str)
 			.replace(/<[^>]*>/g, ' ')
+			.replace(/&amp;/g, '&')
+			.replace(/&lt;/g, '<')
+			.replace(/&gt;/g, '>')
+			.replace(/&quot;/g, '"')
+			.replace(/&#39;/g, "'")
+			.replace(/&nbsp;/g, ' ')
 			.replace(/\s+/g, ' ')
 			.trim();
 	}
@@ -192,7 +219,7 @@
 		}
 
 		var authors = (a.authors || []).map(function (author) {
-			var name = displayName(author).trim();
+			var name = decodeEntities(displayName(author).trim());
 			if (!name) return null;
 			return { '@type': 'Person', 'name': name };
 		}).filter(Boolean);
@@ -339,11 +366,11 @@
 				'<span class="dot" aria-hidden="true"></span>' +
 				'<span class="muted">ID #' + escHtml(String(a.article_id || a.id || '')) + '</span>' +
 			'</div>' +
-			'<h1 class="article-title">' + escHtmlAllowSafeTags(a.title) + '</h1>' +
+			'<h1 class="article-title">' + escHtmlAllowSafeTags(decodeEntities(a.title)) + '</h1>' +
 			(authors ? '<p class="article-authors">' + authors + '</p>' : '') +
 			'<p class="article-source">' +
-				(a.container_title ? '<strong>' + escHtml(a.container_title) + '</strong> · ' : '') +
-				(a.publisher ? escHtml(a.publisher) + ' · ' : '') +
+				(a.container_title ? '<strong>' + escHtml(decodeEntities(a.container_title)) + '</strong> · ' : '') +
+				(a.publisher ? escHtml(decodeEntities(a.publisher)) + ' · ' : '') +
 				'Published ' + escHtml(formatDate(a.published_date)) +
 			'</p>' +
 		'</header>';
@@ -377,7 +404,7 @@
 		if (!summary) return '';
 		return '<div class="plain-english">' +
 			'<span class="plain-english__label">' + icon('sparkle', 12) + ' Plain English · written by our team</span>' +
-			'<p class="plain-english__body">' + escHtml(summary) + '</p>' +
+			'<p class="plain-english__body">' + escHtml(decodeEntities(summary)) + '</p>' +
 		'</div>';
 	}
 
@@ -396,12 +423,13 @@
 		if (subjects.length) {
 			out += '<div class="tag-list">';
 			subjects.forEach(function (s) {
-				var name = s.subject_name || s.name || s;
-				var url  = subjectUrl(name);
+				var decodedName = decodeEntities(s.subject_name || s.name || s);
+				var name = escHtml(decodedName);
+				var url  = subjectUrl(decodedName);
 				if (url) {
-					out += '<a class="tag-item" href="' + escHtml(url) + '">' + escHtml(name) + '</a>';
+					out += '<a class="tag-item" href="' + escHtml(url) + '">' + name + '</a>';
 				} else {
-					out += '<span class="tag-item">' + escHtml(name) + '</span>';
+					out += '<span class="tag-item">' + name + '</span>';
 				}
 			});
 			out += '</div>';
@@ -410,7 +438,7 @@
 			out += '<div class="tag-list">';
 			categories.forEach(function (c) {
 				var name = c.category_name || c.slug || c;
-				out += '<span class="tag-item tag-item--team"># ' + escHtml(name) + '</span>';
+				out += '<span class="tag-item tag-item--team"># ' + escHtml(decodeEntities(name)) + '</span>';
 			});
 			out += '</div>';
 		}
@@ -427,13 +455,13 @@
 				var pct   = Math.round(score * 100);
 				var low   = score < 0.8;
 				return '<div class="ml-algo">' +
-					'<span>' + escHtml(al.algorithm || 'ML') + '</span>' +
+					'<span>' + escHtml(decodeEntities(al.algorithm || 'ML')) + '</span>' +
 					'<span class="ml-algo__bar"><span class="ml-algo__bar-fill' + (low ? ' ml-algo__bar-fill--low' : '') + '" style="width:' + pct + '%"></span></span>' +
 					'<span class="ml-algo__pct' + (low ? ' ml-algo__pct--low' : '') + '">' + pct + '%</span>' +
 				'</div>';
 			}).join('');
 			return '<div class="ml-row">' +
-				'<div class="ml-row__head"><p class="ml-row__subject">' + escHtml(g.subject) + '</p></div>' +
+				'<div class="ml-row__head"><p class="ml-row__subject">' + escHtml(decodeEntities(g.subject)) + '</p></div>' +
 				'<span class="ml-row__verdict ' + verdictCls + '">' +
 					'<span class="dot" aria-hidden="true"></span>' + escHtml(verdictLabel) +
 				'</span>' +
@@ -457,13 +485,13 @@
 			rows += '<dt>DOI</dt><dd class="mono"><a href="https://doi.org/' + encodeURIComponent(a.doi) + '" target="_blank" rel="noopener noreferrer">' + escHtml(a.doi) + '</a></dd>';
 		}
 		if (a.container_title) {
-			rows += '<dt>Journal</dt><dd style="font-style:italic">' + escHtml(a.container_title) + '</dd>';
+			rows += '<dt>Journal</dt><dd style="font-style:italic">' + escHtml(decodeEntities(a.container_title)) + '</dd>';
 		}
 		if (a.publisher) {
-			rows += '<dt>Publisher</dt><dd>' + escHtml(a.publisher) + '</dd>';
+			rows += '<dt>Publisher</dt><dd>' + escHtml(decodeEntities(a.publisher)) + '</dd>';
 		}
 		if (a.sources && a.sources.length) {
-			rows += '<dt>Sources</dt><dd>' + escHtml(a.sources.join(' · ')) + '</dd>';
+			rows += '<dt>Sources</dt><dd>' + escHtml(decodeEntities(a.sources.join(' · '))) + '</dd>';
 		}
 		return '<div class="aside-card">' +
 			'<p class="aside-card__label">Citation &amp; access</p>' +
@@ -475,7 +503,7 @@
 		var areaName = (a.subjects && a.subjects[0] && (a.subjects[0].subject_name || a.subjects[0].name)) || 'this area';
 		return '<div class="aside-card aside-card--tint">' +
 			'<p class="aside-card__label">' + icon('bell', 12) + ' Stay informed</p>' +
-			'<p class="aside-card__body">Get a weekly digest of new <strong>' + escHtml(areaName) + '</strong> papers.</p>' +
+			'<p class="aside-card__body">Get a weekly digest of new <strong>' + escHtml(decodeEntities(areaName)) + '</strong> papers.</p>' +
 			'<a href="/subscribe/" class="btn-outline-teal" style="font-size:13px;padding:7px 16px;">Subscribe to digest ' + icon('external', 14) + '</a>' +
 		'</div>';
 	}
@@ -494,7 +522,7 @@
 
 			return '<a class="related-trial" href="' + escHtml(href) + '" target="_blank" rel="noopener noreferrer">' +
 				'<div class="related-trial__head">' +
-					'<p class="related-trial__title">' + escHtmlAllowSafeTags(title) + '</p>' +
+					'<p class="related-trial__title">' + escHtmlAllowSafeTags(decodeEntities(title)) + '</p>' +
 				'</div>' +
 				(nct ? '<p class="related-trial__nct">' + escHtml(nct) + '</p>' : '') +
 			'</a>';
@@ -536,7 +564,7 @@
 		main += renderRelatedTrials(trials);
 
 		main += '<p class="article-provenance">' +
-			'Found via ' + escHtml((a.sources || []).join(' · ') || 'GregoryAI') + '. ' +
+			'Found via ' + escHtml(decodeEntities((a.sources || []).join(' · ')) || 'GregoryAI') + '. ' +
 			'Indexed automatically by GregoryAI; tags reviewed by curators.' +
 			'<a href="/contact/">Suggest a correction →</a>' +
 		'</p>';
