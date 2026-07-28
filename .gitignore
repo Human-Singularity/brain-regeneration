@@ -29,3 +29,4 @@ Thumbs.db
 brain-regeneration-benchmark/
 communication/PROTOTYPE-*.html
 .claude/launch.json
+.claude/settings.json
