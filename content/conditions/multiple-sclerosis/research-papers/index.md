@@ -55,8 +55,10 @@ category_groups:
         name: "Teriflunomide"
       - id: 3
         name: "Cladribine"
-  - label: "BTK Inhibitors"
+  - label: "Bruton tyrosine kinase Inhibitors (BTKi)"
     categories:
+      - id: 50
+        name: ALL BTKi Research
       - id: 34
         name: "Tolebrutinib"
   - label: "Cytotoxic Immunosuppressant"
