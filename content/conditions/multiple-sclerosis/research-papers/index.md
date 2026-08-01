@@ -55,6 +55,8 @@ category_groups:
         name: "Teriflunomide"
       - id: 3
         name: "Cladribine"
+      - id: 18
+        name: Vidofludimus Calcium
   - label: "Bruton tyrosine kinase Inhibitors (BTKi)"
     categories:
       - id: 50
