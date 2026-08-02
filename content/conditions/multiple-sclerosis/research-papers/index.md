@@ -117,6 +117,8 @@ category_groups:
         name: "MYRF (myelin regulatory factor)"
       - id: 118
         name: "N-acetylcysteine"
+      - id: 120
+        name: Tehranolide
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
