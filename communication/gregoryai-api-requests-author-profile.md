@@ -1,4 +1,4 @@
-# GregoryAI API improvement requests — author profile page
+# GregoryAi API improvement requests — author profile page
 
 Raised while building the `/authors/{ORCID}/` researcher profile page in the
 frontend (`themes/brain-regeneration/static/js/author-profile.js`). None of

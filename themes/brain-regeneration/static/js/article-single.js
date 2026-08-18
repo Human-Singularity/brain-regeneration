@@ -564,8 +564,8 @@
 		main += renderRelatedTrials(trials);
 
 		main += '<p class="article-provenance">' +
-			'Found via ' + escHtml(decodeEntities((a.sources || []).join(' · ')) || 'GregoryAI') + '. ' +
-			'Indexed automatically by GregoryAI; tags reviewed by curators.' +
+			'Found via ' + escHtml(decodeEntities((a.sources || []).join(' · ')) || 'GregoryAi') + '. ' +
+			'Indexed automatically by GregoryAi; tags reviewed by curators.' +
 			'<a href="/contact/">Suggest a correction →</a>' +
 		'</p>';
 

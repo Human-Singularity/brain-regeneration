@@ -2,10 +2,10 @@
 #
 # Frontend: this repo (Hugo) is built and served by Cloudflare Pages —
 #           pushing to GitHub is the deployment (`make deploy-frontend`).
-# Backend:  GregoryAI Django app on $(PROD_HOST). api.brain-regeneration.com is an
+# Backend:  GregoryAi Django app on $(PROD_HOST). api.brain-regeneration.com is an
 #           alternative hostname for api.gregory-ms.com, served from the
 #           $(PROD_PROJECT_DIR) checkout on the server. Backend code lives in the
-#           gregory-ms / GregoryAI repos, NOT here — push there first, then run
+#           gregory-ms / GregoryAi repos, NOT here — push there first, then run
 #           `make deploy-backend` to update and restart the running instance.
 
 # Load variables from .env if present, stripping surrounding quotes
@@ -40,7 +40,7 @@ help: ## Show this help message
 	@echo ""
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Local development — optional GregoryAI backend (docker compose) + Hugo
+# Local development — optional GregoryAi backend (docker compose) + Hugo
 # ──────────────────────────────────────────────────────────────────────────────
 
 start-gregory: ## Start GregoryAi using docker compose
@@ -149,9 +149,9 @@ status: status-gregory ## Show overall local project status
 # Deployment
 #
 # Frontend: Cloudflare Pages watches GitHub — a push is a deploy, no build step.
-# Backend:  the pipeline below updates the GregoryAI checkout on the server and
+# Backend:  the pipeline below updates the GregoryAi checkout on the server and
 #           restarts the `gregory` container. It assumes the backend changes were
-#           already pushed from the gregory-ms / GregoryAI repos.
+#           already pushed from the gregory-ms / GregoryAi repos.
 # ──────────────────────────────────────────────────────────────────────────────
 
 deploy-frontend: ## Push to GitHub — Cloudflare Pages builds and deploys the site
@@ -175,7 +175,7 @@ remote-restart: ## Restart the gregory application container
 	@echo "🔄 Restarting application..."
 	@$(PROD_SSH) 'docker restart gregory && echo "✅ Container restarted"'
 
-deploy-backend: ## Update + restart the GregoryAI backend only if new commits were pulled
+deploy-backend: ## Update + restart the GregoryAi backend only if new commits were pulled
 	@$(PROD_SSH) 'cd $(PROD_PROJECT_DIR) && \
 		BEFORE=$$(git rev-parse HEAD) && \
 		echo "🔄 Pulling from GitHub..." && \

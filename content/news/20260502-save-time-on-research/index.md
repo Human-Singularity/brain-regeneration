@@ -36,7 +36,7 @@ We are working towards expanding this human review to other research areas and c
 
 The search queries are validated by the scientists doing the work — [REGENERAR](/curators/regenerar/) at Coimbra for cell reprogramming, [LPJ Lab](/curators/lpj-lab/) at Cambridge for neuroimmunometabolism, [iMed.ULisboa](/curators/institute-cns-inflammation/) for neuroinflammation.
 
-Our methodology, the data, and [the code](https://github.com/Human-Singularity/brain-regeneration) are open — you can audit anything, including how we tag categories. Third, the engine is the same [GregoryAI](https://gregory-ai.com) that has been running [Gregory-MS](https://gregory-ms.com) since 2021, with 42,000+ articles indexed and 4,400+ flagged as relevant for MS alone.
+Our methodology, the data, and [the code](https://github.com/Human-Singularity/brain-regeneration) are open — you can audit anything, including how we tag categories. Third, the engine is the same [GregoryAi](https://gregory-ai.com) that has been running [Gregory-MS](https://gregory-ms.com) since 2021, with 42,000+ articles indexed and 4,400+ flagged as relevant for MS alone.
 
 ## One feed, all the registries
 
@@ -46,7 +46,7 @@ Our system removes duplicates, fills in missing data from [CrossRef](https://www
 
 We then present them as a single feed per [research area](/research-areas/) and [condition](/conditions/).
 
-{{< figure src="brain-regeneration-research-area-feed.png" treatment="screenshot" alt="Brain Regeneration Observatory research papers feed filtered by research area" fig="02" caption="A single feed pulling from PubMed, bioRxiv, medRxiv, ICTRP and CrossRef. The relevance score is the GregoryAI score; the toggle switches between Relevant and Full feed." credit="Screenshot: brain-regeneration.com" ui_url="brain-regeneration.com/research-areas/cell-reprogramming" >}}
+{{< figure src="brain-regeneration-research-area-feed.png" treatment="screenshot" alt="Brain Regeneration Observatory research papers feed filtered by research area" fig="02" caption="A single feed pulling from PubMed, bioRxiv, medRxiv, ICTRP and CrossRef. The relevance score is the GregoryAi score; the toggle switches between Relevant and Full feed." credit="Screenshot: brain-regeneration.com" ui_url="brain-regeneration.com/research-areas/cell-reprogramming" >}}
 
 ## Search queries you can read
 Each research area page lists the exact PubMed-style queries our scientific curators use to populate the feed — under "Search methodology". You can see why a paper showed up, copy a query into your own workflow, or flag one that needs widening.
@@ -57,7 +57,7 @@ Each research area page lists the exact PubMed-style queries our scientific cura
 
 
 
-We use [GregoryAI](https://gregory-ai.com/) to score every paper for relevance using independent machine-learning models, displayed on each article (we show the algorithm, the percentage, and the threshold). On any feed you can switch between "Relevant papers" and "Full feed", or sort by AI relevance instead of date. The triage your eyes used to do — done before you arrive.
+We use [GregoryAi](https://gregory-ai.com/) to score every paper for relevance using independent machine-learning models, displayed on each article (we show the algorithm, the percentage, and the threshold). On any feed you can switch between "Relevant papers" and "Full feed", or sort by AI relevance instead of date. The triage your eyes used to do — done before you arrive.
 
 {{< figure src="ml-relevance-scores-pubmed-bert-lgbm-tfidf-lstm-gregory-ms.png" treatment="screenshot" alt="ML Relevance scores panel showing three algorithm results for a General category article marked as Relevant: pubmed_bert at 100%, lgbm_tfidf at 78%, and lstm at 90%. Threshold is 0.8." fig="04" caption="Three independent models score each paper; we surface anything two of three agree on" credit="Screenshot: brain-regeneration.com" ui_url="/brain-regeneration.com/articles/299728/" >}}
 

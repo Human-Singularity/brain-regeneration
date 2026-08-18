@@ -50,7 +50,7 @@ Today, we launch [Brain-Regeneration.com](https://brain-regeneration.com/) — a
 
 Brain-Regeneration.com tracks published research and clinical trials across the full landscape of central nervous system regeneration. Remyelination, neuroinflammation, stem-cell therapies, cell reprogramming — all updated within hours of publication, all searchable, all free.
 
-The platform is powered by [GregoryAI](https://gregory-ai.com/), an open-source software that harvests scientific literature and uses machine learning to surface the papers that matter most. It does not replace the expertise of researchers — it makes their work visible to the people who need it.
+The platform is powered by [GregoryAi](https://gregory-ai.com/), an open-source software that harvests scientific literature and uses machine learning to surface the papers that matter most. It does not replace the expertise of researchers — it makes their work visible to the people who need it.
 
 ## Already proven at scale
 

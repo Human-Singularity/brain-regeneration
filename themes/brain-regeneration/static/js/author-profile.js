@@ -1,9 +1,9 @@
 /* author-profile.js — Author profile page (/authors/{orcid}/).
- * Extracts the ORCID from the URL path, resolves it against GregoryAI's
+ * Extracts the ORCID from the URL path, resolves it against GregoryAi's
  * /authors/ endpoint, then renders a profile built from that author record
  * plus their tracked articles (/articles/?author_id=).
  *
- * GregoryAI's author record (see /authors/{id}/) does not currently expose:
+ * GregoryAi's author record (see /authors/{id}/) does not currently expose:
  * institutional affiliation, a "tracked since" date, a topics/collaborators
  * breakdown, or ORCID-based lookup. Where the design calls for those, this
  * script derives a best-effort value from the author's fetched articles and
@@ -150,7 +150,7 @@
 		var bio = (author.biography || '').replace(/\s+/g, ' ').trim();
 		if (bio) return truncate(bio, 180);
 		var name = displayName(author).trim() || 'This researcher';
-		return truncate(name + '’s tracked research on brain regeneration and myelin repair, ranked by GregoryAI.', 180);
+		return truncate(name + '’s tracked research on brain regeneration and myelin repair, ranked by GregoryAi.', 180);
 	}
 
 	function updateAuthorStructuredData(author, pageUrl, descriptionText) {
@@ -364,7 +364,7 @@
 
 	function renderIdentityMark(relevantPct) {
 		var ring = 'conic-gradient(from -90deg,#E8913A 0 ' + relevantPct + '%,rgba(255,255,255,.5) ' + relevantPct + '% 100%)';
-		var title = relevantPct + '% of tracked papers flagged relevant by GregoryAI';
+		var title = relevantPct + '% of tracked papers flagged relevant by GregoryAi';
 		return '<div class="author-mark" title="' + escHtml(title) + '" aria-label="' + escHtml(title) + '" style="background:' + ring + '">' +
 			'<div class="author-mark__disc">' + escHtml(initialsOf(state.author)) + '</div>' +
 		'</div>';
@@ -560,7 +560,7 @@
 						sampleNote +
 					'</div>' +
 				'</div>' +
-				'<div class="author-footer">Showing up to 3 of ' + articlesCount + ' tracked here · Relevance ranked by GregoryAI · Open by design</div>' +
+				'<div class="author-footer">Showing up to 3 of ' + articlesCount + ' tracked here · Relevance ranked by GregoryAi · Open by design</div>' +
 			'</div>';
 
 		wireSort();
