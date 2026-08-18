@@ -51,7 +51,7 @@ timeZone = "Europe/Lisbon"
 # e.g. HUGO_PARAMS_APIBASE=http://localhost:8000 make dev-local
 apiBase = "https://api.brain-regeneration.com"
 
-# GregoryAI "site" identifier for this frontend (distinct from team_id/subject_id
+# GregoryAi "site" identifier for this frontend (distinct from team_id/subject_id
 # used elsewhere). Backs the per-site article sitemap the API generates at
 # {apiBase}/sitemap/sites/{apiSitemapSiteId}/index.xml — this covers article
 # detail pages, which are client-rendered and absent from Hugo's own sitemap.xml.

@@ -10,14 +10,14 @@ A [Hugo](https://gohugo.io/) **extended** static site — the **Brain Regenerati
 - **Git remote:** `Human-Singularity/brain-regeneration`
 - **Hugo:** extended required (themes/styling). The Cloudflare Pages build is pinned to `HUGO_VERSION=0.164.0` (updated 2026-07-16). Match this locally when relying on version-specific template functions.
 
-## We work on the frontend; the backend is GregoryAI
+## We work on the frontend; the backend is GregoryAi
 
-This repo is the **frontend** Hugo site. The **backend is GregoryAI**, a *separate project* (not in this repo) that exposes the data API. The site fetches articles/trials **client-side** from that API at runtime — Hugo does not bake the research data into the build.
+This repo is the **frontend** Hugo site. The **backend is GregoryAi**, a *separate project* (not in this repo) that exposes the data API. The site fetches articles/trials **client-side** from that API at runtime — Hugo does not bake the research data into the build.
 
 - `params.apiBase` in `hugo.toml` is `https://api.brain-regeneration.com`, overridable for local work via the `HUGO_PARAMS_APIBASE` env var (see `make hugo-dev-local`).
 - **Gotcha:** the JS does **not** read `params.apiBase` directly. Templates must pass the endpoint to each mount element via `data-*` attributes (`data-api-base`, `data-endpoint`, `data-team-id`, `data-subject-id`). When an attribute is missing, the scripts **fall back to a hard-coded `https://api.brain-regeneration.com`** (and read an optional `window.__API_BASE__` global). So if data isn't loading or is coming from the wrong host, check the data attributes the template emits — not just `apiBase`.
 
-So: missing/wrong/duplicated articles, author info, relevance scores, or API response shape → that's a **GregoryAI** concern, not this repo. Layout, rendering, styling, and how the data is displayed → this repo (mostly the theme, below).
+So: missing/wrong/duplicated articles, author info, relevance scores, or API response shape → that's a **GregoryAi** concern, not this repo. Layout, rendering, styling, and how the data is displayed → this repo (mostly the theme, below).
 
 ## Where the frontend actually lives: the theme
 
@@ -48,7 +48,7 @@ make help            # list all Make targets
 
 ### Optional local backend (usually not needed)
 
-`docker-compose.yml` + `django/` + `postgres-data/` can run a **local** GregoryAI (Postgres + the `amaralbruno/gregory-ai` Django image) for testing against unreleased API changes. By default the site uses the live API, so you rarely need this.
+`docker-compose.yml` + `django/` + `postgres-data/` can run a **local** GregoryAi (Postgres + the `amaralbruno/gregory-ai` Django image) for testing against unreleased API changes. By default the site uses the live API, so you rarely need this.
 
 ```bash
 make start-gregory / stop-gregory / logs-gregory / status-gregory / clean-gregory
@@ -72,7 +72,7 @@ archetypes/           New-content templates per section
 data/                 social.json
 static/               Verbatim assets, incl. _redirects (Cloudflare Pages rules)
 themes/brain-regeneration/   The active theme — most frontend lives here
-django/, postgres-data/, docker-compose.yml   Optional local GregoryAI backend
+django/, postgres-data/, docker-compose.yml   Optional local GregoryAi backend
 functions/            Cloudflare Pages Functions — server-side head injection for /articles/{id}/
                       and /authors/{orcid}/ (see below); deploys automatically with Pages, no
                       separate build step or dashboard config
@@ -125,7 +125,7 @@ functions/
 
 This is **Cloudflare Pages Functions**, not a standalone Cloudflare Worker — it ships as part of this repo and deploys automatically whenever Pages builds (same push-to-deploy flow as everything else here). No `wrangler.toml`, no separate `wrangler deploy`, and nothing to configure in the Cloudflare dashboard. It is unrelated to the donation Stripe Worker described above, which *is* a separately deployed Worker.
 
-How it works: each function fetches the static shell via `env.ASSETS.fetch()`, fetches the matching record from the GregoryAI API, and uses `HTMLRewriter` to replace the `<title>`, `<meta name="description">`, canonical `<link>`, OG/Twitter tags, and appends JSON-LD — before the response reaches the browser. `article-single.js`/`author-profile.js` still hydrate the page body client-side exactly as before; only the `<head>` is server-rendered. Cloudflare Pages Functions take precedence over `static/_redirects` for matching routes, so the `_redirects` rewrite for `/articles/*` / `/authors/*` still serves as the fallback for paths the functions don't touch (non-numeric IDs, malformed ORCIDs, IDs the API doesn't recognize) — in those cases the function returns the unmodified shell (fail-open).
+How it works: each function fetches the static shell via `env.ASSETS.fetch()`, fetches the matching record from the GregoryAi API, and uses `HTMLRewriter` to replace the `<title>`, `<meta name="description">`, canonical `<link>`, OG/Twitter tags, and appends JSON-LD — before the response reaches the browser. `article-single.js`/`author-profile.js` still hydrate the page body client-side exactly as before; only the `<head>` is server-rendered. Cloudflare Pages Functions take precedence over `static/_redirects` for matching routes, so the `_redirects` rewrite for `/articles/*` / `/authors/*` still serves as the fallback for paths the functions don't touch (non-numeric IDs, malformed ORCIDs, IDs the API doesn't recognize) — in those cases the function returns the unmodified shell (fail-open).
 
 Test locally with `wrangler pages dev public` after `hugo --minify` (not via `make hugo-dev`, which is a plain Hugo server with no Functions runtime).
 
@@ -143,18 +143,18 @@ Single root file. Highlights:
 
 ## Key frontend patterns
 
-- **Client-side data, not built content.** Articles/trials/charts are fetched from the GregoryAI API in the browser. The flow: a Hugo template renders a mount element with `data-*` attributes (endpoint, `team_id`, `subject_id`, etc.) → the matching script reads them → `fetch()` → renders HTML into the mount. Responses are paginated (`results`, `count`, `current_page`, `total_pages`) and queried with params like `team_id`, `subject_id`, `relevant`, `category_id`, `subjects`, `has_clinical_trials`, `ordering`, `page`, `format=json|csv`, `all_results=true`.
+- **Client-side data, not built content.** Articles/trials/charts are fetched from the GregoryAi API in the browser. The flow: a Hugo template renders a mount element with `data-*` attributes (endpoint, `team_id`, `subject_id`, etc.) → the matching script reads them → `fetch()` → renders HTML into the mount. Responses are paginated (`results`, `count`, `current_page`, `total_pages`) and queried with params like `team_id`, `subject_id`, `relevant`, `category_id`, `subjects`, `has_clinical_trials`, `ordering`, `page`, `format=json|csv`, `all_results=true`.
 - **Article detail is a client-rendered shell, with server-side SEO metadata.** `static/_redirects` rewrites `/articles/* → /articles/ 200` so any `/articles/{id}/` path serves the shell; `article-single.js` parses the numeric ID from the URL and fetches `/articles/{id}/?format=json` to render the body. Cloudflare Pages Functions (`functions/articles/[id].js`, `functions/authors/[orcid].js`) take precedence over that `_redirects` rewrite and run first — they fetch the same API record and rewrite the shell's `<head>` (title, meta description, canonical, OG/Twitter tags, JSON-LD) before the response reaches the browser, so crawlers see real per-page metadata even without executing JS. Both fail open: on any API error, timeout, or unknown ID they return the unmodified shell rather than a 5xx. Internal article links use `/articles/{id}/`; external links go straight to the publisher/DOI.
 - **Aggressive localStorage caching.** All feeds/widgets cache through `BR.makeCache(prefix, ttl)` (in `br-utils.js`) under keys like `brPapers:`, `brTrialsFeed:`, `brTrialsStats:`, `brTrialStats:`, `brSpotlight:`, `brObsStats*` with TTLs (1–12h). If you're testing fresh API data and not seeing changes, clear localStorage.
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
 - **Subscribe forms** (all handled by `subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
-- **Donations** use a separate, independently-deployed Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAI API and not a Pages Function in this repo — its source is documented for reference in `content/cloudflare-worker.md`, but changing it means editing/deploying that Worker directly (its own repo/dashboard), not anything under `functions/`.
+- **Donations** use a separate, independently-deployed Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAi API and not a Pages Function in this repo — its source is documented for reference in `content/cloudflare-worker.md`, but changing it means editing/deploying that Worker directly (its own repo/dashboard), not anything under `functions/`.
 - **Styling** is plain CSS in `themes/.../static/css/` (`main.css` + `feeds-mobile.css` site-wide, plus per-page `article-single.css` / `news-single.css`) — not SCSS/Hugo Pipes. Edit there.
 
 ## Conventions
 
 - Frontend changes (templates/CSS/JS) → `themes/brain-regeneration/`. Content/config → repo root. Override the theme via root `layouts/` only when the change must be site-specific.
 - Server-side per-page metadata for client-rendered detail pages → `functions/` (Cloudflare Pages Functions), not a template override.
-- Keep API/team/list identifiers consistent (`apiBase`, subscription `list_id`/`team_id`) with what GregoryAI expects.
+- Keep API/team/list identifiers consistent (`apiBase`, subscription `list_id`/`team_id`) with what GregoryAi expects.
 - Don't commit build output, `node_modules`, or `.env`.
 - When unsure about Hugo specifics, check `.github/skills/hugo/references/`.

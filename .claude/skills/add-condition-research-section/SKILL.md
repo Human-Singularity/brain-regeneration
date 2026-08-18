@@ -30,11 +30,11 @@ Trials page will show the "Research Papers" tab as "Coming soon".
 
 ## Steps
 
-1. **Get the GregoryAI `subject_id`.** This is a backend (GregoryAI) concept, not
+1. **Get the GregoryAi `subject_id`.** This is a backend (GregoryAi) concept, not
    something invented on the frontend. Reuse the **same** `subject_id` and
    `team_id` already set in the condition's `_index.md` under `api:` — the papers
    feed and the trials feed for a condition query the same subject. Don't guess a
-   new id; if you don't already have it from `_index.md`, that's a GregoryAI
+   new id; if you don't already have it from `_index.md`, that's a GregoryAi
    question, not a Hugo one.
 
 2. **Create the leaf bundle**, copying the shape of the MS one:
@@ -68,7 +68,7 @@ Trials page will show the "Research Papers" tab as "Coming soon".
    # false to show the full unfiltered feed by default for this condition.
    require_relevant: false
 
-   # Optional — only include if you have known GregoryAI category ids to group
+   # Optional — only include if you have known GregoryAi category ids to group
    # (e.g. named drugs/treatments). Omit entirely if none apply; the feed still
    # works without it, it just won't have a populated category filter.
    category_groups:
@@ -110,9 +110,9 @@ Trials page will show the "Research Papers" tab as "Coming soon".
   `require_relevant: false` in the page's frontmatter to show the full feed by
   default instead — `conditions/research-papers.html` reads this param and
   passes it through to the partial.
-- `category_groups` category **ids** must already exist in GregoryAI for that
+- `category_groups` category **ids** must already exist in GregoryAi for that
   `team_id`/`subject_id` — don't invent ids. If unsure what categories exist,
-  that's a GregoryAI backend question.
+  that's a GregoryAi backend question.
 - Keep `list_id` consistent with whatever newsletter list is intended — reusing
   the condition's own `list_id` is normal (see MS: both files use `list_id: 1`).
 - This pattern is specific to the **conditions** section. `research-areas/`

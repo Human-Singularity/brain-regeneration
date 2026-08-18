@@ -263,7 +263,7 @@ The main blockage for this timeline is the availability of an approved sitemap.
 | /authors | Top Researchers | Lower priority |
 | **About** |  |  |
 | /about | About Brain-Regeneration |   |
-| └─ /about/gregoryai | Powered by GregoryAI | Technical explanation |
+| └─ /about/gregoryai | Powered by GregoryAi | Technical explanation |
 | **Team & Community** |  |  |
 | /team | Team Overview | Listing of Champions, Supporters, Ambassadors and Project Team |
 | └─ /team/project | Project Team | Individual profiles |
