@@ -4,7 +4,7 @@ layout: research-papers
 date: 2026-07-03
 draft: false
 subscribe: true
-list_id: 6
+list_id: 12
 subscribe_description: "Weekly digest of new parkinson's research and recruiting clinical trials."
 
 description: "Track the latest research on Parkinson's disease, from dopaminergic cell-replacement and reprogramming therapies to neuroinflammation and disease-modifying approaches."
