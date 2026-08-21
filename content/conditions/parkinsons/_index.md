@@ -5,7 +5,7 @@ url: /conditions/parkinsons/clinical-trials/
 date: 2025-01-06
 draft: false
 subscribe: true
-list_id: 6
+list_id: 12
 subscribe_description: "Weekly digest of new parkinson's research and recruiting clinical trials."
 
 description: "Track recruiting clinical trials and the latest research on Parkinson's disease, from dopaminergic cell-replacement and reprogramming therapies to neuroinflammation and disease-modifying approaches."
