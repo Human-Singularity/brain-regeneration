@@ -112,6 +112,19 @@
 
 	--radius: 8px;
 	--shadow: 0 2px 8px rgba(45, 45, 45, 0.06);
+
+	/* ── Design-system tokens introduced by the Funding Calls widget ──
+	   Added because the design used them but :root never defined them —
+	   see docs/funding-calls-section-plan.md §6.3. --color-muted is
+	   deliberately NOT among them: the design system's #8C8C8C is lighter
+	   and less accessible than the site's existing #6B6B6B, which wins. */
+	--color-accent-hover: #D17E2F;
+	--radius-pill: 100px;
+	--shadow-hover: 0 4px 16px rgba(45, 45, 45, 0.1);
+	--fs-h2: 1.6rem;
+	--ease: cubic-bezier(.2, .6, .2, 1);
+	--dur-fast: 150ms;
+	--dur-base: 200ms;
 }
 
 /* ── Global ── */
@@ -3319,3 +3332,171 @@ a:hover {
 	text-decoration: underline;
 }
 .search-clear-all:hover { color: var(--color-text); }
+
+/* ── Funding calls (homepage widget) ──
+   Ported from the Funding Calls Section.dc.html design (variant 1b, the
+   compact list). Inline styles from the design were converted to real
+   classes here so hover/focus states work — see
+   docs/funding-calls-section-plan.md §6.3. */
+.funding-calls-heading { font-size: var(--fs-h2); }
+
+.fc-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-width: 760px;
+	margin: 0 auto;
+}
+
+.fc-row {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--color-text-light);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 16px 20px;
+	text-decoration: none;
+	color: inherit;
+	transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.fc-row:hover,
+.fc-row:focus-visible {
+	box-shadow: var(--shadow-hover);
+	transform: translateY(-1px);
+}
+.fc-row:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+
+.fc-row-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.fc-row-title {
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 15.5px;
+	color: var(--color-text);
+	line-height: 1.35;
+}
+
+.fc-row-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 0;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+}
+.fc-row-place::before {
+	content: '\00b7';
+	margin: 0 8px;
+}
+
+.fc-deadline {
+	flex-shrink: 0;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	/* The design's --color-accent-hover (#D17E2F) on this pill's #FBEEDD
+	   background measures ~2.7:1 — well under WCAG AA's 4.5:1 for 12px/600
+	   text. Darkened here to ~5:1 rather than changing the shared token,
+	   which is used for other, larger-text hover states. */
+	color: #9C5310;
+	background: #FBEEDD;
+	border-radius: var(--radius-pill);
+	padding: 4px 12px;
+	white-space: nowrap;
+}
+
+.fc-arrow {
+	flex-shrink: 0;
+	color: var(--color-muted);
+	font-size: 15px;
+}
+
+.fc-empty {
+	text-align: center;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	color: var(--color-muted);
+	margin: 0;
+}
+
+/* Skeleton rows — reserve height while the fetch is pending/deferred so
+   scrolling this section into view causes no layout shift. */
+.fc-skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	background: var(--color-text-light);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	padding: 16px 20px;
+	animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.fc-skeleton-title {
+	height: 15px;
+	width: 60%;
+	background: var(--color-border);
+	border-radius: 4px;
+}
+.fc-skeleton-meta {
+	height: 11px;
+	width: 30%;
+	background: var(--color-border);
+	border-radius: 4px;
+}
+
+/* Static credit block — always rendered server-side, independent of the
+   fetched rows, since this is the section's payoff, not its fine print
+   (see docs/funding-calls-section-plan.md §6.4). */
+.fc-credit {
+	max-width: 620px;
+	margin: 32px auto 0;
+	text-align: center;
+}
+.fc-credit-org {
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 16px;
+	color: var(--color-primary);
+	margin-bottom: 6px;
+}
+.fc-credit-body {
+	font-size: 15px;
+	color: var(--color-text);
+	margin-bottom: 14px;
+}
+.fc-cta {
+	display: inline-block;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--color-primary);
+	text-decoration: none;
+	transition: color var(--dur-base) var(--ease);
+}
+.fc-cta:hover { color: var(--color-accent); }
+.fc-terms-note {
+	font-weight: 400;
+	color: var(--color-muted);
+}
+.fc-updated {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	margin: 10px 0 0;
+}
+
+@media (max-width: 600px) {
+	.fc-row { flex-wrap: wrap; }
+	.fc-deadline { order: 3; margin-top: 2px; }
+	.fc-arrow { display: none; }
+}
