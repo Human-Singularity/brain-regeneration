@@ -27,7 +27,7 @@
 	var cache = BR.makeCache('brFunding:', 3 * 60 * 60 * 1000); // matches the proxy's edge TTL
 
 	var CACHE_KEY = 'items:' + limit;
-	var FALLBACK_URL = 'https://observatorio.abneuro.org.br/editais';
+	var FALLBACK_URL = 'https://observatorio.abneuro.org.br/editais?utm_source=brain-regeneration&utm_medium=referral&utm_campaign=funding-calls';
 
 	function renderSkeleton() {
 		var rows = '';
