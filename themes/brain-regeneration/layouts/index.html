@@ -346,6 +346,31 @@
 	</div>
 </section>
 
+<!-- ── FUNDING CALLS ──
+     Homepage-only widget backed by the ABN / REDONE.br public RSS feed via
+     the /api/funding-calls Pages Function proxy — a site-relative path, not
+     apiBase (this is not GregoryAi). See docs/funding-calls-section-plan.md. -->
+<section class="section bg-sand">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2 class="funding-calls-heading">Funding calls &amp; opportunities</h2>
+			<p style="font-size: 17px; max-width: 620px; margin: 0 auto;">Grants, fellowships and awards in neuroscience and neurodegeneration, updated daily from the Observat&oacute;rio de Doen&ccedil;as Neurol&oacute;gicas.</p>
+		</div>
+
+		<div id="funding-calls"
+		     data-endpoint="/api/funding-calls"
+		     data-limit="8"
+		     aria-busy="true"></div>
+
+		<div class="fc-credit">
+			<p class="fc-credit-org">Curated by the Observat&oacute;rio de Doen&ccedil;as Neurol&oacute;gicas</p>
+			<p class="fc-credit-body">Academia Brasileira de Neurologia / REDONE.br &mdash; collected daily from CNPq, FAPESP and the state FAPs, FINEP, CAPES, NIH, Grants.gov, the European Union, AAN, Instituto Serrapilheira and international foundations.</p>
+			<a class="fc-cta" href="https://observatorio.abneuro.org.br/editais" target="_blank" rel="noopener" data-umami-event="Funding Calls: View All">Explore the full funding observatory <span aria-hidden="true">&#8599;</span></a>
+			<p class="fc-updated">Updated daily, newest first. <span class="fc-terms-note">(you may be asked to accept their terms of use first)</span></p>
+		</div>
+	</div>
+</section>
+
 <!-- ── PROJECT NEWS (conditional — only if published posts exist) ── -->
 {{ $newsPosts := first 3 (where (where .Site.RegularPages "Section" "news") ".Draft" false) }}
 {{ if $newsPosts }}
@@ -410,4 +435,8 @@
 	</div>
 </section>
 
+{{ end }}
+
+{{ define "page-scripts" }}
+<script src="{{ "js/funding-calls.js" | relURL }}" defer></script>
 {{ end }}
