@@ -259,19 +259,21 @@ export async function onRequest(context) {
 	const limitParam = parseInt(url.searchParams.get('limit'), 10);
 	const limit = Number.isFinite(limitParam) ? Math.min(MAX_LIMIT, Math.max(1, limitParam)) : DEFAULT_LIMIT;
 
-	const respond = (body) =>
+	const respond = (body, cacheControl) =>
 		new Response(JSON.stringify(body), {
 			status: 200,
 			headers: {
 				'Content-Type': 'application/json',
-				'Cache-Control': 'public, max-age=1800, s-maxage=10800, stale-while-revalidate=86400',
+				'Cache-Control': cacheControl,
 			},
 		});
 
 	const xml = await fetchFeed();
 	// Fail open: an upstream error degrades the widget to its empty state
-	// rather than surfacing a 5xx.
-	if (!xml) return respond({ items: [], error: 'upstream' });
+	// rather than surfacing a 5xx. Cached briefly, not with the success TTL —
+	// a transient upstream outage must not pin an empty widget at the edge
+	// for hours after the origin recovers.
+	if (!xml) return respond({ items: [], error: 'upstream' }, 'public, max-age=60, s-maxage=60');
 
 	const rawItems = extractAll(/<item>([\s\S]*?)<\/item>/i, xml);
 
@@ -294,5 +296,8 @@ export async function onRequest(context) {
 	const diversified = roundRobinByFunder(items).slice(0, limit);
 	diversified.sort((a, b) => new Date(b.published) - new Date(a.published));
 
-	return respond({ items: diversified });
+	return respond(
+		{ items: diversified },
+		'public, max-age=1800, s-maxage=10800, stale-while-revalidate=86400'
+	);
 }

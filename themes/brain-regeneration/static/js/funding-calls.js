@@ -29,9 +29,16 @@
 	var CACHE_KEY = 'items:' + limit;
 	var FALLBACK_URL = 'https://observatorio.abneuro.org.br/editais?utm_source=brain-regeneration&utm_medium=referral&utm_campaign=funding-calls';
 
+	// Mirrors the proxy's own clamp (functions/api/funding-calls.js) so the
+	// skeleton reserves the same height the real rows will occupy — a count
+	// fixed at 4 regardless of `limit` would still shift the credit block
+	// below once the actual (e.g. 8-row) response renders.
+	var parsedLimit = parseInt(limit, 10);
+	var skeletonCount = isFinite(parsedLimit) ? Math.min(24, Math.max(1, parsedLimit)) : 8;
+
 	function renderSkeleton() {
 		var rows = '';
-		for (var i = 0; i < 4; i++) {
+		for (var i = 0; i < skeletonCount; i++) {
 			rows += '<div class="fc-skeleton"><span class="fc-skeleton-title"></span><span class="fc-skeleton-meta"></span></div>';
 		}
 		mount.innerHTML = '<div class="fc-rows">' + rows + '</div>';
