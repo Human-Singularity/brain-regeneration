@@ -2030,9 +2030,8 @@ a:hover {
 
 .badge-completed {
 	display: inline-block;
-	background-color: transparent;
-	color: var(--color-muted);
-	border: 1px solid var(--color-border);
+	background-color: var(--color-muted);
+	color: var(--color-text-light);
 	font-family: var(--font-heading);
 	font-weight: 500;
 	font-size: 12px;

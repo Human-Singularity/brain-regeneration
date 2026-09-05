@@ -1,0 +1,40 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/trial-single.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
+
+<div id="trial-shell"
+	data-api-base="{{ $apiBase }}"
+	data-site-title="{{ .Site.Title }}"
+	data-site-description="{{ .Site.Params.description | default "Brain Regeneration Observatory" }}">
+
+	{{/* Loading skeleton */}}
+	<div id="trial-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
+		<div class="container">
+			<div id="trial-loading" class="trial-loading-skeleton">
+				<div class="skeleton skeleton--eyebrow"></div>
+				<div class="skeleton skeleton--title"></div>
+				<div class="skeleton skeleton--title skeleton--title-short"></div>
+				<div class="skeleton skeleton--authors"></div>
+				<div class="skeleton skeleton--meta"></div>
+			</div>
+			<div id="trial-error" class="trial-error-state" hidden>
+				<p>We could not load this trial.</p>
+				<button class="btn-outline-teal" id="trial-retry-btn">Try again</button>
+			</div>
+			<div id="trial-content" hidden></div>
+		</div>
+	</div>
+
+</div>
+
+{{ end }}
+
+{{ define "page-scripts" }}
+<script>
+	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};
+</script>
+<script src="{{ "js/trial-single.js" | relURL }}"></script>
+{{ end }}
