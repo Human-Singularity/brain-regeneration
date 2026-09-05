@@ -7,6 +7,10 @@
 # the client-side JS can extract the ORCID and fetch from the API.
 /authors/*  /authors/  200
 
+# Serve the trial detail shell for any /trials/{id}/ path so that
+# the client-side JS can extract the trial ID and fetch from the API.
+/trials/*  /trials/  200
+
 # Redirect bare condition pages to their clinical-trials subpage
 /conditions/:condition/  /conditions/:condition/clinical-trials/  301
 
