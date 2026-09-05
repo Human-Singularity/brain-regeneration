@@ -399,7 +399,7 @@
 		if (!summary) return '';
 		return '<p class="trial-summary trial-summary--clamped" id="trial-summary-text">' + escHtml(summary) + '</p>' +
 			'<div class="trial-summary-row">' +
-				'<button type="button" class="trial-toggle-link" id="trial-summary-toggle" aria-expanded="false" aria-controls="trial-summary-text">Read the full summary</button>' +
+				'<button type="button" class="trial-toggle-link" id="trial-summary-toggle" aria-expanded="false" aria-controls="trial-summary-text" hidden>Read the full summary</button>' +
 				'<span class="trial-summary-row__hint">Summary as published by the registry.</span>' +
 			'</div>';
 	}
@@ -439,7 +439,7 @@
 						'<ul>' + criteria.exclusion.map(function (c) { return '<li>' + escHtml(c) + '</li>'; }).join('') + '</ul>'
 						: '') +
 				'</div>' +
-				'<button type="button" class="trial-criteria-box__toggle" id="trial-criteria-toggle" aria-expanded="false" aria-controls="trial-criteria-body">Read the full criteria</button>' +
+				'<button type="button" class="trial-criteria-box__toggle" id="trial-criteria-toggle" aria-expanded="false" aria-controls="trial-criteria-body" hidden>Read the full criteria</button>' +
 			'</div>';
 		}
 
@@ -621,10 +621,19 @@
 
 	// ── Interactive toggles (summary clamp + criteria expand) ───────────────
 
+	// A toggle is only useful when its content actually overflows the collapsed
+	// height — scrollHeight exceeding clientHeight is true whether the clamp is
+	// -webkit-line-clamp (summary) or max-height (criteria). Short registry text
+	// that already fits shouldn't offer a "read more" that reveals nothing new.
+	function isTruncated(el) {
+		return el.scrollHeight > el.clientHeight + 1;
+	}
+
 	function initToggles() {
 		var summaryToggle = document.getElementById('trial-summary-toggle');
 		var summaryText   = document.getElementById('trial-summary-text');
 		if (summaryToggle && summaryText) {
+			if (isTruncated(summaryText)) summaryToggle.hidden = false;
 			summaryToggle.addEventListener('click', function () {
 				var open = summaryText.classList.toggle('trial-summary--open');
 				summaryText.classList.toggle('trial-summary--clamped', !open);
@@ -636,6 +645,7 @@
 		var criteriaToggle = document.getElementById('trial-criteria-toggle');
 		var criteriaBody   = document.getElementById('trial-criteria-body');
 		if (criteriaToggle && criteriaBody) {
+			if (isTruncated(criteriaBody)) criteriaToggle.hidden = false;
 			criteriaToggle.addEventListener('click', function () {
 				var open = criteriaBody.classList.toggle('trial-criteria-box__body--open');
 				criteriaToggle.setAttribute('aria-expanded', String(open));
