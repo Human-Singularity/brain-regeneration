@@ -430,7 +430,9 @@
 		var displayId = ids.nct || ids.euct || ids.eudract || '';
 		var summary   = truncate(stripHtml(t.summary), 300);
 		var phase     = formatPhase(t);
-		var detailUrl = t.trial_id ? '/trials/' + encodeURIComponent(t.trial_id) + '/' : t.link;
+		var hasInternalDetail = !!t.trial_id;
+		var detailUrl = hasInternalDetail ? '/trials/' + encodeURIComponent(t.trial_id) + '/' : (t.link || '#');
+		var titleLinkAttrs = hasInternalDetail ? '' : ' target="_blank" rel="noopener noreferrer"';
 
 		// ── Top badge row ─────────────────────────────────────────────────
 		var badges = '';
@@ -456,7 +458,7 @@
 		return '<article class="trial-card">' +
 			(badges ? '<div class="d-flex flex-wrap gap-2 mb-3">' + badges + '</div>' : '') +
 			'<div class="trial-title">' +
-				'<a href="' + escHtml(detailUrl) + '">' + escHtmlSafeTags(t.title) + '</a>' +
+				'<a href="' + escHtml(detailUrl) + '"' + titleLinkAttrs + '>' + escHtmlSafeTags(t.title) + '</a>' +
 			'</div>' +
 			(displayId ? '<div class="trial-nct">' + escHtml(displayId) + '</div>' : '') +
 			(summary   ? '<p class="trial-description">' + escHtml(summary) + '</p>' : '') +

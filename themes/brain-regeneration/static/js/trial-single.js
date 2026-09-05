@@ -339,7 +339,7 @@
 		upsertMetaByProperty('og:title', title);
 		upsertMetaByProperty('og:description', descriptionText);
 		upsertMetaByProperty('og:url', pageUrl);
-		upsertMetaByProperty('og:type', 'article');
+		upsertMetaByProperty('og:type', 'website');
 
 		updateStructuredData(t, pageUrl, descriptionText);
 	}
@@ -399,7 +399,7 @@
 		if (!summary) return '';
 		return '<p class="trial-summary trial-summary--clamped" id="trial-summary-text">' + escHtml(summary) + '</p>' +
 			'<div class="trial-summary-row">' +
-				'<button type="button" class="trial-toggle-link" id="trial-summary-toggle">Read the full summary</button>' +
+				'<button type="button" class="trial-toggle-link" id="trial-summary-toggle" aria-expanded="false" aria-controls="trial-summary-text">Read the full summary</button>' +
 				'<span class="trial-summary-row__hint">Summary as published by the registry.</span>' +
 			'</div>';
 	}
@@ -414,7 +414,7 @@
 
 	function renderEligibility(t) {
 		var stats = [
-			{ label: 'Enrolment target', value: formatEnrollment(t) },
+			{ label: 'Enrollment target', value: formatEnrollment(t) },
 			{ label: 'Age',              value: formatAge(t) },
 			{ label: 'Sex eligible',     value: formatSex(t) },
 			{ label: 'Phase',            value: formatPhase(t) || 'Not specified' },
@@ -439,7 +439,7 @@
 						'<ul>' + criteria.exclusion.map(function (c) { return '<li>' + escHtml(c) + '</li>'; }).join('') + '</ul>'
 						: '') +
 				'</div>' +
-				'<button type="button" class="trial-criteria-box__toggle" id="trial-criteria-toggle">Read the full criteria</button>' +
+				'<button type="button" class="trial-criteria-box__toggle" id="trial-criteria-toggle" aria-expanded="false" aria-controls="trial-criteria-body">Read the full criteria</button>' +
 			'</div>';
 		}
 
@@ -628,6 +628,7 @@
 			summaryToggle.addEventListener('click', function () {
 				var open = summaryText.classList.toggle('trial-summary--open');
 				summaryText.classList.toggle('trial-summary--clamped', !open);
+				summaryToggle.setAttribute('aria-expanded', String(open));
 				summaryToggle.textContent = open ? 'Show less' : 'Read the full summary';
 			});
 		}
@@ -637,6 +638,7 @@
 		if (criteriaToggle && criteriaBody) {
 			criteriaToggle.addEventListener('click', function () {
 				var open = criteriaBody.classList.toggle('trial-criteria-box__body--open');
+				criteriaToggle.setAttribute('aria-expanded', String(open));
 				criteriaToggle.textContent = open ? 'Show less' : 'Read the full criteria';
 			});
 		}
