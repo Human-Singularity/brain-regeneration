@@ -52,6 +52,20 @@
 	var escHtml        = BR.escHtml        || fallbackEscHtml;
 	var decodeEntities = BR.decodeEntities || fallbackDecodeEntities;
 
+	// Some registry summaries (esp. CTIS-sourced) carry literal structural HTML —
+	// "<b>Conditions</b>: ... <br />" — rather than plain text. Escape everything
+	// first, then unescape only an exact allowlist of safe, attribute-free inline
+	// tags (including self-closing <br/>), so that formatting renders without
+	// opening up arbitrary markup from API data.
+	var SUMMARY_SAFE_TAGS = ['b', 'i', 'strong', 'em'];
+	var summarySafeTagPattern = new RegExp('&lt;(/?)(' + SUMMARY_SAFE_TAGS.join('|') + ')&gt;', 'gi');
+	var summarySafeBrPattern = /&lt;br\s*\/?&gt;/gi;
+	function escHtmlAllowRegistryTags(str) {
+		return escHtml(str)
+			.replace(summarySafeBrPattern, '<br>')
+			.replace(summarySafeTagPattern, '<$1$2>');
+	}
+
 	function safeLink(url) {
 		if (!url) return '#';
 		try {
@@ -397,7 +411,7 @@
 	function renderSummary(t) {
 		var summary = decodeEntities(t.summary || '');
 		if (!summary) return '';
-		return '<p class="trial-summary trial-summary--clamped" id="trial-summary-text">' + escHtml(summary) + '</p>' +
+		return '<p class="trial-summary trial-summary--clamped" id="trial-summary-text">' + escHtmlAllowRegistryTags(summary) + '</p>' +
 			'<div class="trial-summary-row">' +
 				'<button type="button" class="trial-toggle-link" id="trial-summary-toggle" aria-expanded="false" aria-controls="trial-summary-text" hidden>Read the full summary</button>' +
 				'<span class="trial-summary-row__hint">Summary as published by the registry.</span>' +
@@ -506,8 +520,9 @@
 			byCountry[code].push(s);
 		});
 
-		var blocks = order.map(function (code) {
+		var blocks = order.map(function (code, idx) {
 			var group = byCountry[code];
+			var panelId = 'trial-location-panel-' + idx;
 			var rows = group.map(function (s) {
 				var place = [s.city, s.state, s.postcode].filter(Boolean).join(', ');
 				return '<div class="trial-site-row">' +
@@ -516,12 +531,17 @@
 				'</div>';
 			}).join('');
 			return '<div class="trial-locations">' +
-				'<div class="trial-locations__head">' +
+				'<button type="button" class="trial-locations__head" aria-expanded="false" aria-controls="' + panelId + '">' +
 					'<span class="trial-locations__country">' + escHtml(countryName(code)) + '</span>' +
-					'<span class="trial-locations__count">' + group.length + ' site' + (group.length !== 1 ? 's' : '') + '</span>' +
+					'<span class="trial-locations__head-right">' +
+						'<span class="trial-locations__count">' + group.length + ' site' + (group.length !== 1 ? 's' : '') + '</span>' +
+						'<span class="trial-locations__chevron" aria-hidden="true">&#9656;</span>' +
+					'</span>' +
+				'</button>' +
+				'<div class="trial-locations__panel" id="' + panelId + '" hidden>' +
+					rows +
+					'<div class="trial-locations__footnote">Contact details for each site are held by the registry. Follow the record link to reach them.</div>' +
 				'</div>' +
-				rows +
-				'<div class="trial-locations__footnote">Contact details for each site are held by the registry. Follow the record link to reach them.</div>' +
 			'</div>';
 		}).join('');
 
@@ -588,7 +608,7 @@
 
 		return '<div class="trial-provenance">' +
 			'<h2 class="trial-provenance__heading">Where this page comes from</h2>' +
-			'<p class="trial-provenance__body">This page is our copy of the registry records listed below. Some trials are registered in more than one place, and each registry keeps its own version. We do not add to those records and we do not verify them — the registry version is the authoritative one.</p>' +
+			'<p class="trial-provenance__body">This page is our copy of the registry records listed below. Some trials are registered in more than one place, and each registry keeps its own version. We do not add to those records and we do not verify them.</p>' +
 			'<div class="trial-provenance__grid">' +
 				'<div class="trial-provenance__item"><span class="trial-provenance__label">Synced</span><span class="trial-provenance__value">' + escHtml(formatDate(t.last_refreshed_on)) + '</span></div>' +
 				'<div class="trial-provenance__item"><span class="trial-provenance__label">Source registries</span><span class="trial-provenance__value">' + escHtml(registryName(t)) + '</span></div>' +
@@ -652,6 +672,15 @@
 				criteriaToggle.textContent = open ? 'Show less' : 'Read the full criteria';
 			});
 		}
+
+		document.querySelectorAll('.trial-locations__head').forEach(function (head) {
+			var panel = document.getElementById(head.getAttribute('aria-controls'));
+			if (!panel) return;
+			head.addEventListener('click', function () {
+				panel.hidden = !panel.hidden;
+				head.setAttribute('aria-expanded', String(!panel.hidden));
+			});
+		});
 	}
 
 	// ── State ─────────────────────────────────────────────────────────────
