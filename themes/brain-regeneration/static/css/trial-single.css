@@ -124,7 +124,7 @@
 	background: var(--color-tint);
 	color: var(--color-primary);
 	padding: 3px 10px;
-	border-radius: var(--radius-pill);
+	border-radius: 100px;
 }
 .trial-chip--phase {
 	font-family: var(--font-heading);
@@ -371,7 +371,7 @@
 	color: var(--color-primary);
 	background: var(--color-tint);
 	padding: 4px 10px;
-	border-radius: var(--radius-pill);
+	border-radius: 100px;
 	flex-shrink: 0;
 }
 .trial-intervention__body {
