@@ -1,14 +1,34 @@
-// Gates access to preview-branch deployments with HTTP Basic Auth.
-// Runs for every request; no-ops on production (CF_PAGES_BRANCH !== "preview").
+// Runs for every request. Two jobs:
+//   1. Gates preview-branch deployments with HTTP Basic Auth.
+//   2. Redirects the bare production *.pages.dev alias to the custom domain.
 // AUTH_USERNAME / AUTH_PASSWORD are set as Preview-scoped env vars/secrets
 // in the Cloudflare Pages dashboard (Settings > Environment variables).
+
+const PRODUCTION_HOST = 'brain-regeneration.com';
+
+// Cloudflare Pages serves the production deployment on this hostname as well as
+// on the custom domain. Zone-level WAF rules, rate limits and challenges apply
+// only to the zone, so this alias is a way around every protection configured on
+// brain-regeneration.com. Branch and deployment-hash previews live on
+// <label>.brain-regeneration.pages.dev and are deliberately not matched here.
+const PAGES_DEV_ALIAS = 'brain-regeneration.pages.dev';
+
 export async function onRequest(context) {
 	const { request, env, next } = context;
 
-	if (env.CF_PAGES_BRANCH !== 'preview') {
-		return next();
+	if (env.CF_PAGES_BRANCH === 'preview') {
+		return requireBasicAuth(request, env, next);
 	}
 
+	const url = new URL(request.url);
+	if (url.hostname === PAGES_DEV_ALIAS) {
+		return Response.redirect(`https://${PRODUCTION_HOST}${url.pathname}${url.search}`, 301);
+	}
+
+	return next();
+}
+
+function requireBasicAuth(request, env, next) {
 	const unauthorized = () =>
 		new Response('Authentication required', {
 			status: 401,
