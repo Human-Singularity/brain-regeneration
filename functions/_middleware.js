@@ -19,7 +19,11 @@ export async function onRequest(context) {
 	const url = new URL(request.url);
 
 	if (url.hostname === PAGES_DEV_ALIAS) {
-		return Response.redirect(`https://${PRODUCTION_HOST}${url.pathname}${url.search}`, 301);
+		// 308 rather than 301: this runs for every method, and a 301 lets clients
+		// (fetch included) rewrite a non-GET request into a GET on redirect. 308
+		// preserves method and body, and search engines treat it as equivalent to
+		// 301 for canonicalisation.
+		return Response.redirect(`https://${PRODUCTION_HOST}${url.pathname}${url.search}`, 308);
 	}
 
 	// Only the production domain is public. Everything else — branch previews,
