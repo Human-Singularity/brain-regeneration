@@ -1,14 +1,48 @@
-// Gates access to preview-branch deployments with HTTP Basic Auth.
-// Runs for every request; no-ops on production (CF_PAGES_BRANCH !== "preview").
-// AUTH_USERNAME / AUTH_PASSWORD are set as Preview-scoped env vars/secrets
-// in the Cloudflare Pages dashboard (Settings > Environment variables).
+// Runs for every request. Two jobs:
+//   1. Redirects the bare production *.pages.dev alias to the custom domain.
+//   2. Gates every hostname that is not the production domain behind Basic Auth.
+// AUTH_USERNAME / AUTH_PASSWORD are Preview-scoped env vars/secrets set in the
+// Cloudflare Pages dashboard (Settings > Environment variables), so every
+// non-production deployment has them and the production one deliberately
+// does not.
+
+const PRODUCTION_HOST = 'brain-regeneration.com';
+
+// Cloudflare Pages serves the production deployment on this hostname as well as
+// on the custom domain. Zone-level WAF rules, rate limits and challenges apply
+// only to the zone, so this alias is a way around every protection configured on
+// brain-regeneration.com.
+const PAGES_DEV_ALIAS = 'brain-regeneration.pages.dev';
+
 export async function onRequest(context) {
 	const { request, env, next } = context;
+	const url = new URL(request.url);
 
-	if (env.CF_PAGES_BRANCH !== 'preview') {
-		return next();
+	if (url.hostname === PAGES_DEV_ALIAS) {
+		// 308 rather than 301: this runs for every method, and a 301 lets clients
+		// (fetch included) rewrite a non-GET request into a GET on redirect. 308
+		// preserves method and body, and search engines treat it as equivalent to
+		// 301 for canonicalisation.
+		return Response.redirect(`https://${PRODUCTION_HOST}${url.pathname}${url.search}`, 308);
 	}
 
+	// Only the production domain is public. Everything else — branch previews,
+	// per-deployment hostnames, and any custom domain that is not the apex —
+	// needs credentials.
+	//
+	// Gating on hostname rather than on CF_PAGES_BRANCH is what makes this fail
+	// closed. The previous check asked "is this the branch named preview?", so a
+	// hostname wired to the wrong deployment served publicly — which is exactly
+	// how preview.brain-regeneration.com ended up as an unauthenticated copy of
+	// production. Asking "is this the production domain?" cannot fail that way.
+	if (url.hostname !== PRODUCTION_HOST) {
+		return requireBasicAuth(request, env, next);
+	}
+
+	return next();
+}
+
+function requireBasicAuth(request, env, next) {
 	const unauthorized = () =>
 		new Response('Authentication required', {
 			status: 401,
