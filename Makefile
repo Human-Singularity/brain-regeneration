@@ -27,6 +27,7 @@ DUMP_FILE        := $(BACKUP_DIR)/db_pull_$(shell date +%Y%m%d_%H%M%S).sql
 BS_VERSION       ?= 5.3.3
 
 .PHONY: help h hugo-dev hugo-dev-local hugo-build dev setup status \
+	dev-proxy pages-dev \
 	check-bootstrap vendor-bootstrap \
 	start-gregory stop-gregory logs-gregory status-gregory restart-gregory clean-gregory \
 	deploy-frontend deploy-backend remote-pull remote-deps remote-migrate remote-restart remote-status \
@@ -86,6 +87,44 @@ hugo-dev-local: ## Start Hugo dev server pointed at local Django API (localhost:
 hugo-build-local: ## Build the Hugo site locally (CF Pages builds production on push)
 	@echo "Building Hugo site..."
 	hugo --minify
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Testing the client-rendered detail pages (/trials/{id}/, /articles/{id}/)
+#
+# Two things stop a plain `make hugo-dev` from rendering these:
+#
+#   1. The live API sends Access-Control-Allow-Origin only for
+#      https://brain-regeneration.com, so a browser on localhost is refused and
+#      every feed fails with net::ERR_FAILED. `make dev-proxy` forwards to the
+#      API and adds the header, for local use only.
+#   2. /trials/{id}/ is served by a static/_redirects rewrite plus the Pages
+#      Function, neither of which Hugo's own server runs — under `hugo server`
+#      those paths 404. `make pages-dev` serves the built site through wrangler,
+#      which honours both.
+#
+# Run them in two terminals:
+#
+#   make dev-proxy
+#   make pages-dev        # then open http://localhost:8788/trials/508/
+#
+# functions/_middleware.js gates every non-production hostname behind Basic
+# Auth and fails closed, so pages-dev passes dev/dev credentials — log in with
+# dev / dev. Wrangler is pinned to v4: v3 crashes on Node 20+ inside miniflare
+# ("The "strategy" argument must be of type object"). The build sets
+# HUGO_ENV=development so head.html leaves out the analytics and session
+# recorder — local testing must not land in production analytics.
+# ──────────────────────────────────────────────────────────────────────────────
+
+dev-proxy: ## Proxy the live API on :8000 with CORS headers, so localhost feeds can load real data
+	python3 scripts/dev-api-proxy.py
+
+pages-dev: ## Build, then serve via wrangler with Functions + _redirects (login dev/dev)
+	@echo "Building against the local API proxy (http://127.0.0.1:8000)..."
+	HUGO_PARAMS_APIBASE=http://127.0.0.1:8000 HUGO_ENV=development hugo --minify
+	@echo "Serving on http://localhost:8788 — Basic Auth: dev / dev"
+	npx --yes wrangler@4 pages dev public --port 8788 \
+		--binding AUTH_USERNAME=dev --binding AUTH_PASSWORD=dev \
+		--compatibility-date 2024-09-23
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Vendored Bootstrap (assets/vendor/) — see assets/vendor/README.md
