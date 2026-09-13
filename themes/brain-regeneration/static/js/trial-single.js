@@ -583,41 +583,218 @@
 		return '<h2 class="trial-section-heading">Research on this trial</h2><div class="trial-research-list">' + cards + '</div>';
 	}
 
-	function buildIdentifierEntries(t) {
-		var ids = t.identifiers || {};
-		var REGISTRY_NAMES = { nct: 'ClinicalTrials.gov', euct: 'EU Clinical Trials System', eudract: 'EudraCT', ctis: 'CTIS' };
-		var entries = [];
-		Object.keys(REGISTRY_NAMES).forEach(function (key) {
-			if (ids[key]) {
-				entries.push({ value: ids[key], label: REGISTRY_NAMES[key], href: key === 'nct' ? t.link : null });
+	// ── Identifiers ────────────────────────────────────────────────────────
+	//
+	// The API's `identifiers` map is keyed by registry, but several keys can
+	// describe the *same* registry record — trial 508 carries both
+	// `euct: "2023-510127-30-00"` and `ctis: "CTIS2023-510127-30-00"`, which is
+	// one EU CTIS registration written two ways. The display unit is therefore a
+	// registry record, not a raw key: entries are grouped, deduped, and paired
+	// with the matching URL from `links` so every id that has a source is
+	// clickable (`t.link` alone only ever covers the primary registry).
+	//
+	// `identifiers`/`links` keys are an open vocabulary — the WHO ICTRP feeds
+	// bring in registries beyond the ones named below, and `links` sometimes
+	// keys by hostname (`chictr.org.cn`) rather than by registry slug. Anything
+	// unknown degrades to an upper-cased key rather than being dropped.
+	var REGISTRY_INFO = {
+		nct:     { group: 'ctgov',   name: 'ClinicalTrials.gov',             links: ['ctgov', 'nct', 'clinicaltrials.gov'] },
+		euct:    { group: 'eu-ctis', name: 'EU CTIS',                        links: ['ctis', 'euct', 'euclinicaltrials.eu'] },
+		ctis:    { group: 'eu-ctis', name: 'EU CTIS',                        links: ['ctis', 'euct', 'euclinicaltrials.eu'] },
+		euctr:   { group: 'eudract', name: 'EU Clinical Trials Register',    links: ['euctr', 'eudract', 'clinicaltrialsregister.eu'] },
+		eudract: { group: 'eudract', name: 'EU Clinical Trials Register',    links: ['euctr', 'eudract', 'clinicaltrialsregister.eu'] },
+		isrctn:  { group: 'isrctn',  name: 'ISRCTN',                         links: ['isrctn', 'isrctn.com'] },
+		drks:    { group: 'drks',    name: 'German Clinical Trials Register',links: ['drks', 'drks.de'] },
+		nl:      { group: 'nl',      name: 'Netherlands Trial Register',     links: ['onderzoekmetmensen.nl', 'nl', 'ntr'] },
+		ntr:     { group: 'nl',      name: 'Netherlands Trial Register',     links: ['onderzoekmetmensen.nl', 'nl', 'ntr'] },
+		jprn:    { group: 'jprn',    name: 'Japan Primary Registries Network', links: ['jrct.mhlw.go.jp', 'center6.umin.ac.jp', 'jprn', 'jrct', 'umin'] },
+		chictr:  { group: 'chictr',  name: 'Chinese Clinical Trial Registry', links: ['chictr.org.cn', 'chictr'] },
+		ctri:    { group: 'ctri',    name: 'Clinical Trials Registry — India', links: ['ctri', 'ctri.nic.in'] },
+		irct:    { group: 'irct',    name: 'Iranian Registry of Clinical Trials', links: ['irct', 'irct.ir'] },
+		actrn:   { group: 'anzctr',  name: 'ANZCTR',                         links: ['anzctr', 'actrn', 'anzctr.org.au'] },
+		anzctr:  { group: 'anzctr',  name: 'ANZCTR',                         links: ['anzctr', 'actrn', 'anzctr.org.au'] },
+		kct:     { group: 'kct',     name: 'Clinical Research Information Service (Korea)', links: ['kct', 'cris.nih.go.kr'] },
+		rbr:     { group: 'rbr',     name: 'Brazilian Clinical Trials Registry', links: ['rbr', 'ensaiosclinicos.gov.br'] },
+		pactr:   { group: 'pactr',   name: 'Pan African Clinical Trials Registry', links: ['pactr', 'pactr.samrc.ac.za'] },
+		tctr:    { group: 'tctr',    name: 'Thai Clinical Trials Registry',  links: ['tctr', 'thaiclinicaltrials.org'] },
+		slctr:   { group: 'slctr',   name: 'Sri Lanka Clinical Trials Registry', links: ['slctr', 'slctr.lk'] },
+		per:     { group: 'per',     name: 'Peruvian Clinical Trials Registry', links: ['per', 'ensayosclinicos-repec.ins.gob.pe'] },
+		rpcec:   { group: 'rpcec',   name: 'Cuban Public Registry of Clinical Trials', links: ['rpcec', 'rpcec.sld.cu'] },
+		lbctr:   { group: 'lbctr',   name: 'Lebanese Clinical Trials Registry', links: ['lbctr', 'lbctr.emro.who.int'] },
+		itmctr:  { group: 'itmctr',  name: 'ITMCTR',                         links: ['itmctr'] },
+	};
+
+	// Order the registry records so the most widely-cited id leads.
+	var REGISTRY_ORDER = ['nct', 'euct', 'ctis', 'euctr', 'eudract', 'isrctn', 'drks', 'nl', 'ntr', 'jprn', 'chictr'];
+
+	function registryInfoFor(key) {
+		return REGISTRY_INFO[key] || { group: key, name: String(key).toUpperCase(), links: [key] };
+	}
+
+	function alnumKey(value) { return String(value == null ? '' : value).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+	function digitKey(value) { return String(value == null ? '' : value).replace(/\D/g, ''); }
+
+	// A registry key maps to its URL either by name (`links.ctgov` for `nct`) or,
+	// when the feed keys by hostname, by the id's digits turning up in the URL —
+	// "2023-510127-30-00" inside ".../?EUCT=2023-510127-30-00".
+	function resolveIdentifierUrl(key, value, links, claimed) {
+		var info = registryInfoFor(key);
+		var i;
+		for (i = 0; i < info.links.length; i++) {
+			var lk = info.links[i];
+			if (links[lk]) { claimed[lk] = true; return links[lk]; }
+		}
+		var core = digitKey(value);
+		if (core.length >= 6) {
+			var keys = Object.keys(links);
+			for (i = 0; i < keys.length; i++) {
+				// A link already matched by name belongs to that registry — don't
+				// let a second identifier attach itself to the same URL.
+				if (claimed[keys[i]]) continue;
+				if (digitKey(links[keys[i]]).indexOf(core) !== -1) { claimed[keys[i]] = true; return links[keys[i]]; }
 			}
+		}
+		return '';
+	}
+
+	// One entry per registry record: { registry, value, href }.
+	function buildIdentifierEntries(t) {
+		var ids   = t.identifiers || {};
+		var links = {};
+		Object.keys(t.links || {}).forEach(function (k) { if (t.links[k]) links[k] = t.links[k]; });
+
+		var keys = Object.keys(ids).filter(function (k) { return ids[k] && k !== 'org_study_id'; });
+		keys.sort(function (a, b) {
+			var ia = REGISTRY_ORDER.indexOf(a), ib = REGISTRY_ORDER.indexOf(b);
+			return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
 		});
+
+		var claimed = {};
+		var byGroup = {};
+		var entries = [];
+
+		keys.forEach(function (key) {
+			var info  = registryInfoFor(key);
+			var value = String(ids[key]).trim();
+			var href  = resolveIdentifierUrl(key, value, links, claimed);
+			var prior = byGroup[info.group];
+			if (prior) {
+				// Same registration under a second key: keep the shorter, more
+				// canonical spelling ("2023-510127-30-00" over "CTIS2023-510127-30-00")
+				// and keep whichever of the two resolved a URL.
+				if (!prior.href && href) prior.href = href;
+				if (value.length < prior.value.length) prior.value = value;
+				return;
+			}
+			var entry = { registry: info.name, value: value, href: href };
+			byGroup[info.group] = entry;
+			entries.push(entry);
+		});
+
 		if (!entries.length && t.link) {
-			entries.push({ value: registryName(t), label: registryName(t), href: t.link });
+			entries.push({ registry: registryName(t), value: registryName(t), href: t.link });
 		}
 		return entries;
 	}
 
+	// `secondary_id` is a free-text catch-all: grant numbers, IND numbers,
+	// EudraCT numbers, sponsor codenames — semicolon- or comma-delimited, and
+	// frequently repeating an id already shown above. Split conservatively (a
+	// comma followed by a digit is a thousands separator, not a delimiter) and
+	// drop anything that restates a value already on the page.
+	function buildSecondaryIdentifiers(t, shownValues) {
+		if (!t.secondary_id) return [];
+		var shownAlnum  = shownValues.map(alnumKey).filter(Boolean);
+		var shownDigits = shownValues.map(digitKey).filter(function (d) { return d.length >= 8; });
+		var parts = [];
+		String(t.secondary_id).split(/\s*;\s*/).forEach(function (chunk) {
+			chunk.split(/,\s*(?=[^\d\s])/).forEach(function (raw) {
+				var part = raw.trim().replace(/^[.,;:/\\\s]+|[.,;:/\\\s]+$/g, '');
+				if (!part) return;
+				var a = alnumKey(part);
+				if (!a) return;
+				// Containment catches "EudraCT Number: 2007-002964-90" restating
+				// "2007-002964-90"; short tokens have to match outright, so a
+				// five-digit sponsor code can't swallow an unrelated number.
+				var duplicate = shownAlnum.some(function (s) {
+					if (a === s) return true;
+					if (Math.min(a.length, s.length) < 5) return false;
+					return a.indexOf(s) !== -1 || s.indexOf(a) !== -1;
+				});
+				if (!duplicate) {
+					var d = digitKey(part);
+					duplicate = d.length >= 8 && shownDigits.indexOf(d) !== -1;
+				}
+				if (!duplicate && parts.indexOf(part) === -1) parts.push(part);
+			});
+		});
+		return parts;
+	}
+
+	// One cell per identifier, laid out on the same grid rhythm as the panel's
+	// Synced / Registry / Registered row above it: registry name as the label,
+	// the id itself as the value, the whole value clickable when we hold a URL
+	// for that registry.
+	function renderIdentifierCell(registry, value, href, extraClass) {
+		var label = '<span class="trial-id__registry">' + escHtml(registry) + '</span>';
+		// safeLink degrades an unusable URL to '#'; render plain text rather than
+		// a link that goes nowhere.
+		var url = href ? safeLink(href) : '';
+		if (url === '#') url = '';
+		var body;
+		if (url) {
+			body = '<a class="trial-id__value trial-id__value--link" href="' + escHtml(url) + '" ' +
+				'target="_blank" rel="noopener noreferrer" ' +
+				'aria-label="' + escHtml(value + ' on ' + registry + ' (opens in a new tab)') + '">' +
+				escHtml(value) + '<span class="trial-id__external" aria-hidden="true">&#8599;</span></a>';
+		} else {
+			body = '<span class="trial-id__value">' + escHtml(value) + '</span>';
+		}
+		return '<li class="trial-id' + (extraClass ? ' ' + extraClass : '') + '">' + label + body + '</li>';
+	}
+
 	function renderProvenance(t) {
-		var identifiers = buildIdentifierEntries(t);
-		var identifierRows = identifiers.map(function (e) {
-			return e.href
-				? '<a href="' + escHtml(safeLink(e.href)) + '" target="_blank" rel="noopener noreferrer">' + escHtml(e.value) + ' &rarr; ' + escHtml(e.label) + '</a>'
-				: '<span>' + escHtml(e.value) + ' (' + escHtml(e.label) + ')</span>';
-		}).join('');
+		var entries = buildIdentifierEntries(t);
+		var cells = entries.map(function (e) {
+			return renderIdentifierCell(e.registry, e.value, e.href, '');
+		});
+
+		// The sponsor's own protocol number identifies the study at the sponsor,
+		// not a registry record — same grid, but labelled apart and never linked.
+		var orgStudyId = (t.identifiers && t.identifiers.org_study_id) || '';
+		if (orgStudyId) {
+			cells.push(renderIdentifierCell('Sponsor protocol number', String(orgStudyId), '', 'trial-id--sponsor'));
+		}
+
+		var shownValues = entries.map(function (e) { return e.value; });
+		if (orgStudyId) shownValues.push(String(orgStudyId));
+		var secondary = buildSecondaryIdentifiers(t, shownValues);
+		var secondaryHtml = secondary.length
+			? '<p class="trial-id-also">' +
+				'<span class="trial-id-also__label">Also referenced as</span>' +
+				secondary.map(function (s) {
+					return '<span class="trial-id-also__value">' + escHtml(s) + '</span>';
+				}).join('') +
+			'</p>'
+			: '';
+
+		var identifiersHtml = cells.length
+			? '<div class="trial-provenance__identifiers">' +
+				'<span class="trial-provenance__label">Identifiers</span>' +
+				'<ul class="trial-id-grid">' + cells.join('') + '</ul>' +
+				secondaryHtml +
+			'</div>'
+			: '';
 
 		return '<div class="trial-provenance">' +
 			'<h2 class="trial-provenance__heading">Where this page comes from</h2>' +
 			'<p class="trial-provenance__body">This page is our copy of the registry records listed below. Some trials are registered in more than one place, and each registry keeps its own version. We do not add to those records and we do not verify them.</p>' +
 			'<div class="trial-provenance__grid">' +
 				'<div class="trial-provenance__item"><span class="trial-provenance__label">Synced</span><span class="trial-provenance__value">' + escHtml(formatDate(t.last_refreshed_on)) + '</span></div>' +
-				'<div class="trial-provenance__item"><span class="trial-provenance__label">Source registries</span><span class="trial-provenance__value">' + escHtml(registryName(t)) + '</span></div>' +
+				'<div class="trial-provenance__item"><span class="trial-provenance__label">Primary registry</span><span class="trial-provenance__value">' + escHtml(registryName(t)) + '</span></div>' +
 				'<div class="trial-provenance__item"><span class="trial-provenance__label">Registered</span><span class="trial-provenance__value">' + escHtml(formatDate(t.date_registration)) + '</span></div>' +
 			'</div>' +
-			'<div class="trial-provenance__identifiers">' +
-				'<span class="trial-provenance__label">Identifiers</span>' +
-				'<div class="trial-provenance__identifiers-row">' + identifierRows + '</div>' +
-			'</div>' +
+			identifiersHtml +
 		'</div>';
 	}
 
