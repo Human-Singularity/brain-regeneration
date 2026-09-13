@@ -110,7 +110,9 @@ hugo-build-local: ## Build the Hugo site locally (CF Pages builds production on 
 # functions/_middleware.js gates every non-production hostname behind Basic
 # Auth and fails closed, so pages-dev passes dev/dev credentials — log in with
 # dev / dev. Wrangler is pinned to v4: v3 crashes on Node 20+ inside miniflare
-# ("The "strategy" argument must be of type object").
+# ("The "strategy" argument must be of type object"). The build sets
+# HUGO_ENV=development so head.html leaves out the analytics and session
+# recorder — local testing must not land in production analytics.
 # ──────────────────────────────────────────────────────────────────────────────
 
 dev-proxy: ## Proxy the live API on :8000 with CORS headers, so localhost feeds can load real data
@@ -118,10 +120,10 @@ dev-proxy: ## Proxy the live API on :8000 with CORS headers, so localhost feeds 
 
 pages-dev: ## Build, then serve via wrangler with Functions + _redirects (login dev/dev)
 	@echo "Building against the local API proxy (http://127.0.0.1:8000)..."
-	HUGO_PARAMS_APIBASE=http://127.0.0.1:8000 hugo --minify
+	HUGO_PARAMS_APIBASE=http://127.0.0.1:8000 HUGO_ENV=development hugo --minify
 	@echo "Serving on http://localhost:8788 — Basic Auth: dev / dev"
 	npx --yes wrangler@4 pages dev public --port 8788 \
-		--binding AUTH_USERNAME=dev AUTH_PASSWORD=dev \
+		--binding AUTH_USERNAME=dev --binding AUTH_PASSWORD=dev \
 		--compatibility-date 2024-09-23
 
 # ──────────────────────────────────────────────────────────────────────────────
