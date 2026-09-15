@@ -123,6 +123,8 @@ category_groups:
         name: TPN10467
       - id: 122
         name: TPN10475
+      - id: 129
+        name: Berberine
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
