@@ -98,7 +98,8 @@ layouts/
   news/ list, single      supporters/ list, single      curators/ list, single
   observatory/ list       index.html      404.html
 static/
-  css/  main.css, feeds-mobile.css   (global; article-single.css + news-single.css load per-page via extra-head)
+  css/  article-single.css, news-single.css   (per-page; loaded via extra-head — main.css and
+                      feeds-mobile.css live in the repo-root assets/css/, not here)
   js/   br-utils.js             (shared helpers on window.BR: escHtml/decodeEntities/stripHtml/truncate/debounce/formatDate/slugify/safeLink + makeCache; loaded first, synchronously, in head)
         feed-ui.js              (window.BR.feedUI — shared feed UI machinery: buildToken, setActiveChip, wireDownloadDropdown, wireMoreFilters, wireHintTags; loaded in head after br-utils)
         research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
@@ -149,7 +150,7 @@ Single root file. Highlights:
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
 - **Subscribe forms** (all handled by `subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
 - **Donations** use a separate, independently-deployed Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAi API and not a Pages Function in this repo — its source is documented for reference in `content/cloudflare-worker.md`, but changing it means editing/deploying that Worker directly (its own repo/dashboard), not anything under `functions/`.
-- **Styling** is plain CSS in `themes/.../static/css/` (`main.css` + `feeds-mobile.css` site-wide, plus per-page `article-single.css` / `news-single.css`) — not SCSS/Hugo Pipes. Edit there.
+- **Styling** is plain CSS, not SCSS. Site-wide `main.css` + `feeds-mobile.css` live in the repo-root `assets/css/` and go through Hugo Pipes (`resources.Get | minify | fingerprint`, with `assets/css/critical.css` inlined for above-the-fold); per-page `article-single.css` / `news-single.css` still live under the theme's `themes/.../static/css/` and load via `extra-head`. Edit whichever matches the file you're touching.
 
 ## Conventions
 
