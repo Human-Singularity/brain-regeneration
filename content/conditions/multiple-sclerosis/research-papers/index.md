@@ -78,45 +78,45 @@ category_groups:
   - label: "Experimental & Repurposed"
     categories:
       - id: 91
-        name: "Dihydroartemisinin"
+        name: Dihydroartemisinin
       - id: 98
-        name: "Nanocurcumin"
+        name: Nanocurcumin
       - id: 99
-        name: "Vafidemstat"
+        name: Vafidemstat
       - id: 100
-        name: "Indapamide"
+        name: Indapamide
       - id: 56
-        name: "PTD802"
+        name: PTD802
       - id: 104
-        name: "Honokiol"
+        name: Honokiol
       - id: 105
-        name: "Valsartan"
+        name: Valsartan
       - id: 106
-        name: "Temporin-GHaR6R Peptide"
+        name: Temporin-GHaR6R Peptide
       - id: 107
-        name: "Fucoxanthin"
+        name: Fucoxanthin
       - id: 108
-        name: "PIPE-791"
+        name: PIPE-791
       - id: 109
-        name: "Pinocembrin"
+        name: Pinocembrin
       - id: 110
-        name: "Adenosine A2A receptor antagonist"
+        name: Adenosine A2A receptor antagonist
       - id: 111
-        name: "Fractalkine"
+        name: Fractalkine
       - id: 112
-        name: "BMP-2/4 blockade"
+        name: BMP-2/4 blockade
       - id: 113
-        name: "Integrated stress response (ISR)"
+        name: Integrated stress response (ISR)
       - id: 114
-        name: "Danazol"
+        name: Danazol
       - id: 115
-        name: "Parbendazole"
+        name: Parbendazole
       - id: 116
-        name: "p57kip2 (CDKN1C)"
+        name: p57kip2 (CDKN1C)
       - id: 117
-        name: "MYRF (myelin regulatory factor)"
+        name: MYRF (myelin regulatory factor)
       - id: 118
-        name: "N-acetylcysteine"
+        name: N-acetylcysteine
       - id: 120
         name: Tehranolide
       - id: 121
@@ -125,6 +125,8 @@ category_groups:
         name: TPN10475
       - id: 129
         name: Berberine
+      - id: 131
+        name: Minocycline
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
