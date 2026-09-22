@@ -48,7 +48,7 @@
 	</picture>
 {{- end }}
 	<div class="container">
-		<h1>{{ .Params.hero_heading | default .Title }}</h1>
+		<h1 id="hero">{{ .Params.hero_heading | default .Title }}</h1>
 		<p>{{ .Params.hero_subheading | default .Params.subtitle }}</p>
 		<div class="d-flex flex-wrap gap-3 mt-4">
 			<a href="{{ "/observatory/#research-areas" | relURL }}" class="btn-amber" data-umami-event="Hero: Explore Research">Explore Research</a>
@@ -173,7 +173,7 @@
 <section class="section bg-sand">
 	<div class="container">
 		<div class="text-center mb-5">
-			<h2>Research areas</h2>
+			<h2 id="research-areas">Research areas</h2>
 			<p class="meta" style="font-size: 16px; max-width: 620px; margin: 0 auto;">Each research area is defined and curated by a scientific team. Papers are collected within hours of publication and ranked by relevance.</p>
 		</div>
 		<div class="row g-4">
@@ -218,7 +218,7 @@
 <section class="section bg-tint">
 	<div class="container">
 		<div class="text-center mb-5">
-			<h2>Clinical trials by condition</h2>
+			<h2 id="conditions">Clinical trials by condition</h2>
 			<p style="font-size: 17px; max-width: 600px; margin: 0 auto;">Find recruiting studies across conditions linked to brain regeneration.</p>
 		</div>
 		<div class="row g-4 justify-content-center">
@@ -255,7 +255,7 @@
 	<div class="container">
 		<div class="newsletter-card">
 			<div class="text-center mb-4">
-				<h2 style="margin-bottom: 8px;">Follow the research that matters to you</h2>
+				<h2 id="subscribe" style="margin-bottom: 8px;">Follow the research that matters to you</h2>
 				<p style="max-width: 520px; margin: 0 auto;">Choose the areas you want to follow. We send one digest per week for each.</p>
 			</div>
 
@@ -346,13 +346,38 @@
 	</div>
 </section>
 
+<!-- ── FUNDING CALLS ──
+     Homepage-only widget backed by the ABN / REDONE.br public RSS feed via
+     the /api/funding-calls Pages Function proxy — a site-relative path, not
+     apiBase (this is not GregoryAi). See docs/funding-calls-section-plan.md. -->
+<section class="section bg-sand">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2 id="funding-opportunities" class="funding-calls-heading">Funding calls &amp; opportunities</h2>
+			<p style="font-size: 17px; max-width: 620px; margin: 0 auto;">Grants, fellowships and awards in neuroscience and neurodegeneration, updated daily from the <a href="https://observatorio.abneuro.org.br/editais?utm_source=brain-regeneration&amp;utm_medium=referral&amp;utm_campaign=funding-calls" target="_blank" rel="noopener" style="color: var(--color-primary); text-decoration: underline;" data-umami-event="Funding Calls: Observatory Link">Observat&oacute;rio de Doen&ccedil;as Neurol&oacute;gicas <span aria-hidden="true">&#8599;</span></a>.</p>
+		</div>
+
+		<div id="funding-calls"
+		     data-endpoint="/api/funding-calls"
+		     data-limit="8"
+		     aria-busy="true"></div>
+
+		<div class="fc-credit">
+			<p class="fc-credit-org">Curated by the Observat&oacute;rio de Doen&ccedil;as Neurol&oacute;gicas</p>
+			<p class="fc-credit-body">Academia Brasileira de Neurologia / REDONE.br &mdash; collected daily from CNPq, FAPESP and the state FAPs, FINEP, CAPES, NIH, Grants.gov, the European Union, AAN, Instituto Serrapilheira and international foundations.</p>
+			<a class="fc-cta" href="https://observatorio.abneuro.org.br/editais?utm_source=brain-regeneration&amp;utm_medium=referral&amp;utm_campaign=funding-calls" target="_blank" rel="noopener" data-umami-event="Funding Calls: View All">Explore the full funding observatory <span aria-hidden="true">&#8599;</span></a>
+			<p class="fc-updated">Updated daily, newest first. <span class="fc-terms-note">(you may be asked to accept their terms of use first)</span></p>
+		</div>
+	</div>
+</section>
+
 <!-- ── PROJECT NEWS (conditional — only if published posts exist) ── -->
 {{ $newsPosts := first 3 (where (where .Site.RegularPages "Section" "news") ".Draft" false) }}
 {{ if $newsPosts }}
 <section class="section bg-tint">
 	<div class="container">
 		<div class="text-center mb-4">
-			<h2>Project News</h2>
+			<h2 id="news">Project News</h2>
 			<p style="max-width: 520px; margin: 0 auto;">Updates, milestones, and announcements.</p>
 		</div>
 		<div class="row g-4" style="max-width: 960px; margin-left: auto; margin-right: auto;">
@@ -384,7 +409,7 @@
 	<div class="container">
 		<div class="gregory-card">
 			<div class="gregory-card-body">
-				<h2 style="margin-bottom: 12px;">Powered by GregoryAi</h2>
+				<h2 id="gregoryai" style="margin-bottom: 12px;">Powered by GregoryAi</h2>
 				<p>This observatory runs on GregoryAi, the research engine we built so that patients, clinicians, and scientists don&rsquo;t have to wait months to hear about work that could change their lives. It watches the medical literature and the clinical trial registries, and surfaces what matters within hours.</p>
 				<a href="https://gregory-ai.com/" class="btn-amber" target="_blank" rel="noopener" data-umami-event="Homepage: GregoryAi">Visit GregoryAi &rarr;</a>
 			</div>
@@ -400,7 +425,7 @@
 	<div class="container">
 		<div class="narrow-col d-flex flex-column flex-md-row align-items-md-center gap-4" style="margin: 0 auto;">
 			<div style="flex: 1;">
-				<h2 style="margin-bottom: 8px;">This is a project to build hope</h2>
+				<h2 id="about-cta" style="margin-bottom: 8px;">This is a project to build hope</h2>
 				<p style="color: var(--color-muted); font-size: 16px; margin-bottom: 0;">Brain Regeneration grew out of Gregory-MS, an observatory for Multiple Sclerosis research built in 2021. Learn how it works, who funds it, and what principles guide the curation.</p>
 			</div>
 			<div style="flex-shrink: 0;">
@@ -410,4 +435,8 @@
 	</div>
 </section>
 
+{{ end }}
+
+{{ define "page-scripts" }}
+<script src="{{ "js/funding-calls.js" | relURL }}" defer></script>
 {{ end }}
