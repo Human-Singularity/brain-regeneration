@@ -1,0 +1,151 @@
+{{ define "extra-head" }}
+<link rel="alternate" type="application/rss+xml" title="Press coverage" href="{{ "press/index.xml" | absURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $clips := .Pages.ByDate.Reverse -}}
+{{- $kit := .Params.press_kit -}}
+{{- $contacts := .Params.contacts -}}
+{{- $typeLabels := dict "article" "Article" "tv" "TV" "radio" "Radio" "podcast" "Podcast" -}}
+{{- $langNames := dict "pt" "Portuguese" "es" "Spanish" "fr" "French" "de" "German" "it" "Italian" -}}
+
+<!-- ── INTRO ── -->
+<section class="press-intro bg-sand">
+	<div class="container">
+		<div class="press-intro-col body-text">
+			<h1>{{ .Title }}</h1>
+			{{ .Content }}
+		</div>
+	</div>
+</section>
+
+<!-- ── COVERAGE + SIDEBAR ── -->
+<section class="press-main bg-sand">
+	<div class="container">
+		<div class="press-layout">
+
+			<aside class="press-sidebar" aria-label="Press contacts and press kit">
+				<div class="press-card">
+					{{ with $contacts }}
+					<div class="press-group">
+						<p class="press-eyebrow">Press contacts</p>
+						{{ with .email }}
+						<a class="press-contact" href="mailto:{{ . }}">
+							<svg class="press-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+							{{ . }}
+						</a>
+						{{ end }}
+						{{ with .phone }}
+						<a class="press-contact" href="tel:{{ replaceRE `[^+0-9]` "" . }}">
+							<svg class="press-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+							{{ . }}
+						</a>
+						{{ end }}
+					</div>
+					{{ end }}
+
+					{{ with $kit }}
+					<div class="press-group">
+						<p class="press-eyebrow">Press kit</p>
+						{{ with .summary }}<p class="press-kit-text">{{ . }}</p>{{ end }}
+						<a class="btn-amber press-kit-btn" href="{{ .url }}" data-umami-event="Press: Download press kit">
+							<svg class="press-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+							Download the press kit
+						</a>
+						<p class="press-kit-meta">ZIP{{ with .size }} · {{ . }}{{ end }}{{ with .updated }} · Updated {{ time.AsTime . | time.Format "2 Jan 2006" }}{{ end }}</p>
+						{{ with .items }}
+						<ul class="press-kit-list">
+							{{ range . }}<li>{{ . }}</li>{{ end }}
+						</ul>
+						{{ end }}
+					</div>
+					{{ end }}
+
+					<div class="press-group">
+						<a class="press-rss" href="{{ "press/index.xml" | relURL }}">
+							<svg class="press-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+							RSS feed of new coverage
+						</a>
+					</div>
+				</div>
+			</aside>
+
+			<div class="press-coverage">
+				<div class="press-coverage-head">
+					<h2>Coverage</h2>
+					{{ if $clips }}
+					<span class="press-count">{{ len $clips }} piece{{ if ne (len $clips) 1 }}s{{ end }} since {{ (index $clips.ByDate 0).Date.Format "2006" }}</span>
+					{{ end }}
+				</div>
+
+				{{ if $clips }}
+				{{ range $clips.GroupByDate "2006" }}
+				<div class="press-year">
+					<h3 class="press-year-label">{{ .Key }}</h3>
+					{{ range .Pages }}
+					{{- $thumb := .Resources.GetMatch (.Params.thumbnail | default "thumbnail*") -}}
+					<article class="press-item">
+						{{ if $thumb }}
+						{{- $img := $thumb.Resize "640x webp" -}}
+						<div class="press-thumb{{ if eq .Params.thumbnail_style "logo" }} press-thumb--logo{{ end }}">
+							<img src="{{ $img.RelPermalink }}" width="{{ $img.Width }}" height="{{ $img.Height }}" loading="lazy" alt="{{ .Params.outlet }} — {{ .Title }}">
+						</div>
+						{{ else }}
+						<div class="press-thumb press-thumb--empty" aria-hidden="true"><span>{{ .Params.outlet }}</span></div>
+						{{ end }}
+						<div class="press-body">
+							<p class="press-meta">
+								<span class="press-outlet">{{ .Params.outlet }}</span>
+								<span>{{ .Date.Format "2 Jan 2006" }}</span>
+								<span>{{ index $typeLabels .Params.media_type | default (.Params.media_type | title) }}</span>
+								{{ with .Params.language }}{{ if ne . "en" }}<span>In {{ index $langNames . | default (. | upper) }}</span>{{ end }}{{ end }}
+							</p>
+							<h4 class="press-title"><a href="{{ .Params.external_url }}" target="_blank" rel="noopener">{{ .Title }}<svg class="press-ext" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></h4>
+							{{ with .Params.summary }}<p class="press-summary">{{ . }}</p>{{ end }}
+							{{ with .Params.links }}
+							<p class="press-links">
+								{{ range . }}<a href="{{ .url }}" target="_blank" rel="noopener">{{ .label }} &rarr;</a>{{ end }}
+							</p>
+							{{ end }}
+						</div>
+					</article>
+					{{ end }}
+				</div>
+				{{ end }}
+				{{ else }}
+				<p class="press-empty">No coverage is listed yet. For interviews and press enquiries, write to <a href="mailto:{{ $contacts.email | default "team@brain-regeneration.com" }}">{{ $contacts.email | default "team@brain-regeneration.com" }}</a>.</p>
+				{{ end }}
+			</div>
+
+		</div>
+	</div>
+</section>
+
+{{/* JSON-LD: CollectionPage > ItemList of the clippings */}}
+{{- if $clips }}
+{{- $items := slice -}}
+{{- range $i, $c := $clips -}}
+	{{- $type := "CreativeWork" -}}
+	{{- if eq $c.Params.media_type "article" }}{{ $type = "NewsArticle" }}{{ else if eq $c.Params.media_type "tv" }}{{ $type = "VideoObject" }}{{ end -}}
+	{{- $item := dict
+		"@type" $type
+		"url" $c.Params.external_url
+		"datePublished" ($c.Date.Format "2006-01-02")
+		"inLanguage" ($c.Params.language | default "en")
+		"publisher" (dict "@type" "Organization" "name" $c.Params.outlet)
+		"about" (dict "@type" "Organization" "name" $.Site.Title "url" $.Site.BaseURL) -}}
+	{{- if eq $type "NewsArticle" }}{{ $item = merge $item (dict "headline" $c.Title) }}{{ else }}{{ $item = merge $item (dict "name" $c.Title) }}{{ end -}}
+	{{- if eq $type "VideoObject" }}{{ $item = merge $item (dict "uploadDate" ($c.Date.Format "2006-01-02") "description" $c.Params.summary) }}{{ end -}}
+	{{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" $item) -}}
+{{- end -}}
+{{- $ld := dict
+	"@context" "https://schema.org"
+	"@type" "CollectionPage"
+	"name" .Title
+	"url" .Permalink
+	"description" .Description
+	"isPartOf" (dict "@type" "WebSite" "name" .Site.Title "url" .Site.BaseURL)
+	"mainEntity" (dict "@type" "ItemList" "itemListElement" $items) }}
+<script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
+{{- end }}
+{{ end }}

@@ -16,3 +16,7 @@
 
 # Redirect old research-papers search URL to the new section root
 /search/research-papers/  /search/  301
+
+# The old Gregory MS media room now lives at /press/
+/media/  /press/  301
+/media/*  /press/  301

@@ -26,7 +26,7 @@ DUMP_FILE        := $(BACKUP_DIR)/db_pull_$(shell date +%Y%m%d_%H%M%S).sql
 # Bootstrap version vendored in assets/vendor/ — see assets/vendor/README.md
 BS_VERSION       ?= 5.3.3
 
-.PHONY: help h hugo-dev hugo-dev-local hugo-build dev setup status \
+.PHONY: press-kit help h hugo-dev hugo-dev-local hugo-build dev setup status \
 	dev-proxy pages-dev \
 	check-bootstrap vendor-bootstrap \
 	start-gregory stop-gregory logs-gregory status-gregory restart-gregory clean-gregory \
@@ -325,3 +325,16 @@ db-upgrade-finish: | $(BACKUP_DIR) ## Step 2 of local Postgres major upgrade (re
 
 $(BACKUP_DIR):
 	mkdir -p $(BACKUP_DIR)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Press kit — zipped from ./press-kit (git-ignored) and uploaded to R2
+# ──────────────────────────────────────────────────────────────────────────────
+
+PRESS_KIT_BUCKET ?= brain-regeneration-files
+
+press-kit: ## Zip ./press-kit and upload it to R2 (PRESS_KIT_BUCKET)
+	@rm -f press-kit.zip
+	cd press-kit && zip -r -X ../press-kit.zip . -x '*.DS_Store'
+	npx wrangler r2 object put $(PRESS_KIT_BUCKET)/brain-regeneration-press-kit.zip --file press-kit.zip --content-type application/zip --remote
+	@rm -f press-kit.zip
+	@echo "Uploaded. Update press_kit.size/updated in content/press/_index.md."

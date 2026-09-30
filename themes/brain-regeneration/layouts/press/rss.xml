@@ -1,0 +1,24 @@
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ .Site.Title }} — Press coverage</title>
+    <link>{{ .Permalink }}</link>
+    <description>{{ .Description }}</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    {{- with .Pages.ByDate.Reverse }}
+    <lastBuildDate>{{ (index . 0).Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>
+    {{- end }}
+    {{ with .OutputFormats.Get "RSS" }}{{ printf "<atom:link href=%q rel=\"self\" type=\"application/rss+xml\" />" .Permalink | safeHTML }}{{ end }}
+    {{- range .Pages.ByDate.Reverse }}
+    <item>
+      <title>{{ .Params.outlet }}: {{ .Title }}</title>
+      <link>{{ .Params.external_url }}</link>
+      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      <guid isPermaLink="true">{{ .Params.external_url }}</guid>
+      <category>{{ .Params.media_type }}</category>
+      <description>{{ .Params.summary }}</description>
+    </item>
+    {{- end }}
+  </channel>
+</rss>
