@@ -3521,7 +3521,7 @@ a:hover {
 	flex-direction: column;
 	gap: 20px;
 }
-@media (min-width: 992px) { .press-sidebar { position: sticky; top: 24px; } }
+@media (min-width: 992px) { .press-sidebar { position: sticky; top: 72px; } }
 .press-group { display: flex; flex-direction: column; gap: 10px; }
 .press-group + .press-group { border-top: 1px solid var(--color-border); padding-top: 20px; }
 .press-eyebrow { font: 600 12px/1.3 var(--font-heading); letter-spacing: .06em; text-transform: uppercase; color: #5E5A54; margin: 0; }
@@ -3611,3 +3611,8 @@ a:hover {
 }
 .press-order button:hover { color: var(--color-accent); }
 .press-order button[aria-pressed="true"] { background: var(--color-primary); color: #fff; }
+
+@media (pointer: coarse) {
+	.press-contact, .press-rss { min-height: 44px; }
+	.press-order button { min-height: 44px; }
+}

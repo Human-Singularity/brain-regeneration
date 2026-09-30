@@ -14,7 +14,9 @@
     <item>
       <title>{{ .Params.outlet }}: {{ .Title }}</title>
       <link>{{ .Params.external_url }}</link>
+      {{- if ne .Params.date_precision "year" }}
       <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      {{- end }}
       <guid isPermaLink="true">{{ .Params.external_url }}</guid>
       <category>{{ .Params.media_type }}</category>
       <description>{{ .Params.summary }}</description>

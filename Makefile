@@ -330,6 +330,7 @@ $(BACKUP_DIR):
 # Press kit — zipped from ./press-kit (git-ignored) and uploaded to R2
 # Public at https://files.brain-regeneration.com/brain-regeneration-press-kit.zip
 # Needs the `cf` CLI logged in (cf auth login) with access to the Human Singularity account.
+# (wrangler cannot be used here: its login does not cover the Human Singularity account.)
 # ──────────────────────────────────────────────────────────────────────────────
 
 PRESS_KIT_BUCKET ?= brain-regeneration-files

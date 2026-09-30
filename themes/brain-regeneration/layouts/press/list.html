@@ -114,7 +114,7 @@
 						<div class="press-body">
 							<p class="press-meta">
 								<span class="press-outlet">{{ .Params.outlet }}</span>
-								<span>{{ .Date.Format "2 Jan 2006" }}</span>
+								<span>{{ if eq .Params.date_precision "year" }}{{ .Date.Format "2006" }}{{ else }}{{ .Date.Format "2 Jan 2006" }}{{ end }}</span>
 								<span>{{ index $typeLabels .Params.media_type | default (.Params.media_type | title) }}</span>
 								{{ with .Params.language }}{{ if ne . "en" }}<span>In {{ index $langNames . | default (. | upper) }}</span>{{ end }}{{ end }}
 							</p>
@@ -153,12 +153,12 @@
 	{{- $item := dict
 		"@type" $type
 		"url" $c.Params.external_url
-		"datePublished" ($c.Date.Format "2006-01-02")
+		"datePublished" ($c.Date.Format (cond (eq $c.Params.date_precision "year") "2006" "2006-01-02"))
 		"inLanguage" ($c.Params.language | default "en")
 		"publisher" (dict "@type" "Organization" "name" $c.Params.outlet)
 		"about" (dict "@type" "Organization" "name" $.Site.Title "url" $.Site.BaseURL) -}}
 	{{- if or (eq $type "NewsArticle") (eq $type "ScholarlyArticle") }}{{ $item = merge $item (dict "headline" $c.Title) }}{{ else }}{{ $item = merge $item (dict "name" $c.Title) }}{{ end -}}
-	{{- if eq $type "VideoObject" }}{{ $item = merge $item (dict "uploadDate" ($c.Date.Format "2006-01-02") "description" $c.Params.summary) }}{{ end -}}
+	{{- if eq $type "VideoObject" }}{{ $item = merge $item (dict "uploadDate" ($c.Date.Format (cond (eq $c.Params.date_precision "year") "2006" "2006-01-02")) "description" $c.Params.summary) }}{{ end -}}
 	{{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" $item) -}}
 {{- end -}}
 {{- $ld := dict
