@@ -26,7 +26,7 @@ DUMP_FILE        := $(BACKUP_DIR)/db_pull_$(shell date +%Y%m%d_%H%M%S).sql
 # Bootstrap version vendored in assets/vendor/ — see assets/vendor/README.md
 BS_VERSION       ?= 5.3.3
 
-.PHONY: help h hugo-dev hugo-dev-local hugo-build dev setup status \
+.PHONY: press-kit help h hugo-dev hugo-dev-local hugo-build dev setup status \
 	dev-proxy pages-dev \
 	check-bootstrap vendor-bootstrap \
 	start-gregory stop-gregory logs-gregory status-gregory restart-gregory clean-gregory \
@@ -325,3 +325,21 @@ db-upgrade-finish: | $(BACKUP_DIR) ## Step 2 of local Postgres major upgrade (re
 
 $(BACKUP_DIR):
 	mkdir -p $(BACKUP_DIR)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Press kit — zipped from ./press-kit (git-ignored) and uploaded to R2
+# Public at https://files.brain-regeneration.com/brain-regeneration-press-kit.zip
+# Needs the `cf` CLI logged in (cf auth login) with access to the Human Singularity account.
+# (wrangler cannot be used here: its login does not cover the Human Singularity account.)
+# ──────────────────────────────────────────────────────────────────────────────
+
+PRESS_KIT_BUCKET ?= brain-regeneration-files
+PRESS_KIT_ACCOUNT ?= daf9a20fa8c4f4a43ae277f707271a27
+
+press-kit: ## Zip ./press-kit and upload it to R2
+	@rm -f press-kit.zip
+	cd press-kit && zip -qr -X ../press-kit.zip . -x '*.DS_Store'
+	CLOUDFLARE_ACCOUNT_ID=$(PRESS_KIT_ACCOUNT) cf r2 objects put brain-regeneration-press-kit.zip --bucket-name $(PRESS_KIT_BUCKET) --content-type application/zip --file press-kit.zip
+	@ls -lh press-kit.zip | awk '{print "Uploaded " $$5}'
+	@rm -f press-kit.zip
+	@echo "Update press_kit.size/updated in content/press/_index.md."
