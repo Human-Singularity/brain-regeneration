@@ -3509,7 +3509,7 @@ a:hover {
 .press-main { padding: 16px 0 80px; }
 .press-layout { display: flex; flex-direction: row-reverse; flex-wrap: wrap; gap: 40px 56px; align-items: flex-start; }
 .press-coverage { flex: 999 1 520px; min-width: 0; }
-.press-sidebar { flex: 1 1 280px; }
+.press-sidebar { flex: 1 1 300px; }
 
 .press-card {
 	background: var(--color-text-light);
@@ -3529,7 +3529,7 @@ a:hover {
 .press-contact, .press-rss {
 	display: flex; align-items: center; gap: 10px; min-height: 32px;
 	font: 500 15px/1.3 var(--font-heading); color: var(--color-primary); text-decoration: none;
-	overflow-wrap: anywhere; transition: color var(--dur-fast) var(--ease);
+	white-space: nowrap; transition: color var(--dur-fast) var(--ease);
 }
 .press-rss { font-size: 14px; }
 .press-contact:hover, .press-rss:hover { color: var(--color-accent); text-decoration: none; }
