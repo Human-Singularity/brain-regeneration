@@ -76,6 +76,10 @@
 					{{ if $clips }}
 					<span class="press-count">{{ len $clips }} piece{{ if ne (len $clips) 1 }}s{{ end }} since {{ (index $clips.ByDate 0).Date.Format "2006" }}</span>
 					{{ end }}
+					<div class="press-order" id="press-order" role="group" aria-label="Order of the timeline" hidden>
+						<button type="button" data-order="newest" aria-pressed="true">Newest first</button>
+						<button type="button" data-order="oldest" aria-pressed="false">Oldest first</button>
+					</div>
 				</div>
 
 				{{ if $clips }}
@@ -86,6 +90,7 @@
 				{{- $entries = sort $entries "date" "desc" -}}
 				{{- $years := slice -}}
 				{{- range $entries }}{{ $y := .date.Format "2006" }}{{ if not (in $years $y) }}{{ $years = $years | append $y }}{{ end }}{{ end -}}
+				<div id="press-timeline">
 				{{ range $years }}
 				{{- $year := . -}}
 				<div class="press-year">
@@ -130,6 +135,7 @@
 					{{ end }}{{ end }}
 				</div>
 				{{ end }}
+				</div>
 				{{ else }}
 				<p class="press-empty">No coverage is listed yet. For interviews and press enquiries, write to <a href="mailto:{{ $contacts.email | default "team@brain-regeneration.com" }}">{{ $contacts.email | default "team@brain-regeneration.com" }}</a>.</p>
 				{{ end }}
@@ -138,6 +144,8 @@
 		</div>
 	</div>
 </section>
+
+<script src="{{ "js/press.js" | relURL }}" defer></script>
 
 {{/* JSON-LD: CollectionPage > ItemList of the clippings */}}
 {{- if $clips }}

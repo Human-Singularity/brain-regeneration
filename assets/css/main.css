@@ -3601,3 +3601,13 @@ a:hover {
 .press-milestone .press-meta { margin-bottom: 2px; }
 .press-milestone .press-outlet { color: var(--color-primary); font-size: 15px; }
 .press-milestone .press-summary { font-size: 14px; }
+
+/* Timeline order toggle (unhidden by press.js) */
+.press-order { margin-left: auto; display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-pill); overflow: hidden; background: #fff; }
+.press-order[hidden] { display: none; }
+.press-order button {
+	font: 500 13px/1 var(--font-heading); color: var(--color-primary); background: transparent; border: 0;
+	padding: 8px 14px; min-height: 32px; cursor: pointer; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.press-order button:hover { color: var(--color-accent); }
+.press-order button[aria-pressed="true"] { background: var(--color-primary); color: #fff; }
