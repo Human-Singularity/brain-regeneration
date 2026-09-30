@@ -13,6 +13,12 @@ milestones:
     url: "/news/everything-can-change-when-a-few-believe-it-is-possible/"
     link_label: "Read the launch story"
     text: "The Observatory launched as the next step after Gregory MS, widening the focus from multiple sclerosis to brain regeneration."
+  - date: 2021-01-01
+    date_label: "2021"
+    label: "Gregory MS begins"
+    url: "/about/"
+    link_label: "Read the full story"
+    text: "Bruno Amaral and António Lopes started building Gregory-MS, a knowledge hub for multiple sclerosis, after Bruno's diagnosis. The AI was meant to help Bruno filter out the research that mattered, and they kept building it bit by bit. They later formed a non-profit for the MS project, the basis for new ideas like this one."
 press_kit:
   # TODO: replace with the public R2 URL once the zip is uploaded (make press-kit)
   url: "https://files.brain-regeneration.com/brain-regeneration-press-kit.zip"
