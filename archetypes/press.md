@@ -2,7 +2,7 @@
 title: ""
 outlet: ""
 date: {{ now.Format "2006-01-02" }}
-media_type: article            # article | tv | radio | podcast
+media_type: article            # article | tv | radio | podcast | paper
 language: en             # BCP 47 code of the original piece
 external_url: ""
 links: []                # optional extra links: - label: "Part 2"  url: "https://..."

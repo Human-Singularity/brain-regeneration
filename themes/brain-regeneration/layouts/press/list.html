@@ -6,7 +6,7 @@
 {{- $clips := .Pages.ByDate.Reverse -}}
 {{- $kit := .Params.press_kit -}}
 {{- $contacts := .Params.contacts -}}
-{{- $typeLabels := dict "article" "Article" "tv" "TV" "radio" "Radio" "podcast" "Podcast" -}}
+{{- $typeLabels := dict "article" "Article" "tv" "TV" "radio" "Radio" "podcast" "Podcast" "paper" "Paper" -}}
 {{- $langNames := dict "pt" "Portuguese" "es" "Spanish" "fr" "French" "de" "German" "it" "Italian" -}}
 
 <!-- ── INTRO ── -->
@@ -126,7 +126,7 @@
 {{- $items := slice -}}
 {{- range $i, $c := $clips -}}
 	{{- $type := "CreativeWork" -}}
-	{{- if eq $c.Params.media_type "article" }}{{ $type = "NewsArticle" }}{{ else if eq $c.Params.media_type "tv" }}{{ $type = "VideoObject" }}{{ end -}}
+	{{- if eq $c.Params.media_type "article" }}{{ $type = "NewsArticle" }}{{ else if eq $c.Params.media_type "tv" }}{{ $type = "VideoObject" }}{{ else if eq $c.Params.media_type "paper" }}{{ $type = "ScholarlyArticle" }}{{ end -}}
 	{{- $item := dict
 		"@type" $type
 		"url" $c.Params.external_url
@@ -134,7 +134,7 @@
 		"inLanguage" ($c.Params.language | default "en")
 		"publisher" (dict "@type" "Organization" "name" $c.Params.outlet)
 		"about" (dict "@type" "Organization" "name" $.Site.Title "url" $.Site.BaseURL) -}}
-	{{- if eq $type "NewsArticle" }}{{ $item = merge $item (dict "headline" $c.Title) }}{{ else }}{{ $item = merge $item (dict "name" $c.Title) }}{{ end -}}
+	{{- if or (eq $type "NewsArticle") (eq $type "ScholarlyArticle") }}{{ $item = merge $item (dict "headline" $c.Title) }}{{ else }}{{ $item = merge $item (dict "name" $c.Title) }}{{ end -}}
 	{{- if eq $type "VideoObject" }}{{ $item = merge $item (dict "uploadDate" ($c.Date.Format "2006-01-02") "description" $c.Params.summary) }}{{ end -}}
 	{{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" $item) -}}
 {{- end -}}
