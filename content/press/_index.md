@@ -34,4 +34,4 @@ press_kit:
     - "Illustrations from unDraw"
 ---
 
-This page collects press coverage of the project, contacts for journalists, and our press kit. The Brain Regeneration Observatory began in 2021 as Gregory MS, so earlier coverage and the current press kit use that name. You can read how the project started on the [About page](/about/).
+The Brain Regeneration Observatory began in 2021 as Gregory MS, so earlier coverage and the current press kit use that name. You can read how the project started on the [About page](/about/).

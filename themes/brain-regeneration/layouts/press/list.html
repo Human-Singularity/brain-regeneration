@@ -73,9 +73,6 @@
 			<div class="press-coverage">
 				<div class="press-coverage-head">
 					<h2>Coverage</h2>
-					{{ if $clips }}
-					<span class="press-count">{{ len $clips }} piece{{ if ne (len $clips) 1 }}s{{ end }} since {{ (index $clips.ByDate 0).Date.Format "2006" }}</span>
-					{{ end }}
 					<div class="press-order" id="press-order" role="group" aria-label="Order of the timeline" hidden>
 						<button type="button" data-order="newest" aria-pressed="true">Newest first</button>
 						<button type="button" data-order="oldest" aria-pressed="false">Oldest first</button>
