@@ -3591,7 +3591,7 @@ a:hover {
 /* Timeline milestone (e.g. launch of the Observatory) */
 .press-milestone {
 	position: relative; margin: 14px 0; padding: 14px 16px;
-	background: var(--color-tint); border: 1px solid var(--color-border); border-left: 3px solid var(--color-primary);
+	background: var(--color-tint); border: 1px solid var(--color-border);
 	border-radius: var(--radius);
 }
 .press-milestone::before {
