@@ -95,6 +95,7 @@
 					<div class="press-milestone">
 						<p class="press-meta"><span class="press-outlet">{{ .label }}</span><span>{{ (time.AsTime .date).Format "2 Jan 2006" }}</span></p>
 						{{ with .text }}<p class="press-summary">{{ . }}</p>{{ end }}
+						{{ if .url }}<p class="press-links"><a href="{{ .url | relURL }}">{{ .link_label | default "Read more" }} &rarr;</a></p>{{ end }}
 					</div>
 					{{ else }}
 					{{ with .page }}

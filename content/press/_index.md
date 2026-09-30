@@ -10,6 +10,8 @@ contacts:
 milestones:
   - date: 2026-04-16
     label: "Brain Regeneration launched"
+    url: "/news/everything-can-change-when-a-few-believe-it-is-possible/"
+    link_label: "Read the launch story"
     text: "The Observatory launched as the next step after Gregory MS, widening the focus from multiple sclerosis to brain regeneration."
 press_kit:
   # TODO: replace with the public R2 URL once the zip is uploaded (make press-kit)
