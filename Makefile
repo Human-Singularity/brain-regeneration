@@ -328,13 +328,17 @@ $(BACKUP_DIR):
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Press kit — zipped from ./press-kit (git-ignored) and uploaded to R2
+# Public at https://files.brain-regeneration.com/brain-regeneration-press-kit.zip
+# Needs the `cf` CLI logged in (cf auth login) with access to the Human Singularity account.
 # ──────────────────────────────────────────────────────────────────────────────
 
 PRESS_KIT_BUCKET ?= brain-regeneration-files
+PRESS_KIT_ACCOUNT ?= daf9a20fa8c4f4a43ae277f707271a27
 
-press-kit: ## Zip ./press-kit and upload it to R2 (PRESS_KIT_BUCKET)
+press-kit: ## Zip ./press-kit and upload it to R2
 	@rm -f press-kit.zip
-	cd press-kit && zip -r -X ../press-kit.zip . -x '*.DS_Store'
-	npx wrangler r2 object put $(PRESS_KIT_BUCKET)/brain-regeneration-press-kit.zip --file press-kit.zip --content-type application/zip --remote
+	cd press-kit && zip -qr -X ../press-kit.zip . -x '*.DS_Store'
+	CLOUDFLARE_ACCOUNT_ID=$(PRESS_KIT_ACCOUNT) cf r2 objects put brain-regeneration-press-kit.zip --bucket-name $(PRESS_KIT_BUCKET) --content-type application/zip --file press-kit.zip
+	@ls -lh press-kit.zip | awk '{print "Uploaded " $$5}'
 	@rm -f press-kit.zip
-	@echo "Uploaded. Update press_kit.size/updated in content/press/_index.md."
+	@echo "Update press_kit.size/updated in content/press/_index.md."
