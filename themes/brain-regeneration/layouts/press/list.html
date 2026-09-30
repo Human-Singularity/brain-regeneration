@@ -79,10 +79,25 @@
 				</div>
 
 				{{ if $clips }}
-				{{ range $clips.GroupByDate "2006" }}
+				{{- /* Merge clippings and timeline milestones, newest first, then group by year */ -}}
+				{{- $entries := slice -}}
+				{{- range $clips }}{{ $entries = $entries | append (dict "date" .Date "page" .) }}{{ end -}}
+				{{- range $.Params.milestones }}{{ $entries = $entries | append (dict "date" (time.AsTime .date) "milestone" .) }}{{ end -}}
+				{{- $entries = sort $entries "date" "desc" -}}
+				{{- $years := slice -}}
+				{{- range $entries }}{{ $y := .date.Format "2006" }}{{ if not (in $years $y) }}{{ $years = $years | append $y }}{{ end }}{{ end -}}
+				{{ range $years }}
+				{{- $year := . -}}
 				<div class="press-year">
-					<h3 class="press-year-label">{{ .Key }}</h3>
-					{{ range .Pages }}
+					<h3 class="press-year-label">{{ $year }}</h3>
+					{{ range $entries }}{{ if eq (.date.Format "2006") $year }}
+					{{ with .milestone }}
+					<div class="press-milestone">
+						<p class="press-meta"><span class="press-outlet">{{ .label }}</span><span>{{ (time.AsTime .date).Format "2 Jan 2006" }}</span></p>
+						{{ with .text }}<p class="press-summary">{{ . }}</p>{{ end }}
+					</div>
+					{{ else }}
+					{{ with .page }}
 					{{- $thumb := .Resources.GetMatch (.Params.thumbnail | default "thumbnail*") -}}
 					<article class="press-item">
 						{{ if $thumb }}
@@ -110,6 +125,8 @@
 						</div>
 					</article>
 					{{ end }}
+					{{ end }}
+					{{ end }}{{ end }}
 				</div>
 				{{ end }}
 				{{ else }}

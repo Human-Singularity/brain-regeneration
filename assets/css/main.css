@@ -3587,3 +3587,17 @@ a:hover {
 	.press-intro { padding-top: 48px; }
 	.press-main { padding-bottom: 48px; }
 }
+
+/* Timeline milestone (e.g. launch of the Observatory) */
+.press-milestone {
+	position: relative; margin: 14px 0; padding: 14px 16px;
+	background: var(--color-tint); border: 1px solid var(--color-border); border-left: 3px solid var(--color-primary);
+	border-radius: var(--radius);
+}
+.press-milestone::before {
+	content: ""; position: absolute; left: -38px; top: 20px; width: 12px; height: 12px; border-radius: 50%;
+	background: var(--color-accent); box-shadow: 0 0 0 3px var(--color-secondary);
+}
+.press-milestone .press-meta { margin-bottom: 2px; }
+.press-milestone .press-outlet { color: var(--color-primary); font-size: 15px; }
+.press-milestone .press-summary { font-size: 14px; }

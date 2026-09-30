@@ -7,6 +7,10 @@ options:
 contacts:
   email: team@brain-regeneration.com
   phone: "+351 912 875 856"
+milestones:
+  - date: 2026-04-16
+    label: "Brain Regeneration launched"
+    text: "The Observatory launched as the next step after Gregory MS, widening the focus from multiple sclerosis to brain regeneration."
 press_kit:
   # TODO: replace with the public R2 URL once the zip is uploaded (make press-kit)
   url: "https://files.brain-regeneration.com/brain-regeneration-press-kit.zip"
