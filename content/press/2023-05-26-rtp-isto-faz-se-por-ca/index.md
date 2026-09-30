@@ -2,7 +2,7 @@
 title: "Isto faz-se por cá, episode 18"
 outlet: "RTP"
 date: 2023-05-26
-media_type: tv
+media_type: radio
 language: pt
 external_url: "https://www.rtp.pt/play/p6403/e694619/isto-faz-se-por-ca"
 links: []
