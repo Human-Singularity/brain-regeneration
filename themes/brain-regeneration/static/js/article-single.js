@@ -626,7 +626,6 @@
 
 		if (summary) {
 			main += '<section class="article-section">' +
-				'<div class="article-section__head"><h2>' + icon('sparkle', 12) + ' In plain English</h2></div>' +
 				renderPlainEnglish(summary) +
 			'</section>';
 		}
