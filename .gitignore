@@ -30,6 +30,6 @@ brain-regeneration-benchmark/
 communication/PROTOTYPE-*.html
 .claude/launch.json
 .claude/settings.json
-
+communication/*
 # Press kit (hosted on R2, see `make press-kit`)
 press-kit/
