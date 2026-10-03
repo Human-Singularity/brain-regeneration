@@ -80,6 +80,13 @@
 		} catch (e) { return '#'; }
 	}
 
+	function dateTag(iso) {
+		if (!iso) return '—';
+		var d = new Date(iso);
+		if (isNaN(d.getTime())) return '—';
+		return '<time datetime="' + escHtml(d.toISOString().slice(0, 10)) + '">' + escHtml(formatDate(iso)) + '</time>';
+	}
+
 	function formatDate(iso) {
 		if (!iso) return '—';
 		return new Date(iso).toLocaleDateString('en-GB', {
@@ -217,6 +224,12 @@
 	}
 
 	function updateStructuredData(a, pageUrl, descriptionText) {
+		// The Pages Function already injects a ScholarlyArticle; a second,
+		// differing entity confuses crawlers. Only fill in when it's missing.
+		var existing = document.querySelectorAll('script[type="application/ld+json"]:not(#article-jsonld-dynamic)');
+		for (var i = 0; i < existing.length; i++) {
+			if (/"@type"\s*:\s*"ScholarlyArticle"/.test(existing[i].textContent)) return;
+		}
 		var el = document.getElementById('article-jsonld-dynamic');
 		if (!el) {
 			el = document.createElement('script');
@@ -369,7 +382,7 @@
 			'<div class="article-eyebrow">' +
 				'<span>' + escHtml(kindLabel) + '</span>' +
 				'<span class="dot" aria-hidden="true"></span>' +
-				'<span class="muted">Indexed ' + escHtml(formatDate(a.discovery_date || a.added_date)) + '</span>' +
+				'<span class="muted">Indexed ' + dateTag(a.discovery_date || a.added_date) + '</span>' +
 				'<span class="dot" aria-hidden="true"></span>' +
 				'<span class="muted">ID #' + escHtml(String(a.article_id || a.id || '')) + '</span>' +
 			'</div>' +
@@ -378,7 +391,7 @@
 			'<p class="article-source">' +
 				(a.container_title ? '<strong>' + escHtml(decodeEntities(a.container_title)) + '</strong> · ' : '') +
 				(a.publisher ? escHtml(decodeEntities(a.publisher)) + ' · ' : '') +
-				'Published ' + escHtml(formatDate(a.published_date)) +
+				'Published ' + dateTag(a.published_date) +
 			'</p>' +
 		'</header>';
 	}
@@ -390,8 +403,8 @@
 			: '<span class="badge access-badge restricted">Restricted</span>';
 		return '<div class="meta-inline">' +
 			(a.doi ? '<span class="meta-inline__cell">' + icon('file', 14) + ' DOI <span class="mono">' + escHtml(a.doi) + '</span></span>' : '') +
-			'<span class="meta-inline__cell">' + icon('calendar', 14) + ' Published <strong>' + escHtml(formatDate(a.published_date)) + '</strong></span>' +
-			'<span class="meta-inline__cell">' + icon('history', 14) + ' Indexed <strong>' + escHtml(formatDate(a.discovery_date || a.added_date)) + '</strong></span>' +
+			'<span class="meta-inline__cell">' + icon('calendar', 14) + ' Published <strong>' + dateTag(a.published_date) + '</strong></span>' +
+			'<span class="meta-inline__cell">' + icon('history', 14) + ' Indexed <strong>' + dateTag(a.discovery_date || a.added_date) + '</strong></span>' +
 			'<span class="meta-inline__cell">' + accessIcon + ' ' + accessBadge + '</span>' +
 		'</div>';
 	}
@@ -407,11 +420,54 @@
 		'</div>';
 	}
 
+	// Allowlist sanitiser for API-supplied HTML (editorial summaries).
+	var SUMMARY_TAGS = {
+		H2: 1, H3: 1, H4: 1, H5: 1, P: 1, BR: 1, UL: 1, OL: 1, LI: 1, STRONG: 1, B: 1, EM: 1, I: 1,
+		A: 1, TABLE: 1, THEAD: 1, TBODY: 1, TR: 1, TH: 1, TD: 1, BLOCKQUOTE: 1, SUP: 1, SUB: 1
+	};
+	var SUMMARY_DROP = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, SVG: 1, MATH: 1, TEMPLATE: 1, FORM: 1 };
+
+	function sanitizeSummaryHtml(html) {
+		var doc = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html');
+		var out = document.createElement('div');
+		(function walk(src, dest) {
+			Array.prototype.forEach.call(src.childNodes, function (node) {
+				if (node.nodeType === 3) { dest.appendChild(document.createTextNode(node.nodeValue)); return; }
+				if (node.nodeType !== 1) return;
+				var tag = node.tagName.toUpperCase();
+				if (SUMMARY_DROP[tag]) return;
+				if (!SUMMARY_TAGS[tag]) { walk(node, dest); return; } // unwrap unknown tags, keep text
+				var el = document.createElement(tag.toLowerCase());
+				if (tag === 'A') {
+					var href = safeLink(node.getAttribute('href'));
+					if (href === '#') { walk(node, dest); return; }
+					el.setAttribute('href', href);
+					el.setAttribute('target', '_blank');
+					el.setAttribute('rel', 'noopener noreferrer nofollow');
+				} else if (tag === 'TH' || tag === 'TD') {
+					['colspan', 'rowspan'].forEach(function (n) {
+						if (/^\d{1,2}$/.test(node.getAttribute(n) || '')) el.setAttribute(n, node.getAttribute(n));
+					});
+				}
+				walk(node, el);
+				dest.appendChild(el);
+			});
+		})(doc.body, out);
+		// Wrap tables so wide ones scroll on mobile instead of breaking layout.
+		Array.prototype.forEach.call(out.querySelectorAll('table'), function (t) {
+			var w = document.createElement('div');
+			w.className = 'plain-english__table';
+			t.parentNode.insertBefore(w, t);
+			w.appendChild(t);
+		});
+		return out.innerHTML;
+	}
+
 	function renderPlainEnglish(summary) {
 		if (!summary) return '';
 		return '<div class="plain-english">' +
-			'<span class="plain-english__label">' + icon('sparkle', 12) + ' Plain English · written by our team</span>' +
-			'<p class="plain-english__body">' + escHtml(decodeEntities(summary)) + '</p>' +
+			'<span class="plain-english__label">' + icon('sparkle', 12) + ' AI generated</span>' +
+			'<div class="plain-english__body">' + sanitizeSummaryHtml(String(summary)) + '</div>' +
 		'</div>';
 	}
 
