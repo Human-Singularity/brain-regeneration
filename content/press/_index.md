@@ -13,6 +13,12 @@ milestones:
     url: "/news/everything-can-change-when-a-few-believe-it-is-possible/"
     link_label: "Read the launch story"
     text: "The Observatory launched as the next step after Gregory MS, widening the focus from multiple sclerosis to brain regeneration."
+  - date: 2024-10-01
+    date_label: "October 2024"
+    label: "Nova SBE improves GregoryAi"
+    url: "/supporters/novasbe/"
+    link_label: "Read about the partnership"
+    text: "A group of master's students from Nova SBE implemented new machine learning algorithms that made GregoryAi better at finding relevant multiple sclerosis research."
   - date: 2021-01-01
     date_label: "2021"
     label: "Gregory MS begins"
