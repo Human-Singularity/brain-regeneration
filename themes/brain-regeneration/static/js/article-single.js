@@ -187,8 +187,15 @@
 		return window.location.origin + path;
 	}
 
+	// Editorial content is opt-in (?include=editorial) and nested; fall back to
+	// the legacy top-level field until the API change is confirmed deployed.
+	function editorialSummary(a) {
+		var e = a.editorial && a.editorial[0];
+		return (e && e.summary_plain_english) || a.summary_plain_english || '';
+	}
+
 	function articleDescription(a) {
-		var summary = stripHtml(a.summary_plain_english || a.abstract || a.description || '');
+		var summary = stripHtml(editorialSummary(a) || a.abstract || a.description || '');
 		if (summary) return truncate(summary, 180);
 		var subject = (a.subjects && a.subjects[0] && (a.subjects[0].subject_name || a.subjects[0].name)) || '';
 		var fallback = 'Read this research article on ' + (subject || 'brain regeneration') +
@@ -539,7 +546,7 @@
 
 	function renderArticle(a) {
 		var mlGrouped = groupPredictions(a.ml_predictions);
-		var summary   = a.summary_plain_english || '';
+		var summary   = editorialSummary(a);
 		var trials    = a.clinical_trials || [];
 
 		var main = renderArticleHeader(a) +
@@ -633,7 +640,7 @@
 
 	function fetchArticle(id) {
 		showLoading();
-		var url = apiBase + '/articles/' + encodeURIComponent(id) + '/?format=json';
+		var url = apiBase + '/articles/' + encodeURIComponent(id) + '/?format=json&include=editorial';
 		fetch(url, { headers: { 'Accept': 'application/json' } })
 			.then(function (resp) {
 				if (!resp.ok) throw new Error('HTTP ' + resp.status);
