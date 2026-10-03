@@ -120,7 +120,8 @@
 		"isPartOf" (dict "@type" "WebSite" "name" .Site.Title "url" .Site.BaseURL)
 	) }}
 {{- end }}
-{{- if not (and .IsSection (eq .Section "press")) }}
+{{- /* /articles/{id}/ gets its own ScholarlyArticle JSON-LD from functions/articles/[id].js (or article-single.js as fallback); the shell's generic WebPage would conflict. */ -}}
+{{- if not (or (and .IsSection (eq .Section "press")) (and .IsSection (eq .Section "articles"))) }}
 <script type="application/ld+json">{{ $jsonld | jsonify | safeJS }}</script>
 {{- end }}
 
