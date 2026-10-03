@@ -21,13 +21,7 @@ options:
 
 [Nova School of Business and Economics](https://www.novasbe.unl.pt/) (Nova SBE) is a leading Portuguese business school and part of Universidade NOVA de Lisboa.
 
-Nova SBE partnered with the Brain Regeneration Observatory to improve the algorithms behind GregoryAi. Faculty members and master's students contributed research and development that led to significant upgrades in how the platform identifies studies relevant to multiple sclerosis and other neurodegenerative conditions.
-
-Key contributions from this partnership include:
-
-- **Enhanced accuracy** — Improved algorithms that better identify relevant studies, reducing noise and helping researchers, patients, and caregivers find pertinent research faster.
-- **Tailored predictive models** — Each research area now receives its own customised model, trained on papers aligned with specific objectives. Within MS research, for example, separate models focus on distinct areas like disease-modifying therapies and remyelination.
-- **Multi-team and multi-subject support** — Architectural improvements that allow different research teams to use GregoryAi independently, expanding the platform's applicability beyond MS.
+Nova SBE partnered with the Brain Regeneration Observatory, when it was still called Gregory-MS, to improve the algorithms behind GregoryAi. Faculty members and master's students contributed research and development that led to significant **improvements to the accuracy of the algorithms** that we use to identify studies relevant to multiple sclerosis and other neurodegenerative conditions.
 
 We would like to thank the people who made this partnership possible:
 
