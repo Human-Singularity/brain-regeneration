@@ -80,18 +80,33 @@
 		} catch (e) { return '#'; }
 	}
 
-	function dateTag(iso) {
-		if (!iso) return '—';
+	// Date-only values ("2025-01-01") are calendar dates: handle them in UTC so
+	// they never shift a day. Full timestamps are shown in the viewer's timezone;
+	// the <time datetime> value uses the same basis so both always agree.
+	function dateParts(iso) {
+		if (!iso) return null;
+		var dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(iso));
 		var d = new Date(iso);
-		if (isNaN(d.getTime())) return '—';
-		return '<time datetime="' + escHtml(d.toISOString().slice(0, 10)) + '">' + escHtml(formatDate(iso)) + '</time>';
+		if (isNaN(d.getTime())) return null;
+		var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+		var y = dateOnly ? d.getUTCFullYear() : d.getFullYear();
+		var m = (dateOnly ? d.getUTCMonth() : d.getMonth()) + 1;
+		var day = dateOnly ? d.getUTCDate() : d.getDate();
+		return { date: d, utc: dateOnly, iso: y + '-' + pad(m) + '-' + pad(day) };
 	}
 
 	function formatDate(iso) {
-		if (!iso) return '—';
-		return new Date(iso).toLocaleDateString('en-GB', {
-			day: 'numeric', month: 'short', year: 'numeric'
-		});
+		var p = dateParts(iso);
+		if (!p) return '—';
+		var opts = { day: 'numeric', month: 'short', year: 'numeric' };
+		if (p.utc) opts.timeZone = 'UTC';
+		return p.date.toLocaleDateString('en-GB', opts);
+	}
+
+	function dateTag(iso) {
+		var p = dateParts(iso);
+		if (!p) return '—';
+		return '<time datetime="' + p.iso + '">' + escHtml(formatDate(iso)) + '</time>';
 	}
 
 	function displayName(a) {
@@ -423,7 +438,7 @@
 	// Allowlist sanitiser for API-supplied HTML (editorial summaries).
 	var SUMMARY_TAGS = {
 		H2: 1, H3: 1, H4: 1, H5: 1, P: 1, BR: 1, UL: 1, OL: 1, LI: 1, STRONG: 1, B: 1, EM: 1, I: 1,
-		A: 1, TABLE: 1, THEAD: 1, TBODY: 1, TR: 1, TH: 1, TD: 1, BLOCKQUOTE: 1, SUP: 1, SUB: 1
+		A: 1, TABLE: 1, CAPTION: 1, THEAD: 1, TBODY: 1, TR: 1, TH: 1, TD: 1, BLOCKQUOTE: 1, SUP: 1, SUB: 1
 	};
 	var SUMMARY_DROP = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, SVG: 1, MATH: 1, TEMPLATE: 1, FORM: 1 };
 
