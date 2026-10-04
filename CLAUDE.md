@@ -98,15 +98,16 @@ layouts/
   news/ list, single      supporters/ list, single      curators/ list, single
   observatory/ list       index.html      404.html
 static/
-  css/  article-single.css, news-single.css   (per-page; loaded via extra-head — main.css and
-                      feeds-mobile.css live in the repo-root assets/css/, not here)
+  css/  article-single.css   (per-page; loaded via extra-head — main.css, feeds-mobile.css and
+                      news-single.css live in the repo-root assets/css/, not here)
   js/   br-utils.js             (shared helpers on window.BR: escHtml/decodeEntities/stripHtml/truncate/debounce/formatDate/slugify/safeLink + makeCache; loaded first, synchronously, in head)
         feed-ui.js              (window.BR.feedUI — shared feed UI machinery: buildToken, setActiveChip, wireDownloadDropdown, wireMoreFilters, wireHintTags; loaded in head after br-utils)
         research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
         trials-feed.js          (conditions clinical-trials feed + stats bar)
         article-single.js       (renders /articles/{id}/ detail from the API)
         research-spotlight.js   (homepage/area "spotlight" of top relevant papers)
-        news-single.js          (news article UX: reading progress, TOC, lightbox — no API)
+        (news-single.js — news article UX: reading progress, TOC, code copy buttons, lightbox —
+         lives in the repo-root assets/js/ and is fingerprinted, like news-single.css)
         subscribe.js            (all subscribe forms — full page #subscribe-form, inline [data-inline-subscribe] widgets, homepage digest — one POST→redirect flow + profile persistence)
         donor-transparency.js   (donate page → Stripe transparency Cloudflare Worker)
 ```
@@ -150,7 +151,7 @@ Single root file. Highlights:
 - **ML relevance + curator badges** are rendered client-side from `ml_predictions` (threshold 0.8) and `article_subject_relevances`; the explainer lives at `/relevancy-scores/`.
 - **Subscribe forms** (all handled by `subscribe.js`) POST `FormData` to the endpoint in `data-api` with `redirect: 'manual'`, treat an opaque redirect as success, and redirect to the `data-thank-you` / `data-error` URLs (configured via `[params.subscriptions]`). The chosen profile is remembered in `localStorage` under `br_subscriber_profile`.
 - **Donations** use a separate, independently-deployed Cloudflare Worker (`donor-transparency.js` → `https://stripe-transparency.human-singularity.workers.dev/`), not the GregoryAi API and not a Pages Function in this repo — its source is documented for reference in `content/cloudflare-worker.md`, but changing it means editing/deploying that Worker directly (its own repo/dashboard), not anything under `functions/`.
-- **Styling** is plain CSS, not SCSS. Site-wide `main.css` + `feeds-mobile.css` live in the repo-root `assets/css/` and go through Hugo Pipes (`resources.Get | minify | fingerprint`, with `assets/css/critical.css` inlined for above-the-fold); per-page `article-single.css` / `news-single.css` still live under the theme's `themes/.../static/css/` and load via `extra-head`. Edit whichever matches the file you're touching.
+- **Styling** is plain CSS, not SCSS. Site-wide `main.css` + `feeds-mobile.css` live in the repo-root `assets/css/` and go through Hugo Pipes (`resources.Get | minify | fingerprint`, with `assets/css/critical.css` inlined for above-the-fold); `news-single.css` and `news-single.js` are there too (`assets/css/`, `assets/js/`), fingerprinted by `news/single.html` so a deploy never leaves visitors on a cached old copy; `article-single.css` still lives under the theme's `themes/.../static/css/` and loads via `extra-head`. News posts' Markdown images go through `themes/.../layouts/news/_markup/render-image.html` (resized, lazy, lightbox), and code blocks use Chroma classes (`markup.highlight.noClasses = false`) styled in `news-single.css`. Edit whichever matches the file you're touching.
 
 ## Conventions
 

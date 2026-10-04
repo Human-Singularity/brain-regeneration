@@ -130,6 +130,11 @@
 	aspect-ratio: 21 / 9;
 	position: relative;
 }
+.b-hero-wrap picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
 .b-hero-wrap img {
 	width: 100%;
 	height: 100%;
@@ -242,6 +247,98 @@
 	padding-left: 22px;
 	margin-bottom: 1.1em;
 }
+
+/* ── Markdown images (render hook: layouts/news/_markup) ─────── */
+.b-col img {
+	max-width: 100%;
+	height: auto;
+}
+.b-col img.b-img {
+	display: block;
+	margin: 28px auto 8px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	background: #fff;
+}
+
+/* ── Code ────────────────────────────────────────────────────── */
+.b-col pre {
+	margin: 0 0 1.4em;
+	padding: 16px 20px;
+	background: var(--color-tint);
+	border: 1px solid var(--color-border);
+	border-left: 3px solid var(--color-primary);
+	border-radius: var(--radius);
+	overflow-x: auto;
+	font-family: var(--font-mono);
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--color-text);
+	tab-size: 4;
+}
+.b-col pre code {
+	font: inherit;
+	color: inherit;
+	background: none;
+	padding: 0;
+}
+.b-col :not(pre) > code {
+	font-family: var(--font-mono);
+	font-size: .86em;
+	color: var(--color-primary);
+	background: var(--color-tint);
+	padding: .12em .38em;
+	border-radius: 4px;
+	overflow-wrap: anywhere;
+}
+/* Copy button (added by news-single.js) */
+.code-block {
+	position: relative;
+}
+.code-block pre,
+pre.code-block {
+	padding-right: 84px;
+}
+.code-copy {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	padding: 4px 10px;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--color-primary);
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-pill);
+	cursor: pointer;
+	transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.code-copy:hover {
+	border-color: var(--color-primary);
+}
+.code-copy:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+.code-copy.is-copied {
+	color: var(--color-text-light);
+	background: var(--color-primary);
+	border-color: var(--color-primary);
+}
+
+/* Syntax colours (Chroma classes, markup.highlight.noClasses = false) */
+.chroma .k, .chroma .kc, .chroma .kd, .chroma .kn, .chroma .kp, .chroma .kr, .chroma .kt,
+.chroma .nb, .chroma .bp, .chroma .nt { color: var(--color-primary); font-weight: 600; }
+.chroma .s, .chroma .s1, .chroma .s2, .chroma .sa, .chroma .sb, .chroma .sc, .chroma .sd,
+.chroma .se, .chroma .sh, .chroma .si, .chroma .sx, .chroma .ss,
+.chroma .m, .chroma .mi, .chroma .mf, .chroma .mh, .chroma .il { color: #8F5310; }
+.chroma .c, .chroma .c1, .chroma .ch, .chroma .cm, .chroma .cp, .chroma .cs { color: var(--color-muted); font-style: italic; }
+.chroma .nf, .chroma .na, .chroma .nv, .chroma .nx { color: #1F4E79; }
+.chroma .gd { color: #A3262A; }
+.chroma .gi { color: #1A6B3A; }
 
 /* ── Figure / caption shared ─────────────────────────────────── */
 figure { margin: 0; }
@@ -557,6 +654,8 @@ figure { margin: 0; }
 	.b-hero-caption { padding: 0 20px; margin-bottom: 32px; }
 	.b-body { padding: 0 20px; }
 	.b-hero-wrap { aspect-ratio: 16 / 9; }
+	/* Wrap rather than scroll sideways: long URLs and commands stay readable. */
+	.b-col pre { padding-top: 14px; padding-bottom: 14px; padding-left: 16px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
 	.b-header h1 { font-size: 26px; }
 	.b-deck { font-size: 17px; }
 	.fig-wide { margin-left: -20px; margin-right: -20px; border-radius: 0; }

@@ -1,0 +1,28 @@
+{{- /*
+  Markdown images in news posts: ![alt](path "optional title").
+  Page-bundle images are resized to the column (max 1440px, webp), carry their
+  dimensions so the page doesn't jump, and open full size in the lightbox.
+  Remote images and formats Hugo can't resize (svg, gif) are passed through.
+*/ -}}
+{{- $u := urls.Parse .Destination -}}
+{{- $res := "" -}}
+{{- if not $u.IsAbs -}}
+	{{- $path := strings.TrimPrefix "./" $u.Path -}}
+	{{- $res = or (.PageInner.Resources.Get $path) (resources.Get $path) -}}
+{{- end -}}
+{{- $caption := .Title | default .Text -}}
+{{- if and $res (eq $res.ResourceType "image") (not (in (slice "svg" "gif") $res.MediaType.SubType)) -}}
+	{{- $img := $res -}}
+	{{- if gt $res.Width 1440 -}}
+		{{- $img = $res.Resize "1440x webp" -}}
+	{{- else -}}
+		{{- $img = $res.Process "webp" -}}
+	{{- end -}}
+	<img class="b-img zoomable" src="{{ $img.RelPermalink }}" alt="{{ .Text }}"
+		{{- with .Title }} title="{{ . }}"{{ end }}
+		width="{{ $img.Width }}" height="{{ $img.Height }}" loading="lazy" decoding="async"
+		data-lightbox-src="{{ $res.RelPermalink }}" data-lightbox-caption="{{ $caption }}">
+{{- else -}}
+	<img class="b-img" src="{{ with $res }}{{ .RelPermalink }}{{ else }}{{ .Destination | safeURL }}{{ end }}" alt="{{ .Text }}"
+		{{- with .Title }} title="{{ . }}"{{ end }} loading="lazy" decoding="async">
+{{- end -}}

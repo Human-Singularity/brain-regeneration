@@ -4,7 +4,8 @@
  *   1. Reading progress bar
  *   2. Sticky TOC with IntersectionObserver active state
  *   3. Smooth-scroll on TOC click
- *   4. Click-to-zoom lightbox (keyboard-accessible, focus-trapped)
+ *   4. Copy button on code blocks
+ *   5. Click-to-zoom lightbox (keyboard-accessible, focus-trapped)
  */
 (function () {
 	'use strict';
@@ -107,7 +108,71 @@
 		});
 	}
 
-	/* ── 4. Lightbox ─────────────────────────────────────────── */
+	/* ── 4. Copy button on code blocks ───────────────────────── */
+	function copyText(text) {
+		if (navigator.clipboard && window.isSecureContext) {
+			return navigator.clipboard.writeText(text);
+		}
+		// Older browsers / non-https: copy through a temporary textarea.
+		return new Promise(function (resolve, reject) {
+			var ta = document.createElement('textarea');
+			ta.value = text;
+			ta.setAttribute('readonly', '');
+			ta.style.position = 'fixed';
+			ta.style.opacity = '0';
+			document.body.appendChild(ta);
+			ta.select();
+			var ok = false;
+			try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+			document.body.removeChild(ta);
+			if (ok) { resolve(); } else { reject(new Error('copy failed')); }
+		});
+	}
+
+	var copyStatus = null;
+	function announce(message) {
+		if (!copyStatus) {
+			copyStatus = document.createElement('span');
+			copyStatus.className = 'visually-hidden';
+			copyStatus.setAttribute('role', 'status');
+			document.body.appendChild(copyStatus);
+		}
+		copyStatus.textContent = '';
+		setTimeout(function () { copyStatus.textContent = message; }, 50);
+	}
+
+	document.querySelectorAll('.b-col pre').forEach(function (pre) {
+		var block = pre.parentElement.classList.contains('highlight') ? pre.parentElement : pre;
+		block.classList.add('code-block');
+
+		var btn = document.createElement('button');
+		btn.type = 'button';
+		btn.className = 'code-copy';
+		btn.textContent = 'Copy';
+		btn.setAttribute('aria-label', 'Copy code to clipboard');
+		var resetTimer = null;
+
+		btn.addEventListener('click', function () {
+			var code = pre.querySelector('code') || pre;
+			copyText(code.textContent.replace(/\n$/, '')).then(function () {
+				btn.textContent = 'Copied';
+				btn.classList.add('is-copied');
+				announce('Code copied to clipboard');
+			}, function () {
+				btn.textContent = 'Copy failed';
+				announce('Copy failed. Select the code and copy it manually.');
+			});
+			clearTimeout(resetTimer);
+			resetTimer = setTimeout(function () {
+				btn.textContent = 'Copy';
+				btn.classList.remove('is-copied');
+			}, 2000);
+		});
+
+		block.appendChild(btn);
+	});
+
+	/* ── 5. Lightbox ─────────────────────────────────────────── */
 	var lightbox = document.getElementById('js-lightbox');
 	if (!lightbox) { return; }
 

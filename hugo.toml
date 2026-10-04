@@ -38,7 +38,9 @@ timeZone = "Europe/Lisbon"
     guessSyntax = false
     lineNos = false
     lineNumbersInTable = true
-    noClasses = true
+    # Classes, not inline colours: code blocks are styled with the site's
+    # design tokens (assets/css/news-single.css).
+    noClasses = false
     style = "monokai"
     tabWidth = 4
   [markup.tableOfContents]
