@@ -253,6 +253,20 @@
 	max-width: 100%;
 	height: auto;
 }
+.b-img-zoom {
+	display: block;
+	max-width: 100%;
+	margin: 28px auto 8px;
+	padding: 0;
+	border: 0;
+	background: none;
+	border-radius: var(--radius);
+	cursor: zoom-in;
+}
+.b-img-zoom:focus-visible {
+	outline: 3px solid var(--color-primary);
+	outline-offset: 3px;
+}
 .b-col img.b-img {
 	display: block;
 	margin: 28px auto 8px;
@@ -260,6 +274,9 @@
 	border-radius: var(--radius);
 	box-shadow: var(--shadow);
 	background: #fff;
+}
+.b-img-zoom img.b-img {
+	margin: 0;
 }
 
 /* ── Code ────────────────────────────────────────────────────── */
@@ -296,8 +313,7 @@
 .code-block {
 	position: relative;
 }
-.code-block pre,
-pre.code-block {
+.code-block pre {
 	padding-right: 84px;
 }
 .code-copy {

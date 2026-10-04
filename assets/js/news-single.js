@@ -142,7 +142,13 @@
 	}
 
 	document.querySelectorAll('.b-col pre').forEach(function (pre) {
-		var block = pre.parentElement.classList.contains('highlight') ? pre.parentElement : pre;
+		// The button sits next to the <pre>, never inside it, so it is never part of the copied text.
+		var block = pre.parentElement;
+		if (!block.classList.contains('highlight')) {
+			block = document.createElement('div');
+			pre.parentNode.insertBefore(block, pre);
+			block.appendChild(pre);
+		}
 		block.classList.add('code-block');
 
 		var btn = document.createElement('button');
@@ -203,7 +209,9 @@
 	/* Delegated click on .zoomable elements */
 	document.addEventListener('click', function (e) {
 		var zoomable = e.target.closest('.zoomable');
-		if (zoomable && !e.target.closest('a, button')) {
+		var control  = e.target.closest('a, button');
+		// A zoomable that is itself a button (body images) opens; other controls inside a zoomable don't.
+		if (zoomable && (!control || control === zoomable)) {
 			var src     = zoomable.dataset.lightboxSrc || (zoomable.querySelector('img') && zoomable.querySelector('img').src) || '';
 			var caption = zoomable.dataset.lightboxCaption || (zoomable.querySelector('.caption__text') && zoomable.querySelector('.caption__text').textContent) || '';
 			if (src) { openLightbox(src, caption); }
