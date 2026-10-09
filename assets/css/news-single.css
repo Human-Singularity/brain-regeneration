@@ -345,6 +345,53 @@
 	border-color: var(--color-primary);
 }
 
+/* ── Tables ──────────────────────────────────────────────────── */
+.b-col table {
+	width: 100%;
+	margin: 0 0 1.6em;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	overflow: hidden;
+	font-size: .94em;
+	line-height: 1.55;
+}
+.b-col th,
+.b-col td {
+	padding: 12px 16px;
+	text-align: left;
+	vertical-align: top;
+	border-bottom: 1px solid var(--color-border);
+}
+.b-col thead th {
+	font-family: var(--font-heading);
+	font-size: .82em;
+	font-weight: 700;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	color: var(--color-primary);
+	background: var(--color-tint);
+	border-bottom: 2px solid var(--color-primary);
+}
+.b-col tbody tr:last-child td {
+	border-bottom: 0;
+}
+.b-col tbody tr:nth-child(even) td {
+	background: var(--color-tint);
+}
+/* First column is the row label (e.g. tool names): keep it on one line. */
+.b-col td:first-child {
+	white-space: nowrap;
+}
+.b-col td:first-child code {
+	white-space: nowrap;
+}
+.b-col td code {
+	background: #fff;
+	border: 1px solid var(--color-border);
+}
+
 /* Syntax colours (Chroma classes, markup.highlight.noClasses = false) */
 .chroma .k, .chroma .kc, .chroma .kd, .chroma .kn, .chroma .kp, .chroma .kr, .chroma .kt,
 .chroma .nb, .chroma .bp, .chroma .nt { color: var(--color-primary); font-weight: 600; }
@@ -672,6 +719,9 @@ figure { margin: 0; }
 	.b-hero-wrap { aspect-ratio: 16 / 9; }
 	/* Wrap rather than scroll sideways: long URLs and commands stay readable. */
 	.b-col pre { padding-top: 14px; padding-bottom: 14px; padding-left: 16px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+	.b-col table { font-size: .9em; }
+	.b-col th, .b-col td { padding: 10px 12px; }
+	.b-col td:first-child, .b-col td:first-child code { white-space: normal; }
 	.b-header h1 { font-size: 26px; }
 	.b-deck { font-size: 17px; }
 	.fig-wide { margin-left: -20px; margin-right: -20px; border-radius: 0; }
