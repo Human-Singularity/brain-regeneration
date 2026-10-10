@@ -14,6 +14,10 @@ image: ""
 # Optional caption for the header image. Set to false to hide the caption entirely.
 # If omitted, falls back to the page description.
 image_caption: ""
+# Optional: where to crop the header image. Defaults to "Smart" (Hugo picks the
+# most interesting region). Or one of Center, Top, Bottom, Left, Right, TopLeft,
+# TopRight, BottomLeft, BottomRight.
+image_anchor: ""
 
 # Tags for categorisation
 tags: []
