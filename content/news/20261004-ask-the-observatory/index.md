@@ -1,6 +1,6 @@
 ---
 title: "GregoryAi now lets you connect any AI assistant to our website"
-date: 2026-10-04T10:00:00+01:00
+date: 2026-10-10T10:00:00+01:00
 draft: false
 
 description: "Connect Claude, ChatGPT, or any other AI, to the Brain Regeneration database. Search for research papers and keep track of clinical trials by asking in plain language."
