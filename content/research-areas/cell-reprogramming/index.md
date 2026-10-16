@@ -11,6 +11,9 @@ description: "Transforming the body's own cells into functioning neurons through
 curators:
   - "regenerar"
 
+# Backend subject slug for the RSS feeds ({apiBase}/feed/sites/3/...); differs from the page slug for some subjects
+feed_slug: "cell-reprogramming"
+
 api:
   endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 4

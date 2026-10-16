@@ -1,0 +1,29 @@
+{{- /*
+  feeds/rss-follow.html — compact visible "Follow via RSS" block listing the
+  page's feeds (see feeds/rss-links.html). Place it next to the newsletter
+  block. Renders nothing for pages without a feed_slug.
+*/ -}}
+{{- $feeds := partial "feeds/rss-links.html" . -}}
+{{- if $feeds }}
+<section class="bg-sand rss-follow-section" aria-labelledby="rss-follow-heading">
+	<div class="container">
+		<div class="narrow-col">
+			<div class="rss-follow">
+				<h3 id="rss-follow-heading">Follow via RSS</h3>
+				<p class="rss-follow-lead">Prefer a feed reader? Copy a link into it to get new items as they appear.</p>
+				<ul class="rss-follow-list">
+					{{- range $feeds }}
+					<li>
+						<a class="rss-follow-link" href="{{ .href }}" data-umami-event="RSS: Follow feed" data-umami-event-feed="{{ .key }}">
+							<svg class="press-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+							{{ .label }}
+						</a>
+						<span class="rss-follow-desc">{{ .desc }}</span>
+					</li>
+					{{- end }}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+{{- end }}

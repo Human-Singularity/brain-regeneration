@@ -1,0 +1,57 @@
+{{- /*
+  feeds/rss-links.html — RETURNS the list of GregoryAi RSS feeds for a page, so
+  the <head> <link rel="alternate"> tags (feeds/rss-head.html) and the visible
+  "Follow via RSS" block (feeds/rss-follow.html) share one source of truth.
+
+  Pages opt in with a `feed_slug` front-matter key (the backend's subject slug,
+  which differs from the page slug for some subjects). Pages without it get an
+  empty list, so they render exactly as before.
+
+  Feeds live at {apiBase}/feed/sites/{apiSitemapSiteId}/… — built from
+  params.apiBase (HUGO_PARAMS_APIBASE-aware), never a hard-coded host.
+
+  Offered feeds (in order):
+    conditions/*      relevant research, recruiting trials, all research, all new trials
+                      (+ new patent families, only on the page using the patents layout)
+    research-areas/*  relevant research, all research
+
+  Patent feed: links only — never abstracts or claims (EPO licence forbids syndicating them).
+
+  Param: the page (.)
+  Returns: slice of dicts {key, label, title, desc, href}
+*/ -}}
+{{- $page := . -}}
+{{- $items := slice -}}
+{{- with $page.Params.feed_slug -}}
+	{{- $slug := . -}}
+	{{- $name := $page.Title -}}
+	{{- $base := printf "%s/feed/sites/%v/" (strings.TrimRight "/" site.Params.apiBase) site.Params.apiSitemapSiteId -}}
+	{{- $isCondition := eq $page.Section "conditions" -}}
+	{{- $items = $items | append (dict "key" "relevant" "label" "Relevant research"
+		"title" (printf "Relevant %s research" $name)
+		"desc" "Papers our editors and models flag"
+		"href" (printf "%sarticles/subject/%s/relevant/" $base $slug)) -}}
+	{{- if $isCondition -}}
+		{{- $items = $items | append (dict "key" "recruiting" "label" "Recruiting trials"
+			"title" (printf "Recruiting %s clinical trials" $name)
+			"desc" "Trials you could join"
+			"href" (printf "%strials/subject/%s/recruiting/" $base $slug)) -}}
+	{{- end -}}
+	{{- $items = $items | append (dict "key" "research" "label" "All research"
+		"title" (printf "All %s research" $name)
+		"desc" "Every new paper we track on this subject"
+		"href" (printf "%sarticles/subject/%s/" $base $slug)) -}}
+	{{- if $isCondition -}}
+		{{- $items = $items | append (dict "key" "trials" "label" "All new trials"
+			"title" (printf "All new %s clinical trials" $name)
+			"desc" "Every newly added trial, whatever its status"
+			"href" (printf "%strials/subject/%s/" $base $slug)) -}}
+		{{- if eq $page.Params.layout "patents" -}}
+			{{- $items = $items | append (dict "key" "patents" "label" "New patent families"
+				"title" (printf "New %s patent families" $name)
+				"desc" "New patent families, newest first by first publication date"
+				"href" (printf "%spatents/subject/%s/" $base $slug)) -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- return $items -}}

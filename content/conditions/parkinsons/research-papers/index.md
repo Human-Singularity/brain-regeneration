@@ -11,6 +11,9 @@ description: "Track the latest research on Parkinson's disease, from dopaminergi
 
 hero_description: "Parkinson's disease is driven by the progressive loss of dopamine-producing neurons in the substantia nigra. Papers below cover cell-replacement, neuroprotection, alpha-synuclein-targeting, and neuroinflammation research."
 
+# Backend subject slug for the RSS feeds ({apiBase}/feed/sites/3/...); differs from the page slug for some subjects
+feed_slug: "parkinson-disease"
+
 api:
   endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 1

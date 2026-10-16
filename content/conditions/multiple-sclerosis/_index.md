@@ -20,6 +20,9 @@ related_research_areas:
   - "neuroimmune-interactions"
   - "neuroinflammation"
 
+# Backend subject slug for the RSS feeds ({apiBase}/feed/sites/3/...); differs from the page slug for some subjects
+feed_slug: "multiple-sclerosis"
+
 api:
   endpoint: "https://api.brain-regeneration.com/trials/"
   team_id: 1

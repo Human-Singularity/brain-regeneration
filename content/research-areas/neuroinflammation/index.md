@@ -11,6 +11,9 @@ description: "The role of inflammation in the emergence or progression of neurod
 curators:
   - "institute-cns-inflammation"
 
+# Backend subject slug for the RSS feeds ({apiBase}/feed/sites/3/...); differs from the page slug for some subjects
+feed_slug: "cns-blood-inflamation"
+
 api:
   endpoint: "https://api.brain-regeneration.com/articles/"
   team_id: 6

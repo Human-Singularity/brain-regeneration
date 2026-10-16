@@ -1,3 +1,7 @@
+{{ define "extra-head" }}
+{{ partial "feeds/rss-head.html" . }}
+{{ end }}
+
 {{ define "main" }}
 
 <!-- ── PAGE HEADER ── -->
@@ -180,6 +184,8 @@
 	</div>
 </section>
 {{ end }}
+
+{{ partial "feeds/rss-follow.html" . }}
 
 <!-- ── SEARCH METHODOLOGY ── -->
 {{ if and .Params.show_queries .Params.queries }}
