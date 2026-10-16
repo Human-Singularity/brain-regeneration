@@ -88,11 +88,11 @@ functions/            Cloudflare Pages Functions — server-side head injection 
 layouts/
   _default/   baseof, single, list, sectioned-page, prose-page,
               subscribe, thankyou, communication-tools, error
-  partials/   head, nav, footer, research-papers-feed, api-endpoint
+  partials/   head, nav, footer, research-papers-feed, api-endpoint, condition-tabs
     feeds/    stats-bar, download-dropdown, trials-pagination, trials-mobile-filters
     forms/    newsletter-inline, country-datalist
   shortcodes/ figure
-  conditions/ list, single, research-papers
+  conditions/ list, single, research-papers, patents   (tabs come from partials/condition-tabs; a missing sibling page shows "Coming soon")
   research-areas/ list, single
   search/ research-papers, single   (advanced search: papers landing + clinical-trials view)
   news/ list, single      supporters/ list, single      curators/ list, single
@@ -104,6 +104,7 @@ static/
         feed-ui.js              (window.BR.feedUI — shared feed UI machinery: buildToken, setActiveChip, wireDownloadDropdown, wireMoreFilters, wireHintTags; loaded in head after br-utils)
         research-feed.js        (conditions + research-area + advanced-search papers feed: category filter, server-side sort, ML/expert badges, CSV, URL state, mobile sheet)
         trials-feed.js          (conditions clinical-trials feed + stats bar)
+        patents-feed.js         (conditions patents feed: category/modality/applicant filters, filter-aware stats + filings-by-year chart; no CSV — EPO licence forbids bulk export and requires keeping the Espacenet link)
         article-single.js       (renders /articles/{id}/ detail from the API)
         research-spotlight.js   (homepage/area "spotlight" of top relevant papers)
         (news-single.js — news article UX: reading progress, TOC, code copy buttons, lightbox —
@@ -112,7 +113,7 @@ static/
         donor-transparency.js   (donate page → Stripe transparency Cloudflare Worker)
 ```
 
-Each script is self-invoking and **no-ops unless its mount element exists** (e.g. `#paper-list`, `#papers-list`, `#trials-list`, `#article-shell`, `#spotlight-papers`), so they're safe to load site-wide. Config comes from `data-*` attributes on those mounts.
+Each script is self-invoking and **no-ops unless its mount element exists** (e.g. `#paper-list`, `#papers-list`, `#trials-list`, `#patents-list`, `#article-shell`, `#spotlight-papers`), so they're safe to load site-wide. Config comes from `data-*` attributes on those mounts.
 
 ## Server-side metadata: `functions/` (Cloudflare Pages Functions)
 

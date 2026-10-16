@@ -28,14 +28,7 @@
 </section>
 
 <!-- ── SECTION TABS ── -->
-<div class="section-tabs">
-	<div class="container">
-		<nav class="section-tabs-nav">
-			<a href="{{ $conditionPage.RelPermalink }}" class="section-tab">Clinical Trials</a>
-			<a href="{{ .RelPermalink }}" class="section-tab active" aria-current="page">Research Papers</a>
-		</nav>
-	</div>
-</div>
+{{ partial "condition-tabs" (dict "condition" $conditionPage "active" "papers") }}
 
 {{- $requireRelevant := true -}}
 {{- if isset .Params "require_relevant" -}}{{- if not .Params.require_relevant -}}{{- $requireRelevant = false -}}{{- end -}}{{- end -}}

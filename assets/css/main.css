@@ -1613,6 +1613,106 @@ a:hover {
 	color: var(--color-muted);
 }
 
+/* ── Patent card (conditions/patents.html, patents-feed.js) ── */
+#patents-list { min-height: 540px; }
+
+.patent-card-applicants {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	color: var(--color-muted);
+	margin-bottom: 6px;
+	line-height: 1.4;
+}
+
+/* Applicant names filter the feed — styled as quiet links, not buttons */
+.patent-applicant {
+	display: inline;
+	padding: 0;
+	border: none;
+	background: none;
+	font: inherit;
+	color: var(--color-primary);
+	text-align: left;
+	cursor: pointer;
+}
+.patent-applicant:hover,
+.patent-applicant:focus-visible { color: var(--color-accent); text-decoration: underline; }
+
+.patent-applicant-more { white-space: nowrap; }
+
+.patent-card-number {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--color-text);
+}
+.patent-card-family { font-family: var(--font-heading); font-size: 12px; color: var(--color-muted); }
+
+.patent-trial-badge {
+	display: inline-block;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 2px 8px;
+	border-radius: 100px;
+	line-height: 1.6;
+	background-color: #FCEBD9;
+	color: #8A4A0C;
+}
+
+.patent-suggestion-count {
+	float: right;
+	margin-left: 8px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--color-muted);
+}
+
+.patents-source-note {
+	margin: 24px auto 0;
+	max-width: 720px;
+	text-align: center;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--color-muted);
+}
+.patents-source-note a { color: var(--color-primary); text-decoration: underline; }
+
+/* Stats bar: filings-by-priority-year bar chart */
+.patents-years { min-width: 260px; }
+.patents-years-chart { position: relative; width: 260px; margin: 0 auto 4px; }
+.patents-years-chart svg { display: block; width: 100%; height: 48px; overflow: visible; }
+.patents-years-bar { fill: var(--color-primary); }
+.patents-years-bar.is-partial { fill: var(--color-primary); opacity: 0.45; }
+.patents-years-hit { fill: transparent; }
+.patents-years-col.is-hover .patents-years-bar { fill: var(--color-accent); opacity: 1; }
+.patents-years-axis {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 2px;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--color-muted);
+}
+.patents-years-empty { height: 48px; line-height: 48px; color: var(--color-muted); }
+.patents-years-tip {
+	position: absolute;
+	bottom: calc(100% + 6px);
+	transform: translateX(-50%);
+	padding: 4px 8px;
+	border-radius: 6px;
+	background: var(--color-text);
+	color: var(--color-text-light);
+	font-family: var(--font-heading);
+	font-size: 12px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 5;
+}
+.patents-years-tip[hidden] { display: none; }
+
 /* ── Feed loading & empty states ── */
 .paper-loading {
 	display: flex;
@@ -1813,6 +1913,19 @@ a:hover {
 .section-tab.active .section-tab__count {
 	background: var(--color-tint);
 	color: var(--color-primary);
+}
+/* Three tabs (+ a "Coming soon" badge) don't fit a phone: keep one line and scroll */
+@media (max-width: 767.98px) {
+	.section-tabs-nav {
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.section-tabs-nav::-webkit-scrollbar { display: none; }
+	.section-tab {
+		flex: 0 0 auto;
+		white-space: nowrap;
+		padding: 14px 14px;
+	}
 }
 .coming-soon-badge {
 	display: inline-block;
