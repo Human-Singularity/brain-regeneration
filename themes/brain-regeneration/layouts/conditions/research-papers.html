@@ -1,3 +1,7 @@
+{{ define "extra-head" }}
+{{ partial "feeds/rss-head.html" . }}
+{{ end }}
+
 {{ define "main" }}
 
 {{/* Resolve parent condition page (e.g. /conditions/multiple-sclerosis/) */}}
@@ -46,6 +50,8 @@
 	"umamiEvent" "Condition: Subscribe Papers"
 	"umamiTitle" $conditionPage.Title) }}
 {{ end }}
+
+{{ partial "feeds/rss-follow.html" . }}
 
 <script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 

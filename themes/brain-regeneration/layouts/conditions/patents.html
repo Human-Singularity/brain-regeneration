@@ -1,3 +1,7 @@
+{{ define "extra-head" }}
+{{ partial "feeds/rss-head.html" . }}
+{{ end }}
+
 {{ define "main" }}
 
 {{/* Resolve parent condition page (e.g. /conditions/multiple-sclerosis/) */}}
@@ -279,6 +283,8 @@
 		</p>
 	</div>
 </section>
+
+{{ partial "feeds/rss-follow.html" . }}
 
 <script src="{{ "js/patents-feed.js" | relURL }}" defer></script>
 

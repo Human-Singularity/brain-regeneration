@@ -1,3 +1,7 @@
+{{ define "extra-head" }}
+{{ partial "feeds/rss-head.html" . }}
+{{ end }}
+
 {{ define "main" }}
 
 <!-- ── BREADCRUMB ── -->
@@ -171,6 +175,8 @@
 	"umamiEvent" "Condition: Subscribe"
 	"umamiTitle" .Title) }}
 {{ end }}
+
+{{ partial "feeds/rss-follow.html" . }}
 
 <script src="{{ "js/trials-feed.js" | relURL }}" defer></script>
 <script src="{{ "js/subscribe.js" | relURL }}" defer></script>

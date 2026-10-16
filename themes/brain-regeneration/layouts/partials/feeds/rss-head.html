@@ -1,0 +1,8 @@
+{{- /*
+  feeds/rss-head.html — emits one <link rel="alternate" type="application/rss+xml">
+  per feed for the page (see feeds/rss-links.html). Call from a template's
+  "extra-head" block. Emits nothing for pages without a feed_slug.
+*/ -}}
+{{- range partial "feeds/rss-links.html" . }}
+<link rel="alternate" type="application/rss+xml" title="{{ .title }}" href="{{ .href }}">
+{{- end }}

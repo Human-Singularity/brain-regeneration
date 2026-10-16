@@ -20,6 +20,9 @@ related_research_areas:
   - brain-reprogramming
   - neuroinflammation
 
+# Backend subject slug for the RSS feeds ({apiBase}/feed/sites/3/...); differs from the page slug for some subjects
+feed_slug: "parkinson-disease"
+
 api:
   endpoint: "https://api.brain-regeneration.com/trials/"
   team_id: 1
