@@ -154,6 +154,7 @@
 					<option value="title_desc">Title Z→A</option>
 					<option value="ml_score">AI relevance</option>
 				</select>
+				{{ partial "feeds/search-rss" (dict "site" $page.Site "id" "papers-search-rss-toggle") }}
 				{{ partial "feeds/rss-dropdown" (dict "page" $page "id" "papers-rss-toggle") }}
 				{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
 			</div>
@@ -442,6 +443,9 @@
 
 		<div class="mobile-feed-bar d-lg-none">
 		<p class="mobile-result-count d-lg-none" id="papers-mobile-result-count" aria-live="polite"></p>
+		{{- if $advanced }}
+		{{ partial "feeds/search-rss" (dict "site" $page.Site "id" "papers-search-rss-toggle-mobile") }}
+		{{- end }}
 		{{ partial "feeds/rss-dropdown" (dict "page" $page "id" "papers-rss-toggle-mobile") }}
 		</div>
 

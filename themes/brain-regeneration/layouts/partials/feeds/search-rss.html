@@ -1,0 +1,27 @@
+{{- /*
+  feeds/search-rss.html — "Get updates for this search" button + menu shell for
+  a feed toolbar. Deliberately EMPTY of links: the feed scripts
+  (research-feed.js / trials-feed.js / patents-feed.js) call
+  BR.feedUI.updateSearchFeed() after a search has run, which builds the URL from
+  the script's own search state and injects the <a rel="nofollow">. The shell
+  stays hidden until then, and is hidden again for searches the feed can't
+  express. Look and behaviour match feeds/rss-dropdown.html.
+
+  Params (dict):
+    site — .Site (for params.apiSitemapSiteId; the apiBase comes from the
+           feed's mount element, like the rest of the scripts)
+    id   — unique id for the toggle button (menu id is "<id>-menu"); pass a
+           different id for each copy on a page (desktop + mobile)
+*/ -}}
+{{- $id := .id -}}
+<div class="download-dropdown rss-dropdown" data-rss-menu data-search-feed data-feed-site-id="{{ .site.Params.apiSitemapSiteId }}" hidden>
+	<button type="button" class="btn-download btn-rss" id="{{ $id }}" aria-haspopup="true" aria-expanded="false" aria-controls="{{ $id }}-menu" title="Get updates for this search" data-umami-event="RSS: Follow search feed" data-umami-event-action="open-menu">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+		Get updates<span class="visually-hidden"> for this search</span>
+		<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+	</button>
+	<div class="download-menu rss-menu" id="{{ $id }}-menu" role="menu" aria-labelledby="{{ $id }}">
+		<p class="rss-menu-note">Paste this into a feed reader (Feedly, Inoreader, NetNewsWire) to get new results as they're found.</p>
+		<div data-search-feed-slot></div>
+	</div>
+</div>

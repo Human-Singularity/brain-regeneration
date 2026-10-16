@@ -476,11 +476,41 @@
 		updateCounter(data.count || 0);
 		writeURL(push === true);
 		renderTokens();
+		syncSearchFeed();
+	}
+
+	// "Get updates for this search": translate THIS script's search state into
+	// the patents feed's own parameter names (not a copy of the page query
+	// string). The feed expresses search text, subject, category, applicant
+	// (sponsor), granted and trial-linked. The treatment-type filter and the
+	// free-text applicant (a patent applicant with no sponsor record) have no
+	// feed equivalent, so they hide the button rather than publish a broader
+	// feed. Links only — never abstracts or claims (EPO licence).
+	function syncSearchFeed() {
+		var feedUI = BR.feedUI;
+		if (!feedUI || !feedUI.updateSearchFeed) return;
+		if (state.modality || (state.applicant && !state.sponsorId)) {
+			feedUI.hideSearchFeed();
+			return;
+		}
+		feedUI.updateSearchFeed({
+			kind:       'patents',
+			apiBase:    apiBase,
+			categoryId: state.category,
+			sponsorId:  state.sponsorId,
+			params: {
+				search:         (state.keyword || '').trim(),
+				subject_id:     subjectId,
+				has_grant:      state.granted ? 'true' : '',
+				has_trial_link: state.trialLinked ? 'true' : ''
+			}
+		});
 	}
 
 	function fetchPage(page, push) {
 		var url = buildURL(page);
 		lastListURL = url;
+		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
 		fetchStats();
 
 		var cached = cache.get(url);
