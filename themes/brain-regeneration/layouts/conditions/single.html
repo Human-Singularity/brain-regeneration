@@ -133,7 +133,10 @@
 		</form>
 		<div class="mt-2 d-flex align-items-center justify-content-between">
 			<span class="results-count" id="results-count"></span>
-			{{ partial "feeds/download-dropdown" (dict "toggleId" "download-toggle") }}
+			<div class="feed-actions">
+				{{ partial "feeds/rss-dropdown" (dict "page" . "id" "rss-toggle") }}
+				{{ partial "feeds/download-dropdown" (dict "toggleId" "download-toggle") }}
+			</div>
 		</div>
 	</div>
 </div></div>{{/* end d-none d-lg-block */}}
@@ -142,7 +145,10 @@
 <!-- ── TRIAL LISTING ── -->
 <section class="section bg-sand">
 	<div class="container">
+		<div class="mobile-feed-bar d-lg-none">
 		<p class="mobile-result-count d-lg-none" id="trials-mobile-result-count" aria-live="polite"></p>
+		{{ partial "feeds/rss-dropdown" (dict "page" . "id" "rss-toggle-mobile") }}
+		</div>
 
 		{{/* Trial listing mount point — populated at runtime */}}
 		<div id="trials-list"

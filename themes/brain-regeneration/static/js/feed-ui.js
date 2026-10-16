@@ -74,6 +74,58 @@
 		});
 	}
 
+	// Wire a toolbar link menu (the RSS dropdown, partials/feeds/rss-dropdown.html):
+	// `root` holds a toggle button (aria-expanded) and a .download-menu of
+	// role=menuitem links. Click toggles; Escape closes and returns focus to the
+	// toggle; ArrowDown/Up/Home/End move between items; clicking or focusing
+	// outside closes. Sibling of wireDownloadDropdown (which routes button
+	// options to handlers); links navigate on their own.
+	function wireMenuDropdown(root) {
+		if (!root || root.dataset.menuWired) return;
+		var toggle = root.querySelector('button[aria-haspopup]');
+		var menu = root.querySelector('.download-menu');
+		if (!toggle || !menu) return;
+		root.dataset.menuWired = '1';
+
+		function items() { return Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]')); }
+		function setOpen(open, focusItem) {
+			toggle.setAttribute('aria-expanded', String(open));
+			menu.classList.toggle('is-open', open);
+			if (open && focusItem) { var list = items(); if (list.length) list[0].focus(); }
+		}
+
+		toggle.addEventListener('click', function () {
+			setOpen(toggle.getAttribute('aria-expanded') !== 'true', false);
+		});
+		toggle.addEventListener('keydown', function (e) {
+			if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true, true); }
+		});
+		menu.addEventListener('keydown', function (e) {
+			var list = items();
+			var i = list.indexOf(document.activeElement);
+			if (e.key === 'Escape') { setOpen(false); toggle.focus(); }
+			else if (e.key === 'ArrowDown') { e.preventDefault(); if (list.length) list[(i + 1) % list.length].focus(); }
+			else if (e.key === 'ArrowUp') { e.preventDefault(); if (list.length) list[(i - 1 + list.length) % list.length].focus(); }
+			else if (e.key === 'Home') { e.preventDefault(); if (list.length) list[0].focus(); }
+			else if (e.key === 'End') { e.preventDefault(); if (list.length) list[list.length - 1].focus(); }
+			else if (e.key === 'Tab') { setOpen(false); }
+		});
+		menu.addEventListener('click', function (e) {
+			if (e.target.closest('[role="menuitem"]')) setOpen(false);
+		});
+		// Capture phase so a sibling dropdown's stopPropagation can't keep this one open.
+		document.addEventListener('click', function (e) {
+			if (!root.contains(e.target)) setOpen(false);
+		}, true);
+	}
+
+	// Wire every server-rendered RSS menu once the DOM is ready.
+	function wireAllMenuDropdowns() {
+		document.querySelectorAll('[data-rss-menu]').forEach(wireMenuDropdown);
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAllMenuDropdowns);
+	else wireAllMenuDropdowns();
+
 	// Wire the advanced "More filters / Fewer filters" panel toggle.
 	function wireMoreFilters(btn, panel, arrowId) {
 		if (!btn || !panel) return;
@@ -100,6 +152,7 @@
 		setSearchChipActive: setSearchChipActive,
 		setActiveChip: setActiveChip,
 		wireDownloadDropdown: wireDownloadDropdown,
+		wireMenuDropdown: wireMenuDropdown,
 		wireMoreFilters: wireMoreFilters,
 		wireHintTags: wireHintTags
 	};
