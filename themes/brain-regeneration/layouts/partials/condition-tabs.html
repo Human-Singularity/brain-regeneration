@@ -1,0 +1,34 @@
+{{- /*
+  condition-tabs.html — Clinical Trials / Research Papers / Patents tab strip
+  for a condition section. A tab whose sibling page doesn't exist renders as a
+  disabled "Coming soon" tab.
+
+  Params (dict):
+    condition — the condition section page (e.g. /conditions/multiple-sclerosis/)
+    active    — "trials" | "papers" | "patents"
+*/ -}}
+{{- $condition := .condition -}}
+{{- $active := .active -}}
+{{- $rpPage := "" -}}
+{{- with where $condition.Pages "Params.layout" "research-papers" -}}{{- $rpPage = index . 0 -}}{{- end -}}
+{{- $patentsPage := "" -}}
+{{- with where $condition.Pages "Params.layout" "patents" -}}{{- $patentsPage = index . 0 -}}{{- end -}}
+{{- $tabs := slice
+	(dict "key" "trials"  "label" "Clinical Trials" "page" $condition)
+	(dict "key" "papers"  "label" "Research Papers" "page" $rpPage)
+	(dict "key" "patents" "label" "Patents"         "page" $patentsPage) -}}
+<div class="section-tabs">
+	<div class="container">
+		<nav class="section-tabs-nav">
+			{{- range $tabs }}
+			{{- if eq .key $active }}
+			<a href="{{ .page.RelPermalink }}" class="section-tab active" aria-current="page">{{ .label }}</a>
+			{{- else if .page }}
+			<a href="{{ .page.RelPermalink }}" class="section-tab">{{ .label }}</a>
+			{{- else }}
+			<span class="section-tab disabled" aria-disabled="true" title="Coming soon">{{ .label }} <span class="coming-soon-badge">Coming soon</span></span>
+			{{- end }}
+			{{- end }}
+		</nav>
+	</div>
+</div>

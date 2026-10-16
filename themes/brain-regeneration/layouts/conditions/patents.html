@@ -1,0 +1,285 @@
+{{ define "main" }}
+
+{{/* Resolve parent condition page (e.g. /conditions/multiple-sclerosis/) */}}
+{{ $conditionPage := .Parent }}
+
+{{- $apiBase := .Site.Params.apiBase -}}
+{{- $subjectId := "" -}}
+{{- with .Params.api }}{{ $subjectId = .subject_id | string }}{{ end -}}
+{{- $endpoint := partial "api-endpoint" (dict "api" .Params.api "apiBase" $apiBase) -}}
+
+{{/* Category filter reuses the research-papers sibling's curated groups — the category IDs are shared with patents */}}
+{{- $categoryGroups := .Params.category_groups -}}
+{{- if not $categoryGroups -}}
+	{{- with where $conditionPage.Pages "Params.layout" "research-papers" -}}{{- $categoryGroups = (index . 0).Params.category_groups -}}{{- end -}}
+{{- end -}}
+
+{{- $modalities := slice
+	(dict "value" "small_molecule"         "label" "Small-molecule drug")
+	(dict "value" "biologic_antibody"      "label" "Antibody / biologic")
+	(dict "value" "cell_gene_therapy"      "label" "Cell / gene therapy")
+	(dict "value" "natural_product"        "label" "Natural product / supplement")
+	(dict "value" "rehabilitation"         "label" "Rehabilitation / physical")
+	(dict "value" "device_neuromodulation" "label" "Device / neuromodulation")
+	(dict "value" "research_topic"         "label" "Research topic")
+	(dict "value" "other"                  "label" "Other") -}}
+{{- $sorts := slice
+	(dict "value" "discovery"     "label" "Recently added")
+	(dict "value" "published"     "label" "Newest published")
+	(dict "value" "published_asc" "label" "Oldest published")
+	(dict "value" "priority"      "label" "Newest priority date")
+	(dict "value" "priority_asc"  "label" "Oldest priority date") -}}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
+		<span>/</span>
+		<a href="{{ $conditionPage.RelPermalink }}">{{ $conditionPage.Title }}</a>
+		<span>/</span>
+		<strong>Patents</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }} — Patents</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── SECTION TABS ── -->
+{{ partial "condition-tabs" (dict "condition" $conditionPage "active" "patents") }}
+
+<!-- ── STATS BAR (populated by patents-feed.js; follows the active filters) ── -->
+<div class="stats-bar patents-stats" id="patents-stats">
+	<div class="container">
+		<div class="d-flex justify-content-center align-items-center flex-wrap">
+			<div class="stat-item">
+				<div class="stat-number" id="patents-stat-total">—</div>
+				<div class="stat-label">Patent families</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="patents-stat-granted">—</div>
+				<div class="stat-label">Granted</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-number" id="patents-stat-trials" style="color: var(--color-accent);">—</div>
+				<div class="stat-label">Linked to clinical trials</div>
+			</div>
+			<div class="stat-item patents-years">
+				<div class="patents-years-chart" id="patents-years-chart" role="img" aria-label="Patent families by year of first filing"></div>
+				<div class="stat-label">Filings by priority year</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
+<div class="d-none d-lg-block">
+<div class="filter-bar" id="patents-filters">
+	<div class="container">
+		<form id="patents-filter-form" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-3">
+					<label for="patents-search-input">Search patents</label>
+					<input type="text" class="form-control" id="patents-search-input" placeholder="e.g. remyelination, fumarate…">
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="patents-category-select">Category</label>
+					<select class="form-select" id="patents-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="patents-modality-select">Type of treatment</label>
+					<select class="form-select" id="patents-modality-select">
+						<option value="">All types</option>
+						{{- range $modalities }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+					</select>
+				</div>
+				<div class="col-12 col-md-3" style="position:relative">
+					<label for="patents-applicant-input">Applicant</label>
+					<input type="text" class="form-control" id="patents-applicant-input" placeholder="Company, university or person…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="patents-applicant-suggestions">
+					<div id="patents-applicant-suggestions" class="author-suggestions" role="listbox" hidden></div>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="submit" class="btn-amber w-100" id="patents-search-btn" style="padding: 8px 12px; font-size: 13px;" data-search-context="{{ $conditionPage.Title }}">Search</button>
+				</div>
+				<div class="col-6 col-md-1 d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="patents-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mt-1">
+				<div class="col-12 col-md-auto">
+					<div class="search-toggle-row">
+						<input type="checkbox" class="search-toggle-input" id="patents-granted" role="switch">
+						<label for="patents-granted" class="search-toggle-label">Granted only</label>
+					</div>
+				</div>
+				<div class="col-12 col-md-auto">
+					<div class="search-toggle-row">
+						<input type="checkbox" class="search-toggle-input" id="patents-trial-linked" role="switch">
+						<label for="patents-trial-linked" class="search-toggle-label">Linked to a clinical trial</label>
+					</div>
+				</div>
+				<div class="col-12 col-md-auto ms-auto d-flex align-items-center gap-3">
+					<span class="results-count" id="patents-result-count" style="white-space: nowrap;"></span>
+					<label for="patents-sort-select" class="visually-hidden">Sort by</label>
+					<select class="form-select" id="patents-sort-select" style="max-width: 210px; font-size: 13px;">
+						{{- range $sorts }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+					</select>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</div>{{/* end d-none d-lg-block */}}
+
+<!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
+<div class="mobile-feeds-bar d-lg-none" id="patents-mobile-bar">
+	<div class="container">
+		<div class="mobile-search-wrap">
+			<label for="patents-mobile-search" class="visually-hidden">Search patents</label>
+			<input type="text" class="form-control" id="patents-mobile-search" placeholder="Search patents…" autocomplete="off">
+			<button type="button" class="mobile-search-clear" id="patents-mobile-clear" hidden aria-label="Clear search">
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="filter-tokens" id="patents-filter-tokens" hidden>
+			<button type="button" class="token-add-filters"
+				data-bs-toggle="offcanvas"
+				data-bs-target="#patents-filter-sheet"
+				aria-controls="patents-filter-sheet">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+				+ Filters
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── MOBILE FILTER BOTTOM SHEET ── -->
+<div class="offcanvas offcanvas-bottom filter-sheet d-lg-none"
+	tabindex="-1"
+	id="patents-filter-sheet"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Filter patents">
+	<div class="offcanvas-header">
+		<div class="title-row">
+			<h5 class="offcanvas-title">Filters</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+	</div>
+	<div class="offcanvas-body">
+		<div class="sheet-group">
+			<div class="sheet-group-label">Category</div>
+			<div class="sheet-chips" id="patents-sheet-category">
+				<button type="button" class="sheet-chip active" data-value="">All categories</button>
+				{{/* chips populated by JS from category groups */}}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Type of treatment</div>
+			<div class="sheet-chips" id="patents-sheet-modality">
+				<button type="button" class="sheet-chip active" data-value="">All types</button>
+				{{- range $modalities }}
+				<button type="button" class="sheet-chip" data-value="{{ .value }}">{{ .label }}</button>
+				{{- end }}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<label for="patents-sheet-applicant" class="sheet-group-label">Applicant</label>
+			<input type="text" class="form-control form-control-sm" id="patents-sheet-applicant" placeholder="Company, university or person…" autocomplete="off">
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Status</div>
+			<div class="sheet-chips" id="patents-sheet-granted">
+				<button type="button" class="sheet-chip active" data-value="false">All patents</button>
+				<button type="button" class="sheet-chip" data-value="true">Granted only</button>
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Clinical trials</div>
+			<div class="sheet-chips" id="patents-sheet-trials">
+				<button type="button" class="sheet-chip active" data-value="false">All patents</button>
+				<button type="button" class="sheet-chip" data-value="true">Linked to a trial</button>
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Sort by</div>
+			<div class="sheet-chips" id="patents-sheet-sort">
+				{{- range $i, $s := $sorts }}
+				<button type="button" class="sheet-chip{{ if eq $i 0 }} active{{ end }}" data-value="{{ $s.value }}">{{ $s.label }}</button>
+				{{- end }}
+			</div>
+		</div>
+	</div>
+	<div class="sheet-footer">
+		<button type="button" class="btn-outline-teal" id="patents-sheet-reset">Reset</button>
+		<button type="button" class="btn-amber" id="patents-sheet-apply">Show results</button>
+	</div>
+</div>
+
+<!-- ── MOBILE FAB ── -->
+<button type="button" class="filter-fab d-lg-none" id="patents-filter-fab"
+	data-bs-toggle="offcanvas"
+	data-bs-target="#patents-filter-sheet"
+	aria-controls="patents-filter-sheet"
+	aria-label="Open filters">
+	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+	Filters
+	<span class="fab-count" id="patents-fab-count" hidden>0</span>
+</button>
+
+<!-- ── PATENT LISTING ── -->
+<section class="section bg-sand" style="padding-top: 24px;">
+	<div class="container">
+		<noscript>
+			<p>JavaScript is required to load patents.</p>
+		</noscript>
+
+		<p class="mobile-result-count d-lg-none" id="patents-mobile-result-count" aria-live="polite"></p>
+
+		<div
+			id="patents-list"
+			data-api-base="{{ $apiBase }}"
+			data-endpoint="{{ $endpoint }}"
+			data-subject-id="{{ $subjectId }}"
+			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
+		</div>
+
+		<div class="pagination-controls" id="patents-pagination">
+			<button class="pagination-btn" id="patents-first-btn" title="First page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+			</button>
+			<button class="pagination-btn" id="patents-prev-btn" disabled title="Previous page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
+			</button>
+			<span id="patents-pagination-numbers"></span>
+			<button class="pagination-btn" id="patents-next-btn" title="Next page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
+			</button>
+			<button class="pagination-btn" id="patents-last-btn" title="Last page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+			</button>
+		</div>
+
+		<p class="patents-source-note">
+			Patent data from the European Patent Office (EPO) via Open Patent Services. Each patent links to its full record on
+			<a href="https://worldwide.espacenet.com/" target="_blank" rel="noopener noreferrer">Espacenet</a>.
+			Grant status is inferred from publication kind codes and is not a statement of legal status.
+		</p>
+	</div>
+</section>
+
+<script src="{{ "js/patents-feed.js" | relURL }}" defer></script>
+
+{{ end }}

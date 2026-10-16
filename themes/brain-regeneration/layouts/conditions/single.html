@@ -28,18 +28,7 @@
 {{- with where .Pages "Params.layout" "research-papers" -}}{{- $rpPage = index . 0 -}}{{- end -}}
 {{- $categoryGroups := slice -}}
 {{- with $rpPage -}}{{- with .Params.category_groups -}}{{- $categoryGroups = . -}}{{- end -}}{{- end -}}
-<div class="section-tabs">
-	<div class="container">
-		<nav class="section-tabs-nav">
-			<a href="#" class="section-tab active" aria-current="page">Clinical Trials</a>
-			{{ if $rpPage }}
-			<a href="{{ $rpPage.RelPermalink }}" class="section-tab">Research Papers</a>
-			{{ else }}
-			<span class="section-tab disabled" aria-disabled="true" title="Coming soon">Research Papers <span class="coming-soon-badge">Coming soon</span></span>
-			{{ end }}
-		</nav>
-	</div>
-</div>
+{{ partial "condition-tabs" (dict "condition" . "active" "trials") }}
 
 <!-- ── STATS BAR (populated by JS) ── -->
 {{ partial "feeds/stats-bar" (dict "page" .) }}
