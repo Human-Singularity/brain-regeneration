@@ -140,6 +140,7 @@
 						<option value="{{ .value }}">{{ .label }}</option>
 						{{- end }}
 					</select>
+					{{ partial "feeds/search-rss" (dict "site" .Site "id" "patents-search-rss-toggle") }}
 					{{ partial "feeds/rss-dropdown" (dict "page" . "id" "patents-rss-toggle") }}
 				</div>
 			</div>
@@ -253,6 +254,7 @@
 
 		<div class="mobile-feed-bar d-lg-none">
 		<p class="mobile-result-count d-lg-none" id="patents-mobile-result-count" aria-live="polite"></p>
+		{{ partial "feeds/search-rss" (dict "site" .Site "id" "patents-search-rss-toggle-mobile") }}
 		{{ partial "feeds/rss-dropdown" (dict "page" . "id" "patents-rss-toggle-mobile") }}
 		</div>
 
