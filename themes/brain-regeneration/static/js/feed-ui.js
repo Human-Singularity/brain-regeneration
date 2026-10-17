@@ -126,6 +126,112 @@
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAllMenuDropdowns);
 	else wireAllMenuDropdowns();
 
+	// ── "Get updates for this search" RSS feed ───────────────────────────────
+	// Server-side the toolbar only has an empty, hidden shell
+	// (partials/feeds/search-rss.html). Once a search has actually run, a feed
+	// script calls updateSearchFeed() with the search translated into the feed's
+	// own parameter names; this builds the URL, creates the <a rel="nofollow">
+	// and unhides the shell. Anything the feed cannot express must be reported
+	// with hideSearchFeed() (never approximate: a broader feed is a wrong feed).
+	var SEARCH_FEED_MAX_TEXT = 300;
+	var searchFeedToken = 0;
+	var slugCache = {};
+
+	function searchFeedShells() {
+		return document.querySelectorAll('[data-search-feed]');
+	}
+
+	function hideSearchFeed() {
+		searchFeedToken++;
+		searchFeedShells().forEach(function (shell) {
+			shell.hidden = true;
+			var slot = shell.querySelector('[data-search-feed-slot]');
+			if (slot) slot.textContent = '';
+		});
+	}
+
+	// Resolve an id to the backend slug the feeds use (categories and sponsors
+	// only carry numeric ids in the page's own state). Memoised per page load.
+	function lookupSlug(url, pick) {
+		if (!slugCache[url]) {
+			slugCache[url] = fetch(url)
+				.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+				.then(pick)
+				.catch(function () { delete slugCache[url]; return ''; });
+		}
+		return slugCache[url];
+	}
+
+	function categorySlug(apiBase, id) {
+		var url = apiBase.replace(/\/$/, '') + '/categories/?format=json&include_authors=false&category_id=' + encodeURIComponent(id);
+		return lookupSlug(url, function (d) {
+			var c = d && d.results && d.results[0];
+			return c && String(c.id) === String(id) ? (c.category_slug || '') : '';
+		});
+	}
+
+	function sponsorSlug(apiBase, id) {
+		var url = apiBase.replace(/\/$/, '') + '/sponsors/' + encodeURIComponent(id) + '/?format=json';
+		return lookupSlug(url, function (d) { return d && d.slug ? d.slug : ''; });
+	}
+
+	// spec: { kind: 'articles'|'trials'|'patents', apiBase,
+	//         params: { feedParam: value, … }   (empty values are skipped)
+	//         categoryId, sponsorId }           (resolved to category_slug /
+	//                                            applicant_sponsor_slug here)
+	function updateSearchFeed(spec) {
+		var shells = searchFeedShells();
+		if (!shells.length) return;
+		var token = ++searchFeedToken;
+		var apiBase = spec.apiBase;
+		var lookups = [];
+		if (spec.categoryId) lookups.push(categorySlug(apiBase, spec.categoryId).then(function (s) { return ['category_slug', s]; }));
+		if (spec.sponsorId)  lookups.push(sponsorSlug(apiBase, spec.sponsorId).then(function (s) { return ['applicant_sponsor_slug', s]; }));
+
+		Promise.all(lookups).then(function (pairs) {
+			if (token !== searchFeedToken) return; // a newer search superseded this one
+			var params = {};
+			Object.keys(spec.params || {}).forEach(function (k) { params[k] = spec.params[k]; });
+			for (var i = 0; i < pairs.length; i++) {
+				if (!pairs[i][1]) { hideSearchFeed(); return; } // unresolved filter: never publish a broader feed
+				params[pairs[i][0]] = pairs[i][1];
+			}
+			var qs = new URLSearchParams();
+			var keys = Object.keys(params).sort();
+			for (var j = 0; j < keys.length; j++) {
+				var v = params[keys[j]];
+				if (v === '' || v === null || v === undefined || v === false) continue;
+				v = String(v);
+				if (v.length > SEARCH_FEED_MAX_TEXT) { hideSearchFeed(); return; }
+				qs.set(keys[j], v);
+			}
+			shells.forEach(function (shell) {
+				var siteId = shell.dataset.feedSiteId || '';
+				var slot = shell.querySelector('[data-search-feed-slot]');
+				if (!siteId || !slot) { shell.hidden = true; return; }
+				var a = document.createElement('a');
+				a.className = 'download-option rss-option';
+				a.setAttribute('role', 'menuitem');
+				a.rel = 'nofollow noopener';
+				a.target = '_blank';
+				a.href = apiBase.replace(/\/$/, '') + '/feed/sites/' + encodeURIComponent(siteId) + '/' + spec.kind + '/search/' + (qs.toString() ? '?' + qs.toString() : '');
+				a.setAttribute('data-umami-event', 'RSS: Follow search feed');
+				a.setAttribute('data-umami-event-kind', spec.kind);
+				var label = document.createElement('span');
+				label.className = 'rss-option-label';
+				label.textContent = 'RSS feed for this search';
+				var desc = document.createElement('span');
+				desc.className = 'rss-option-desc';
+				desc.textContent = 'New results, newest first';
+				a.appendChild(label);
+				a.appendChild(desc);
+				slot.textContent = '';
+				slot.appendChild(a);
+				shell.hidden = false;
+			});
+		});
+	}
+
 	// Wire the advanced "More filters / Fewer filters" panel toggle.
 	function wireMoreFilters(btn, panel, arrowId) {
 		if (!btn || !panel) return;
@@ -153,6 +259,8 @@
 		setActiveChip: setActiveChip,
 		wireDownloadDropdown: wireDownloadDropdown,
 		wireMenuDropdown: wireMenuDropdown,
+		updateSearchFeed: updateSearchFeed,
+		hideSearchFeed: hideSearchFeed,
 		wireMoreFilters: wireMoreFilters,
 		wireHintTags: wireHintTags
 	};

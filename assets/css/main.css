@@ -3815,3 +3815,6 @@ a.rss-option:focus-visible { outline: 2px solid var(--color-primary); outline-of
 }
 .mobile-feed-bar .mobile-result-count { flex: 1 1 auto; min-width: 0; }
 .mobile-feed-bar .btn-download { padding: 6px 12px; font-size: 13px; }
+
+/* "Get updates for this search" shell stays hidden until a search has run (author display:inline-flex would otherwise beat [hidden]) */
+.download-dropdown[hidden] { display: none; }

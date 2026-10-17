@@ -661,8 +661,46 @@
 
 	// ── Fetch ──────────────────────────────────────────────────────────────
 
+	// "Get updates for this search" RSS feed (/search/ only — the shell exists
+	// only there). Translates THIS script's search state into the feed's own
+	// parameter names; deliberately not a copy of the page query string. Any
+	// filter the feed can't express (author, DOI, date range, has-trials, more
+	// than one subject) hides the button rather than publishing a broader feed.
+	function syncSearchFeed() {
+		var feedUI = BR.feedUI;
+		if (!feedUI || !feedUI.updateSearchFeed) return;
+		if (state.authorId || state.doi || state.dateFrom || state.dateTo || state.hasClinicalTrials !== null) {
+			feedUI.hideSearchFeed();
+			return;
+		}
+		var ids = [];
+		function addIds(list) {
+			String(list || '').split(',').filter(Boolean).forEach(function (id) {
+				if (ids.indexOf(id) === -1) ids.push(id);
+			});
+		}
+		addIds(subjectId);
+		if (conditionChips || areaChips) { addIds(state.conditionSubjects); addIds(state.areaSubjects); }
+		else addIds(state.subjects);
+		if (ids.length > 1) { feedUI.hideSearchFeed(); return; }
+
+		feedUI.updateSearchFeed({
+			kind:       'articles',
+			apiBase:    apiBase,
+			categoryId: state.category,
+			params: {
+				search:     (state.keyword || '').trim(),
+				subject_id: ids[0] || '',
+				open_access: state.openAccess ? 'true' : '',
+				// Same rule as buildURL(): a category search ignores the relevance toggle.
+				relevant:   (!state.category && state.relevant) ? 'true' : ''
+			}
+		});
+	}
+
 	function fetchPage(page, push) {
 		var url = buildURL(page);
+		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
 		var cached = getCached(url);
 		if (cached && cached.count > 0) {
 			state.results = cached.results || [];
@@ -673,6 +711,7 @@
 			if (tabPapersCount && page === 1) tabPapersCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
 			renderDesktopTokens();
+			syncSearchFeed();
 			return;
 		}
 
@@ -704,6 +743,7 @@
 				if (tabPapersCount && page === 1) tabPapersCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
 				renderDesktopTokens();
+				syncSearchFeed();
 			})
 			.catch(renderError);
 	}
