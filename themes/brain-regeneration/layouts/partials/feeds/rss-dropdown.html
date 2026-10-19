@@ -1,34 +1,44 @@
 {{- /*
-  feeds/rss-dropdown.html — compact RSS button + menu for a feed toolbar,
+  feeds/rss-dropdown.html — compact RSS button + panel for a feed toolbar,
   sitting next to the CSV download dropdown. Lists the page's feeds
   (feeds/rss-links.html — the same source of truth as the <head> tags and the
-  "Follow via RSS" section). Renders nothing for pages without a feed_slug.
+  "Follow via RSS" section), each with its URL in a read-only field and a Copy
+  button. Renders nothing for pages without a feed_slug.
 
-  Reuses the download-dropdown button/menu styles; behaviour is wired by
-  BR.feedUI.wireMenuDropdown (auto-applied to every [data-rss-menu] in feed-ui.js).
+  Reuses the download-dropdown button styles and the search-feed panel styles;
+  behaviour is wired by BR.feedUI (wireRssDropdown, auto-applied to every
+  [data-rss-dropdown] in feed-ui.js).
 
   Params (dict):
     page — the page whose feeds to list
-    id   — unique id for the toggle button (the menu id is "<id>-menu");
+    id   — unique id for the toggle button (the panel id is "<id>-panel");
            pass a different id for each copy on a page (desktop + mobile)
 */ -}}
 {{- $feeds := partial "feeds/rss-links.html" .page -}}
 {{- $id := .id -}}
 {{- if $feeds }}
-<div class="download-dropdown rss-dropdown" data-rss-menu>
-	<button type="button" class="btn-download btn-rss" id="{{ $id }}" aria-haspopup="true" aria-expanded="false" aria-controls="{{ $id }}-menu" aria-label="Follow via RSS" data-umami-event="RSS: Follow feed" data-umami-event-action="open-menu">
+<div class="download-dropdown rss-dropdown" data-rss-dropdown>
+	<button type="button" class="btn-download btn-rss" id="{{ $id }}" aria-expanded="false" aria-controls="{{ $id }}-panel" aria-label="Follow via RSS: copy a feed link" data-umami-event="RSS: Follow feed" data-umami-event-action="open-menu">
 		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
 		RSS
 		<svg class="chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
 	</button>
-	<div class="download-menu rss-menu" id="{{ $id }}-menu" role="menu" aria-labelledby="{{ $id }}">
-		<p class="rss-menu-note">Paste a link into a feed reader (Feedly, Inoreader, NetNewsWire) to get new items as they appear.</p>
-		{{- range $feeds }}
-		<a class="download-option rss-option" role="menuitem" href="{{ .href }}" target="_blank" rel="noopener" data-umami-event="RSS: Follow feed" data-umami-event-action="open-feed" data-umami-event-feed="{{ .key }}">
-			<span class="rss-option-label">{{ .label }}</span>
-			<span class="rss-option-desc">{{ .desc }}</span>
-		</a>
-		{{- end }}
+	<div class="download-menu rss-menu rss-copy-panel" id="{{ $id }}-panel">
+		<p class="search-feed-note rss-copy-intro">Copy a feed link and paste it into a feed reader (Feedly, Inoreader, NetNewsWire) to get new items as they appear.</p>
+		<ul class="rss-feed-list">
+			{{- range $i, $f := $feeds }}
+			<li class="rss-feed-item" data-rss-feed data-feed-label="{{ $f.label }}">
+				<span class="rss-option-label">{{ $f.label }}</span>
+				<span class="rss-option-desc">{{ $f.desc }}</span>
+				<div class="search-feed-url">
+					<label class="visually-hidden" for="{{ $id }}-url-{{ $i }}">{{ $f.label }} feed link</label>
+					<input type="text" id="{{ $id }}-url-{{ $i }}" class="search-feed-url-input" value="{{ $f.href }}" readonly spellcheck="false">
+					<button type="button" class="search-feed-copy" data-rss-copy aria-label="Copy the {{ $f.label }} feed link" data-umami-event="RSS: Follow feed" data-umami-event-action="copy" data-umami-event-feed="{{ $f.key }}">Copy</button>
+				</div>
+			</li>
+			{{- end }}
+		</ul>
+		<p class="rss-copy-status" role="status" aria-live="polite" data-rss-copy-status></p>
 	</div>
 </div>
 {{- end }}

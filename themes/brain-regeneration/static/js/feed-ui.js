@@ -74,57 +74,117 @@
 		});
 	}
 
-	// Wire a toolbar link menu (the RSS dropdown, partials/feeds/rss-dropdown.html):
-	// `root` holds a toggle button (aria-expanded) and a .download-menu of
-	// role=menuitem links. Click toggles; Escape closes and returns focus to the
-	// toggle; ArrowDown/Up/Home/End move between items; clicking or focusing
-	// outside closes. Sibling of wireDownloadDropdown (which routes button
-	// options to handlers); links navigate on their own.
-	function wireMenuDropdown(root) {
-		if (!root || root.dataset.menuWired) return;
-		var toggle = root.querySelector('button[aria-haspopup]');
-		var menu = root.querySelector('.download-menu');
-		if (!toggle || !menu) return;
-		root.dataset.menuWired = '1';
+	// ── Copy panels: the RSS dropdown and "Get updates for this search" ──────
+	// A toolbar button (aria-expanded, aria-controls) opens a panel holding feed
+	// URLs in read-only fields, each with a Copy button. Clicking the button
+	// again, Escape or a click outside closes it; focusing a field selects it.
+	// The URLs are never links, so crawlers have nothing to follow.
 
-		function items() { return Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]')); }
-		function setOpen(open, focusItem) {
-			toggle.setAttribute('aria-expanded', String(open));
-			menu.classList.toggle('is-open', open);
-			if (open && focusItem) { var list = items(); if (list.length) list[0].focus(); }
+	// Copy `text`; resolves when it is on the clipboard, rejects otherwise.
+	// The Clipboard API needs a secure context (https or localhost); elsewhere,
+	// or if it is refused, fall back to selecting `input` and execCommand.
+	function copyText(text, input) {
+		if (navigator.clipboard && window.isSecureContext) {
+			return navigator.clipboard.writeText(text).catch(function () { return copyBySelection(input); });
 		}
+		return copyBySelection(input);
+	}
 
+	function copyBySelection(input) {
+		return new Promise(function (resolve, reject) {
+			if (!input) { reject(); return; }
+			input.focus();
+			input.select();
+			var ok = false;
+			try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+			if (ok) resolve(); else reject();
+		});
+	}
+
+	function panelOf(toggle) {
+		return toggle ? document.getElementById(toggle.getAttribute('aria-controls')) : null;
+	}
+
+	function setPanelOpen(root, open) {
+		var toggle = root.querySelector('button[aria-controls]');
+		var panel = panelOf(toggle);
+		if (!toggle || !panel) return;
+		toggle.setAttribute('aria-expanded', String(open));
+		panel.classList.toggle('is-open', open);
+	}
+
+	// onOpen, if given, runs each time the panel opens.
+	function wireCopyPanel(root, onOpen) {
+		var toggle = root.querySelector('button[aria-controls]');
+		var panel = panelOf(toggle);
+		if (!toggle || !panel) return false;
 		toggle.addEventListener('click', function () {
-			setOpen(toggle.getAttribute('aria-expanded') !== 'true', false);
+			var open = toggle.getAttribute('aria-expanded') === 'true';
+			setPanelOpen(root, !open);
+			if (!open && onOpen) onOpen();
 		});
 		toggle.addEventListener('keydown', function (e) {
-			if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true, true); }
+			if (e.key === 'Escape') setPanelOpen(root, false);
 		});
-		menu.addEventListener('keydown', function (e) {
-			var list = items();
-			var i = list.indexOf(document.activeElement);
-			if (e.key === 'Escape') { setOpen(false); toggle.focus(); }
-			else if (e.key === 'ArrowDown') { e.preventDefault(); if (list.length) list[(i + 1) % list.length].focus(); }
-			else if (e.key === 'ArrowUp') { e.preventDefault(); if (list.length) list[(i - 1 + list.length) % list.length].focus(); }
-			else if (e.key === 'Home') { e.preventDefault(); if (list.length) list[0].focus(); }
-			else if (e.key === 'End') { e.preventDefault(); if (list.length) list[list.length - 1].focus(); }
-			else if (e.key === 'Tab') { setOpen(false); }
+		panel.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') { setPanelOpen(root, false); toggle.focus(); }
 		});
-		menu.addEventListener('click', function (e) {
-			if (e.target.closest('[role="menuitem"]')) setOpen(false);
+		panel.querySelectorAll('input[readonly]').forEach(function (input) {
+			input.addEventListener('focus', function () { input.select(); });
 		});
 		// Capture phase so a sibling dropdown's stopPropagation can't keep this one open.
 		document.addEventListener('click', function (e) {
-			if (!root.contains(e.target)) setOpen(false);
+			if (!root.contains(e.target)) setPanelOpen(root, false);
 		}, true);
+		return true;
 	}
 
-	// Wire every server-rendered RSS menu once the DOM is ready.
-	function wireAllMenuDropdowns() {
-		document.querySelectorAll('[data-rss-menu]').forEach(wireMenuDropdown);
+	// RSS dropdown (partials/feeds/rss-dropdown.html): one row per feed. Copy
+	// marks its row "Copied" for a few seconds; a failed copy leaves the URL
+	// selected for Ctrl/Cmd+C and says so.
+	var COPIED_RESET_MS = 2500;
+
+	function wireRssDropdown(root) {
+		if (!root || root.dataset.rssWired) return;
+		if (!wireCopyPanel(root)) return;
+		root.dataset.rssWired = '1';
+		var status = root.querySelector('[data-rss-copy-status]');
+		var rows = root.querySelectorAll('[data-rss-feed]');
+
+		function resetRow(row) {
+			row.classList.remove('is-copied');
+			var b = row.querySelector('[data-rss-copy]');
+			if (b) b.textContent = 'Copy';
+		}
+
+		rows.forEach(function (row) {
+			var input = row.querySelector('input[readonly]');
+			var btn = row.querySelector('[data-rss-copy]');
+			if (!input || !btn) return;
+			var timer = null;
+			btn.addEventListener('click', function () {
+				copyText(input.value, input).then(function () {
+					rows.forEach(resetRow);
+					row.classList.add('is-copied');
+					btn.textContent = 'Copied';
+					if (status) status.textContent = (row.dataset.feedLabel || 'Feed') + ' link copied to your clipboard';
+					clearTimeout(timer);
+					timer = setTimeout(function () { resetRow(row); }, COPIED_RESET_MS);
+				}, function () {
+					if (status) status.textContent = 'Copy the selected link with Ctrl+C or \u2318C';
+					input.focus();
+					input.select();
+				});
+				input.scrollLeft = 0;
+			});
+		});
 	}
-	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAllMenuDropdowns);
-	else wireAllMenuDropdowns();
+
+	function wireAllRssDropdowns() {
+		document.querySelectorAll('[data-rss-dropdown]').forEach(wireRssDropdown);
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAllRssDropdowns);
+	else wireAllRssDropdowns();
 
 	// ── "Get updates for this search" RSS feed ───────────────────────────────
 	// Server-side the toolbar only has an empty, hidden shell
@@ -157,39 +217,10 @@
 	function hideSearchFeed() {
 		searchFeedToken++;
 		searchFeedShells().forEach(function (shell) {
-			setSearchFeedPanel(shell, false);
+			setPanelOpen(shell, false);
 			setSearchFeedUrl(shell, '', '');
 			shell.hidden = true;
 		});
-	}
-
-	// Copy `text`; resolves when it is on the clipboard, rejects otherwise.
-	// The Clipboard API needs a secure context (https or localhost); elsewhere,
-	// or if it is refused, fall back to selecting `input` and execCommand.
-	function copyText(text, input) {
-		if (navigator.clipboard && window.isSecureContext) {
-			return navigator.clipboard.writeText(text).catch(function () { return copyBySelection(input); });
-		}
-		return copyBySelection(input);
-	}
-
-	function copyBySelection(input) {
-		return new Promise(function (resolve, reject) {
-			if (!input) { reject(); return; }
-			input.focus();
-			input.select();
-			var ok = false;
-			try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-			if (ok) resolve(); else reject();
-		});
-	}
-
-	function setSearchFeedPanel(shell, open) {
-		var toggle = shell.querySelector('button[aria-controls]');
-		var panel = shell.querySelector('.search-feed-panel');
-		if (!toggle || !panel) return;
-		toggle.setAttribute('aria-expanded', String(open));
-		panel.classList.toggle('is-open', open);
 	}
 
 	// Copy the shell's feed URL and say so in its status line. On failure the
@@ -210,36 +241,18 @@
 		if (input) input.scrollLeft = 0;
 	}
 
-	// Click the button: copy the URL and show it. Click again, press Escape or
-	// click outside: close. The Copy button copies again; focusing the field
-	// selects the whole URL.
+	// Opening the panel copies the URL and shows it (wireCopyPanel handles
+	// closing); the Copy button copies again.
 	function wireSearchFeed(shell) {
 		if (!shell || shell.dataset.searchFeedWired) return;
-		var toggle = shell.querySelector('button[aria-controls]');
-		var panel = shell.querySelector('.search-feed-panel');
-		if (!toggle || !panel) return;
-		shell.dataset.searchFeedWired = '1';
-		var input = shell.querySelector('[data-search-feed-url]');
-		var again = shell.querySelector('[data-search-feed-copy]');
-
-		toggle.addEventListener('click', function () {
-			if (toggle.getAttribute('aria-expanded') === 'true') { setSearchFeedPanel(shell, false); return; }
+		var opened = wireCopyPanel(shell, function () {
 			shell.classList.remove('is-copied');
-			setSearchFeedPanel(shell, true);
 			copySearchFeed(shell);
 		});
+		if (!opened) return;
+		shell.dataset.searchFeedWired = '1';
+		var again = shell.querySelector('[data-search-feed-copy]');
 		if (again) again.addEventListener('click', function () { copySearchFeed(shell); });
-		if (input) input.addEventListener('focus', function () { input.select(); });
-		panel.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape') { setSearchFeedPanel(shell, false); toggle.focus(); }
-		});
-		toggle.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape') setSearchFeedPanel(shell, false);
-		});
-		// Capture phase so a sibling dropdown's stopPropagation can't keep this one open.
-		document.addEventListener('click', function (e) {
-			if (!shell.contains(e.target)) setSearchFeedPanel(shell, false);
-		}, true);
 	}
 
 	function wireAllSearchFeeds() {
@@ -307,7 +320,7 @@
 				var siteId = shell.dataset.feedSiteId || '';
 				if (!siteId) { shell.hidden = true; return; }
 				var url = apiBase.replace(/\/$/, '') + '/feed/sites/' + encodeURIComponent(siteId) + '/' + spec.kind + '/search/' + (qs.toString() ? '?' + qs.toString() : '');
-				if (url !== shell.dataset.feedUrl) setSearchFeedPanel(shell, false); // never leave a stale URL on show
+				if (url !== shell.dataset.feedUrl) setPanelOpen(shell, false); // never leave a stale URL on show
 				wireSearchFeed(shell);
 				setSearchFeedUrl(shell, url, spec.kind);
 				shell.hidden = false;
@@ -341,7 +354,7 @@
 		setSearchChipActive: setSearchChipActive,
 		setActiveChip: setActiveChip,
 		wireDownloadDropdown: wireDownloadDropdown,
-		wireMenuDropdown: wireMenuDropdown,
+		wireRssDropdown: wireRssDropdown,
 		updateSearchFeed: updateSearchFeed,
 		hideSearchFeed: hideSearchFeed,
 		wireMoreFilters: wireMoreFilters,

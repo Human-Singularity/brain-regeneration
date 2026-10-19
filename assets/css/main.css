@@ -3777,34 +3777,6 @@ a:hover {
 	max-width: calc(100vw - 32px);
 	padding: 8px 0;
 }
-.rss-menu-note {
-	margin: 0;
-	padding: 4px 16px 10px;
-	font-family: var(--font-body);
-	font-size: 13px;
-	line-height: 1.45;
-	color: var(--color-muted);
-	border-bottom: 1px solid var(--color-border);
-	margin-bottom: 4px;
-}
-a.rss-option {
-	display: flex;
-	flex-direction: column;
-	gap: 1px;
-	text-decoration: none;
-	white-space: normal;
-}
-a.rss-option:hover, a.rss-option:focus-visible {
-	background-color: var(--color-tint);
-	color: var(--color-primary);
-	text-decoration: none;
-}
-a.rss-option:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
-.rss-option-desc {
-	font-size: 12.5px;
-	font-weight: 400;
-	color: var(--color-muted);
-}
 .btn-rss:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 /* Mobile: result count + RSS button share a row (the desktop toolbar is hidden < lg) */
 .mobile-feed-bar {
@@ -3819,14 +3791,17 @@ a.rss-option:focus-visible { outline: 2px solid var(--color-primary); outline-of
 /* "Get updates for this search" shell stays hidden until a search has run (author display:inline-flex would otherwise beat [hidden]) */
 .download-dropdown[hidden] { display: none; }
 
-/* ── "Get updates for this search" panel (partials/feeds/search-rss.html) ──
-   The button copies the feed URL; the panel shows what was copied. */
-.search-feed-panel {
+/* ── Copy panels: "Get updates for this search" (partials/feeds/search-rss.html)
+   and the RSS dropdown (partials/feeds/rss-dropdown.html). Feed URLs sit in
+   read-only fields with a Copy button; the search button copies on open. */
+.search-feed-panel,
+.rss-copy-panel {
 	width: 360px;
 	max-width: calc(100vw - 32px);
 	padding: 12px 14px;
 	z-index: 210; /* above the mobile .filter-fab (200), below Bootstrap's navbar/offcanvas */
 }
+.rss-copy-panel { width: 380px; }
 .search-feed-status {
 	display: flex;
 	align-items: center;
@@ -3889,3 +3864,47 @@ a.rss-option:focus-visible { outline: 2px solid var(--color-primary); outline-of
 @media (pointer: coarse) {
 	.search-feed-copy, .search-feed-url-input { min-height: 44px; }
 }
+
+/* RSS dropdown rows: label, description, then the URL field + Copy button.
+   Two-class selectors so they beat .download-menu li's padding reset. */
+.rss-copy-panel .rss-copy-intro { margin: 0 0 4px; }
+.rss-copy-panel .rss-feed-list { list-style: none; margin: 0; padding: 0; }
+.rss-copy-panel .rss-feed-item {
+	padding: 10px 0;
+	border-top: 1px solid var(--color-border);
+}
+.rss-copy-panel .rss-feed-item:last-child { padding-bottom: 2px; }
+.rss-copy-panel .rss-option-label {
+	display: block;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+.rss-copy-panel .rss-option-desc {
+	display: block;
+	margin: 1px 0 6px;
+	font-family: var(--font-heading);
+	font-size: 12.5px;
+	color: var(--color-muted);
+}
+.rss-feed-item.is-copied .search-feed-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+.rss-feed-item.is-copied .search-feed-copy::before {
+	content: "";
+	width: 12px;
+	height: 12px;
+	background-color: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.rss-copy-status {
+	margin: 6px 0 0;
+	font-family: var(--font-heading);
+	font-size: 12.5px;
+	color: var(--color-muted);
+}
+.rss-copy-status:empty { display: none; }
