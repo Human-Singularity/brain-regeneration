@@ -130,9 +130,10 @@
 	// Server-side the toolbar only has an empty, hidden shell
 	// (partials/feeds/search-rss.html). Once a search has actually run, a feed
 	// script calls updateSearchFeed() with the search translated into the feed's
-	// own parameter names; this builds the URL, creates the <a rel="nofollow">
-	// and unhides the shell. Anything the feed cannot express must be reported
-	// with hideSearchFeed() (never approximate: a broader feed is a wrong feed).
+	// own parameter names; this builds the URL, puts it in the shell's read-only
+	// field and unhides the shell. Anything the feed cannot express must be
+	// reported with hideSearchFeed() (never approximate: a broader feed is a
+	// wrong feed). Clicking the button copies the URL (wireSearchFeed below).
 	var SEARCH_FEED_MAX_TEXT = 300;
 	var searchFeedToken = 0;
 	var slugCache = {};
@@ -141,14 +142,111 @@
 		return document.querySelectorAll('[data-search-feed]');
 	}
 
+	function setSearchFeedUrl(shell, url, kind) {
+		var input = shell.querySelector('[data-search-feed-url]');
+		var status = shell.querySelector('[data-search-feed-status]');
+		shell.dataset.feedUrl = url;
+		if (input) input.value = url;
+		if (status) status.textContent = '';
+		shell.querySelectorAll('[data-umami-event]').forEach(function (el) {
+			if (kind) el.setAttribute('data-umami-event-kind', kind);
+			else el.removeAttribute('data-umami-event-kind');
+		});
+	}
+
 	function hideSearchFeed() {
 		searchFeedToken++;
 		searchFeedShells().forEach(function (shell) {
+			setSearchFeedPanel(shell, false);
+			setSearchFeedUrl(shell, '', '');
 			shell.hidden = true;
-			var slot = shell.querySelector('[data-search-feed-slot]');
-			if (slot) slot.textContent = '';
 		});
 	}
+
+	// Copy `text`; resolves when it is on the clipboard, rejects otherwise.
+	// The Clipboard API needs a secure context (https or localhost); elsewhere,
+	// or if it is refused, fall back to selecting `input` and execCommand.
+	function copyText(text, input) {
+		if (navigator.clipboard && window.isSecureContext) {
+			return navigator.clipboard.writeText(text).catch(function () { return copyBySelection(input); });
+		}
+		return copyBySelection(input);
+	}
+
+	function copyBySelection(input) {
+		return new Promise(function (resolve, reject) {
+			if (!input) { reject(); return; }
+			input.focus();
+			input.select();
+			var ok = false;
+			try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+			if (ok) resolve(); else reject();
+		});
+	}
+
+	function setSearchFeedPanel(shell, open) {
+		var toggle = shell.querySelector('button[aria-controls]');
+		var panel = shell.querySelector('.search-feed-panel');
+		if (!toggle || !panel) return;
+		toggle.setAttribute('aria-expanded', String(open));
+		panel.classList.toggle('is-open', open);
+	}
+
+	// Copy the shell's feed URL and say so in its status line. On failure the
+	// URL is left selected in the field so Ctrl/Cmd+C copies it.
+	function copySearchFeed(shell) {
+		var url = shell.dataset.feedUrl || '';
+		var input = shell.querySelector('[data-search-feed-url]');
+		var status = shell.querySelector('[data-search-feed-status]');
+		if (!url) return;
+		copyText(url, input).then(function () {
+			if (status) status.textContent = 'Feed link copied to your clipboard';
+			shell.classList.add('is-copied');
+		}, function () {
+			if (status) status.textContent = 'Copy the feed link below';
+			shell.classList.remove('is-copied');
+			if (input) { input.focus(); input.select(); }
+		});
+		if (input) input.scrollLeft = 0;
+	}
+
+	// Click the button: copy the URL and show it. Click again, press Escape or
+	// click outside: close. The Copy button copies again; focusing the field
+	// selects the whole URL.
+	function wireSearchFeed(shell) {
+		if (!shell || shell.dataset.searchFeedWired) return;
+		var toggle = shell.querySelector('button[aria-controls]');
+		var panel = shell.querySelector('.search-feed-panel');
+		if (!toggle || !panel) return;
+		shell.dataset.searchFeedWired = '1';
+		var input = shell.querySelector('[data-search-feed-url]');
+		var again = shell.querySelector('[data-search-feed-copy]');
+
+		toggle.addEventListener('click', function () {
+			if (toggle.getAttribute('aria-expanded') === 'true') { setSearchFeedPanel(shell, false); return; }
+			shell.classList.remove('is-copied');
+			setSearchFeedPanel(shell, true);
+			copySearchFeed(shell);
+		});
+		if (again) again.addEventListener('click', function () { copySearchFeed(shell); });
+		if (input) input.addEventListener('focus', function () { input.select(); });
+		panel.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') { setSearchFeedPanel(shell, false); toggle.focus(); }
+		});
+		toggle.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') setSearchFeedPanel(shell, false);
+		});
+		// Capture phase so a sibling dropdown's stopPropagation can't keep this one open.
+		document.addEventListener('click', function (e) {
+			if (!shell.contains(e.target)) setSearchFeedPanel(shell, false);
+		}, true);
+	}
+
+	function wireAllSearchFeeds() {
+		searchFeedShells().forEach(wireSearchFeed);
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAllSearchFeeds);
+	else wireAllSearchFeeds();
 
 	// Resolve an id to the backend slug the feeds use (categories and sponsors
 	// only carry numeric ids in the page's own state). Memoised per page load.
@@ -207,26 +305,11 @@
 			}
 			shells.forEach(function (shell) {
 				var siteId = shell.dataset.feedSiteId || '';
-				var slot = shell.querySelector('[data-search-feed-slot]');
-				if (!siteId || !slot) { shell.hidden = true; return; }
-				var a = document.createElement('a');
-				a.className = 'download-option rss-option';
-				a.setAttribute('role', 'menuitem');
-				a.rel = 'nofollow noopener';
-				a.target = '_blank';
-				a.href = apiBase.replace(/\/$/, '') + '/feed/sites/' + encodeURIComponent(siteId) + '/' + spec.kind + '/search/' + (qs.toString() ? '?' + qs.toString() : '');
-				a.setAttribute('data-umami-event', 'RSS: Follow search feed');
-				a.setAttribute('data-umami-event-kind', spec.kind);
-				var label = document.createElement('span');
-				label.className = 'rss-option-label';
-				label.textContent = 'RSS feed for this search';
-				var desc = document.createElement('span');
-				desc.className = 'rss-option-desc';
-				desc.textContent = 'New results, newest first';
-				a.appendChild(label);
-				a.appendChild(desc);
-				slot.textContent = '';
-				slot.appendChild(a);
+				if (!siteId) { shell.hidden = true; return; }
+				var url = apiBase.replace(/\/$/, '') + '/feed/sites/' + encodeURIComponent(siteId) + '/' + spec.kind + '/search/' + (qs.toString() ? '?' + qs.toString() : '');
+				if (url !== shell.dataset.feedUrl) setSearchFeedPanel(shell, false); // never leave a stale URL on show
+				wireSearchFeed(shell);
+				setSearchFeedUrl(shell, url, spec.kind);
 				shell.hidden = false;
 			});
 		});
