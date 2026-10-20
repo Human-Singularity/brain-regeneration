@@ -1,0 +1,36 @@
+{{- /*
+  feeds/search-rss.html — "Get updates for this search" button + panel shell for
+  a feed toolbar. Deliberately EMPTY of the URL: the feed scripts
+  (research-feed.js / trials-feed.js / patents-feed.js) call
+  BR.feedUI.updateSearchFeed() after a search has run, which builds the URL from
+  the script's own search state and puts it in the read-only field. The shell
+  stays hidden until then, and is hidden again for searches the feed can't
+  express.
+
+  Clicking the button copies the feed URL to the clipboard and opens the panel,
+  which shows the URL that was copied and a Copy button to copy it again. The
+  URL is never a link, so crawlers have nothing to follow. Behaviour is wired
+  by BR.feedUI (wireSearchFeed in feed-ui.js).
+
+  Params (dict):
+    site — .Site (for params.apiSitemapSiteId; the apiBase comes from the
+           feed's mount element, like the rest of the scripts)
+    id   — unique id for the toggle button (panel id is "<id>-panel"); pass a
+           different id for each copy on a page (desktop + mobile)
+*/ -}}
+{{- $id := .id -}}
+<div class="download-dropdown rss-dropdown search-feed" data-search-feed data-feed-site-id="{{ .site.Params.apiSitemapSiteId }}" hidden>
+	<button type="button" class="btn-download btn-rss" id="{{ $id }}" aria-expanded="false" aria-controls="{{ $id }}-panel" title="Copy an RSS feed link for this search" data-umami-event="RSS: Follow search feed" data-umami-event-action="copy">
+		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+		Get updates<span class="visually-hidden"> for this search: copy the RSS feed link</span>
+	</button>
+	<div class="download-menu rss-menu search-feed-panel" id="{{ $id }}-panel">
+		<p class="search-feed-status" role="status" aria-live="polite" data-search-feed-status></p>
+		<div class="search-feed-url">
+			<label class="visually-hidden" for="{{ $id }}-url">RSS feed link for this search</label>
+			<input type="text" id="{{ $id }}-url" class="search-feed-url-input" readonly spellcheck="false" data-search-feed-url>
+			<button type="button" class="search-feed-copy" data-search-feed-copy data-umami-event="RSS: Follow search feed" data-umami-event-action="copy-again">Copy</button>
+		</div>
+		<p class="search-feed-note">Paste it into a feed reader (Feedly, Inoreader, NetNewsWire) to get new results as they're found.</p>
+	</div>
+</div>

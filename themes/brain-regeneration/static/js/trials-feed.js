@@ -577,10 +577,55 @@
 		}
 	}
 
+	// ── "Get updates for this search" RSS feed ───────────────────────────────
+	// (/search/clinical-trials/ only — the shell exists only there.) Translates
+	// THIS script's search state into the feed's own parameter names; not a copy
+	// of the page query string. Filters the feed can't express (identifiers,
+	// acronym, has-results, study type, registration-date range, a country name
+	// that doesn't resolve to an ISO code, more than one condition) hide the
+	// button instead of publishing a broader feed.
+	function syncSearchFeed() {
+		var feedUI = BR.feedUI;
+		if (!feedUI || !feedUI.updateSearchFeed) return;
+		if (state.identifiers || state.acronym || state.hasResults || state.studyType || state.dateFrom || state.dateTo) {
+			feedUI.hideSearchFeed();
+			return;
+		}
+		var countryCode = '';
+		if (state.country) {
+			var c = state.country.trim();
+			countryCode = COUNTRY_NAME_TO_CODE[c.toLowerCase()] || (/^[A-Za-z]{2}$/.test(c) ? c.toUpperCase() : '');
+			if (!countryCode) { feedUI.hideSearchFeed(); return; }
+		}
+		var ids = [];
+		function addIds(list) {
+			String(list || '').split(',').filter(Boolean).forEach(function (id) {
+				if (ids.indexOf(id) === -1) ids.push(id);
+			});
+		}
+		addIds(subjectId);
+		addIds(state.subjects);
+		if (ids.length > 1) { feedUI.hideSearchFeed(); return; }
+
+		feedUI.updateSearchFeed({
+			kind:       'trials',
+			apiBase:    (endpoint.replace(/\/trials\/?$/, '') || 'https://api.brain-regeneration.com'),
+			categoryId: state.categoryId,
+			params: {
+				search:                        (state.keyword || '').trim(),
+				subject_id:                    ids[0] || '',
+				recruitment_status_normalized: state.status,
+				phase_normalized:              state.phase,
+				country:                       countryCode
+			}
+		});
+	}
+
 	// ── Fetch ─────────────────────────────────────────────────────────────────
 	function fetchPage(page, push) {
 		var url = buildURL(page);
 		var cacheKey = 'brTrialsFeed:' + url;
+		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
 		var cached = getCached(cacheKey);
 		if (cached && cached.count > 0) {
 			renderCards(cached.results || []);
@@ -588,6 +633,7 @@
 			if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
 			renderTrialsTokens();
+			syncSearchFeed();
 			return;
 		}
 
@@ -601,6 +647,7 @@
 				if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
 				renderTrialsTokens();
+				syncSearchFeed();
 			})
 			.catch(renderError);
 	}

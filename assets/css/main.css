@@ -3764,3 +3764,147 @@ a:hover {
 @media (pointer: coarse) {
 	.rss-follow-link { min-height: 44px; }
 }
+
+/* ── RSS toolbar button + menu (partials/feeds/rss-dropdown.html) ──
+   Reuses .download-dropdown / .btn-download / .download-menu / .download-option. */
+.feed-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.rss-menu {
+	min-width: 300px;
+	max-width: calc(100vw - 32px);
+	padding: 8px 0;
+}
+.btn-rss:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+/* Mobile: result count + RSS button share a row (the desktop toolbar is hidden < lg) */
+.mobile-feed-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+.mobile-feed-bar .mobile-result-count { flex: 1 1 auto; min-width: 0; }
+.mobile-feed-bar .btn-download { padding: 6px 12px; font-size: 13px; }
+
+/* "Get updates for this search" shell stays hidden until a search has run (author display:inline-flex would otherwise beat [hidden]) */
+.download-dropdown[hidden] { display: none; }
+
+/* ── Copy panels: "Get updates for this search" (partials/feeds/search-rss.html)
+   and the RSS dropdown (partials/feeds/rss-dropdown.html). Feed URLs sit in
+   read-only fields with a Copy button; the search button copies on open. */
+.search-feed-panel,
+.rss-copy-panel {
+	width: 360px;
+	max-width: calc(100vw - 32px);
+	padding: 12px 14px;
+	z-index: 210; /* above the mobile .filter-fab (200), below Bootstrap's navbar/offcanvas */
+}
+.rss-copy-panel { width: 380px; }
+.search-feed-status {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 0 8px;
+	min-height: 1.4em;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+.search-feed.is-copied .search-feed-status { color: var(--color-primary); }
+.search-feed.is-copied .search-feed-status::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	background-color: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.search-feed-url {
+	display: flex;
+	align-items: stretch;
+	gap: 6px;
+}
+.search-feed-url-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 7px 9px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--color-text);
+	background-color: var(--color-tint);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+}
+.search-feed-url-input:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+.search-feed-copy {
+	flex: 0 0 auto;
+	padding: 6px 12px;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--color-text-light);
+	background-color: var(--color-primary);
+	border: none;
+	border-radius: var(--radius);
+	cursor: pointer;
+}
+.search-feed-copy:hover { filter: brightness(1.1); }
+.search-feed-copy:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.search-feed-note {
+	margin: 8px 0 0;
+	font-family: var(--font-body);
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--color-muted);
+}
+@media (pointer: coarse) {
+	.search-feed-copy, .search-feed-url-input { min-height: 44px; }
+}
+
+/* RSS dropdown rows: label, description, then the URL field + Copy button.
+   Two-class selectors so they beat .download-menu li's padding reset. */
+.rss-copy-panel .rss-copy-intro { margin: 0 0 4px; }
+.rss-copy-panel .rss-feed-list { list-style: none; margin: 0; padding: 0; }
+.rss-copy-panel .rss-feed-item {
+	padding: 10px 0;
+	border-top: 1px solid var(--color-border);
+}
+.rss-copy-panel .rss-feed-item:last-child { padding-bottom: 2px; }
+.rss-copy-panel .rss-option-label {
+	display: block;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+.rss-copy-panel .rss-option-desc {
+	display: block;
+	margin: 1px 0 6px;
+	font-family: var(--font-heading);
+	font-size: 12.5px;
+	color: var(--color-muted);
+}
+.rss-feed-item.is-copied .search-feed-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+.rss-feed-item.is-copied .search-feed-copy::before {
+	content: "";
+	width: 12px;
+	height: 12px;
+	background-color: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.rss-copy-status {
+	margin: 6px 0 0;
+	font-family: var(--font-heading);
+	font-size: 12.5px;
+	color: var(--color-muted);
+}
+.rss-copy-status:empty { display: none; }
