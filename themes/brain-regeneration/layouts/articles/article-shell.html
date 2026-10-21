@@ -35,17 +35,8 @@
 {{ define "page-scripts" }}
 <script>
 	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};
-	// Map of normalised subject name → URL, built from Hugo content at build time.
-	{{- $map := dict -}}
-	{{- range where .Site.RegularPages "Section" "research-areas" -}}
-		{{- $map = merge $map (dict (.Title | lower) .RelPermalink) -}}
-	{{- end -}}
-	{{- range where .Site.Pages "Kind" "section" -}}
-		{{- if and (eq .Section "conditions") (ne .RelPermalink "/conditions/") -}}
-			{{- $map = merge $map (dict (.Title | lower) .RelPermalink) -}}
-		{{- end -}}
-	{{- end }}
-	window.__SUBJECT_URLS__ = {{ $map | jsonify | safeJS }};
+	// Subject id → landing page + papers/trials tables + curated categories (partials/subject-links.html).
+	window.__SUBJECT_LINKS__ = {{ partial "subject-links" . | jsonify | safeJS }};
 </script>
 <script src="{{ "js/article-single.js" | relURL }}"></script>
 {{ end }}

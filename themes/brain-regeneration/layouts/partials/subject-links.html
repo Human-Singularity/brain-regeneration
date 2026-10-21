@@ -1,0 +1,54 @@
+{{- /*
+  subject-links.html — RETURNS a map of API subject_id → where that subject
+  lives on this site, so client-rendered pages (article, author, trial) can link
+  subjects and categories to the right table. Emitted as window.__SUBJECT_LINKS__
+  and read through BR.subjectUrl / BR.categoryUrl (br-utils.js).
+
+  Each entry: {
+    name        — page title (used to match subjects by name when the id is missing)
+    url         — the subject's landing page
+    papers      — research-papers table ("" if none)
+    trials      — clinical-trials table ("" if none; conditions only)
+    categories  — category ids curated in that page's category_groups (the
+                  ones the tables offer as filters)
+  }
+
+  Param: any page (unused; the map is site-wide)
+*/ -}}
+{{- $links := dict -}}
+{{- range where (where site.Pages "Section" "conditions") "Kind" "section" -}}
+	{{- $cond := . -}}
+	{{- $sid := "" -}}
+	{{- with .Params.api -}}{{- with .subject_id -}}{{- $sid = string . -}}{{- end -}}{{- end -}}
+	{{- if $sid -}}
+		{{- $papers := "" -}}
+		{{- $cats := slice -}}
+		{{- with where $cond.Pages "Params.layout" "research-papers" -}}
+			{{- $rp := index . 0 -}}
+			{{- $papers = $rp.RelPermalink -}}
+			{{- range $rp.Params.category_groups -}}{{- range .categories -}}{{- $cats = $cats | append .id -}}{{- end -}}{{- end -}}
+		{{- end -}}
+		{{- $links = merge $links (dict $sid (dict
+			"name" $cond.Title
+			"url" $cond.RelPermalink
+			"papers" $papers
+			"trials" $cond.RelPermalink
+			"categories" $cats)) -}}
+	{{- end -}}
+{{- end -}}
+{{- range where site.RegularPages "Section" "research-areas" -}}
+	{{- $area := . -}}
+	{{- $sid := "" -}}
+	{{- with .Params.api -}}{{- with .subject_id -}}{{- $sid = string . -}}{{- end -}}{{- end -}}
+	{{- if $sid -}}
+		{{- $cats := slice -}}
+		{{- range $area.Params.category_groups -}}{{- range .categories -}}{{- $cats = $cats | append .id -}}{{- end -}}{{- end -}}
+		{{- $links = merge $links (dict $sid (dict
+			"name" $area.Title
+			"url" $area.RelPermalink
+			"papers" $area.RelPermalink
+			"trials" ""
+			"categories" $cats)) -}}
+	{{- end -}}
+{{- end -}}
+{{- return $links -}}

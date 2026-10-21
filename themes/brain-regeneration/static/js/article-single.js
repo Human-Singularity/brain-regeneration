@@ -67,6 +67,8 @@
 	}
 
 	var BR                   = window.BR || {};
+	var subjectUrl  = BR.subjectUrl  || function () { return null; };
+	var categoryUrl = BR.categoryUrl || function () { return null; };
 	var escHtml              = BR.escHtml              || fallbackEscHtml;
 	var escHtmlAllowSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
 	var decodeEntities       = BR.decodeEntities       || fallbackDecodeEntities;
@@ -486,13 +488,8 @@
 		'</div>';
 	}
 
-	var subjectUrls = window.__SUBJECT_URLS__ || {};
-
-	function subjectUrl(name) {
-		// Normalise to lowercase for lookup — matches Hugo's `.Title | lower` at build time.
-		return subjectUrls[String(name).toLowerCase().trim()] || null;
-	}
-
+	// Subjects link to their page; categories link to the research-papers table
+	// filtered by that category (BR.subjectUrl / BR.categoryUrl, br-utils.js).
 	function renderSubjects(a) {
 		var subjects   = a.subjects   || [];
 		var categories = a.team_categories || [];
@@ -501,9 +498,8 @@
 		if (subjects.length) {
 			out += '<div class="tag-list">';
 			subjects.forEach(function (s) {
-				var decodedName = decodeEntities(s.subject_name || s.name || s);
-				var name = escHtml(decodedName);
-				var url  = subjectUrl(decodedName);
+				var name = escHtml(decodeEntities(s.subject_name || s.name || s));
+				var url  = subjectUrl(s);
 				if (url) {
 					out += '<a class="tag-item" href="' + escHtml(url) + '">' + name + '</a>';
 				} else {
@@ -515,8 +511,13 @@
 		if (categories.length) {
 			out += '<div class="tag-list">';
 			categories.forEach(function (c) {
-				var name = c.category_name || c.slug || c;
-				out += '<span class="tag-item tag-item--team"># ' + escHtml(decodeEntities(name)) + '</span>';
+				var name = escHtml(decodeEntities(c.category_name || c.slug || c));
+				var url  = categoryUrl(c.id, subjects, 'papers');
+				if (url) {
+					out += '<a class="tag-item tag-item--team" href="' + escHtml(url) + '" title="Research papers in ' + name + '"># ' + name + '</a>';
+				} else {
+					out += '<span class="tag-item tag-item--team"># ' + name + '</span>';
+				}
 			});
 			out += '</div>';
 		}

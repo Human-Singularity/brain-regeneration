@@ -65,6 +65,8 @@
 	}
 
 	var BR              = window.BR || {};
+	var subjectUrl  = BR.subjectUrl  || function () { return null; };
+	var categoryUrl = BR.categoryUrl || function () { return null; };
 	var escHtml         = BR.escHtml              || fallbackEscHtml;
 	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
 	var decodeEntities  = BR.decodeEntities       || fallbackDecodeEntities;
@@ -306,12 +308,13 @@
 			subs.forEach(function (s) {
 				var name = s.subject_name || s.name;
 				if (!name) return;
-				if (!subjectsMap[name]) subjectsMap[name] = { count: 0, categories: {} };
+				if (!subjectsMap[name]) subjectsMap[name] = { id: s.id, count: 0, categories: {} };
 				subjectsMap[name].count++;
 				cats.forEach(function (c) {
 					var cname = c.category_name || c.slug;
 					if (!cname) return;
-					subjectsMap[name].categories[cname] = (subjectsMap[name].categories[cname] || 0) + 1;
+					var entry = subjectsMap[name].categories[cname] || (subjectsMap[name].categories[cname] = { id: c.id, count: 0 });
+					entry.count++;
 				});
 			});
 
@@ -335,9 +338,9 @@
 		var subjects = Object.keys(subjectsMap).map(function (name) {
 			var s = subjectsMap[name];
 			var categories = Object.keys(s.categories).map(function (c) {
-				return { name: c, count: s.categories[c] };
+				return { id: s.categories[c].id, name: c, count: s.categories[c].count };
 			}).sort(function (a, b) { return b.count - a.count; }).slice(0, 6);
-			return { name: name, count: s.count, categories: categories };
+			return { id: s.id, name: name, count: s.count, categories: categories };
 		}).sort(function (a, b) { return b.count - a.count; });
 
 		var allCollaborators = Object.keys(collabMap).map(function (k) { return collabMap[k]; })
@@ -416,11 +419,22 @@
 	function renderSubjects(subjects) {
 		if (!subjects.length) return '<p class="author-empty-note">No subjects matched yet.</p>';
 		return subjects.map(function (s) {
+			var subject = { id: s.id, subject_name: s.name };
+			// Each category chip links to this subject's research-papers table filtered by it.
 			var chips = s.categories.map(function (c) {
-				return '<span class="author-collab-chip">' + escHtml(decodeEntities(c.name)) + ' <span class="author-chip__count">' + c.count + '</span></span>';
+				var label = escHtml(decodeEntities(c.name)) + ' <span class="author-chip__count">' + c.count + '</span>';
+				var url = categoryUrl(c.id, [subject], 'papers');
+				return url
+					? '<a class="author-collab-chip author-collab-chip--link" href="' + escHtml(url) + '" data-umami-event="Author Profile: View Category">' + label + '</a>'
+					: '<span class="author-collab-chip">' + label + '</span>';
 			}).join('');
+			var subjectName = escHtml(decodeEntities(s.name));
+			var subjectHref = subjectUrl(subject);
 			return '<div class="author-subject">' +
-				'<div class="author-subject__head"><span class="author-subject__name">' + escHtml(decodeEntities(s.name)) + '</span>' +
+				'<div class="author-subject__head">' +
+				(subjectHref
+					? '<a class="author-subject__name" href="' + escHtml(subjectHref) + '">' + subjectName + '</a>'
+					: '<span class="author-subject__name">' + subjectName + '</span>') +
 				'<span class="author-subject__count">' + s.count + ' paper' + (s.count === 1 ? '' : 's') + '</span></div>' +
 				(chips ? '<div class="author-subject__chips">' + chips + '</div>' : '') +
 			'</div>';

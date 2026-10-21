@@ -35,6 +35,7 @@
 {{ define "page-scripts" }}
 <script>
 	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};
+	window.__SUBJECT_LINKS__ = {{ partial "subject-links" . | jsonify | safeJS }};
 </script>
 <script src="{{ "js/trial-single.js" | relURL }}"></script>
 {{ end }}

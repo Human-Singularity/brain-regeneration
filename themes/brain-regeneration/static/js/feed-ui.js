@@ -281,6 +281,25 @@
 		});
 	}
 
+	// { id, name } for one category, or null. For ?category= links to a table
+	// that doesn't curate that category (article / author / trial pages link to
+	// any category), so the filter UI can show its name instead of its id.
+	var categoryInfoCache = {};
+	function categoryInfo(apiBase, id) {
+		var key = String(id);
+		if (!categoryInfoCache[key]) {
+			var url = apiBase.replace(/\/$/, '') + '/categories/?format=json&include_authors=false&category_id=' + encodeURIComponent(id);
+			categoryInfoCache[key] = fetch(url)
+				.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+				.then(function (d) {
+					var c = d && d.results && d.results[0];
+					return c && String(c.id) === key ? { id: c.id, name: c.category_name || c.category_slug || key } : null;
+				})
+				.catch(function () { delete categoryInfoCache[key]; return null; });
+		}
+		return categoryInfoCache[key];
+	}
+
 	function sponsorSlug(apiBase, id) {
 		var url = apiBase.replace(/\/$/, '') + '/sponsors/' + encodeURIComponent(id) + '/?format=json';
 		return lookupSlug(url, function (d) { return d && d.slug ? d.slug : ''; });
@@ -357,6 +376,7 @@
 		wireRssDropdown: wireRssDropdown,
 		updateSearchFeed: updateSearchFeed,
 		hideSearchFeed: hideSearchFeed,
+		categoryInfo: categoryInfo,
 		wireMoreFilters: wireMoreFilters,
 		wireHintTags: wireHintTags
 	};

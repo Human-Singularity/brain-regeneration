@@ -1376,6 +1376,7 @@
 	} catch (e) { /* non-fatal: category select will just have no options */ }
 
 	populateCategorySelect();
+	ensureUrlCategory();
 
 	fetchPage(state.page, false);
 
@@ -1542,6 +1543,26 @@
 			btn.dataset.value = String(c.id);
 			btn.textContent = c.name;
 			group.appendChild(btn);
+		});
+	}
+
+	// A ?category= link from an article, author or trial page can name a category
+	// this page doesn't curate. The API filter applies regardless; look up its name
+	// and add it to the filter options so the select, mobile chips, tokens and the
+	// description panel show it (and a later search doesn't silently drop it).
+	function ensureUrlCategory() {
+		var id = state.category;
+		if (!id || state.categories.some(function (c) { return String(c.id) === id; })) return;
+		if (!BR.feedUI || !BR.feedUI.categoryInfo) return;
+		BR.feedUI.categoryInfo(apiBase, id).then(function (cat) {
+			if (!cat || state.category !== id) return;
+			if (state.categories.some(function (c) { return String(c.id) === id; })) return;
+			state.categories.push(cat);
+			if (state.categoryGroups.length) state.categoryGroups.push({ label: 'Other', categories: [cat] });
+			populateCategorySelect();
+			populateMobileCategoryChips();
+			renderTokens();
+			renderDesktopTokens();
 		});
 	}
 
