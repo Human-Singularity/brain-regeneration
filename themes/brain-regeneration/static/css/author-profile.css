@@ -414,6 +414,17 @@
 	border-radius: 100px;
 }
 
+.author-collab-chip--link {
+	text-decoration: none;
+	border: 1px solid transparent;
+	transition: border-color var(--dur-base) var(--ease);
+}
+.author-collab-chip--link:hover,
+.author-collab-chip--link:focus-visible { border-color: var(--color-primary); color: var(--color-primary); text-decoration: none; }
+
+a.author-subject__name { text-decoration: none; }
+a.author-subject__name:hover { text-decoration: underline; }
+
 .author-chip__count { opacity: .55; }
 
 .author-collaborators { display: flex; flex-direction: column; gap: 13px; }

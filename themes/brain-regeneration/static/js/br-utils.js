@@ -153,6 +153,56 @@
 		};
 	}
 
+	// ── Subject / category links ──────────────────────────────────────────
+	// window.__SUBJECT_LINKS__ is emitted at build time by partials/subject-links.html:
+	// { "<subject_id>": { name, url, papers, trials, categories: [ids] } }.
+	// Pages that don't emit it get null from every helper, so callers fall back to
+	// plain (unlinked) labels.
+
+	function subjectLinks() { return window.__SUBJECT_LINKS__ || {}; }
+
+	// s: an API subject object ({ id, subject_name }), an id, or a name.
+	function subjectEntry(s) {
+		if (s == null) return null;
+		var links = subjectLinks();
+		var id = typeof s === 'object' ? s.id : (/^\d+$/.test(String(s)) ? s : null);
+		if (id != null && links[String(id)]) return links[String(id)];
+		var name = typeof s === 'object' ? (s.subject_name || s.name) : (id == null ? s : null);
+		if (!name) return null;
+		name = String(name).toLowerCase().trim();
+		for (var k in links) {
+			if (links[k].name && links[k].name.toLowerCase().trim() === name) return links[k];
+		}
+		return null;
+	}
+
+	function subjectUrl(s) {
+		var e = subjectEntry(s);
+		return e ? e.url : null;
+	}
+
+	// The table filtered to one category. kind: 'papers' (any category works:
+	// research-feed.js resolves names it doesn't curate) or 'trials' (only
+	// curated categories, because the trials filter only offers those).
+	// Prefers one of `subjects` (the record's own subjects), and among them one
+	// that curates the category; failing that, any subject that curates it.
+	function categoryUrl(categoryId, subjects, kind) {
+		if (categoryId == null || categoryId === '') return null;
+		kind = kind === 'trials' ? 'trials' : 'papers';
+		var id = Number(categoryId);
+		function usable(e) { return !!(e && e[kind]); }
+		function curates(e) { return (e.categories || []).indexOf(id) !== -1; }
+		var own = (subjects || []).map(subjectEntry).filter(usable);
+		var pick = own.filter(curates)[0] || (kind === 'papers' ? own[0] : null);
+		if (!pick) {
+			var links = subjectLinks();
+			for (var k in links) {
+				if (usable(links[k]) && curates(links[k])) { pick = links[k]; break; }
+			}
+		}
+		return pick ? pick[kind] + '?category=' + encodeURIComponent(id) : null;
+	}
+
 	window.BR = Object.assign(window.BR || {}, {
 		escHtml: escHtml,
 		escHtmlAllowSafeTags: escHtmlAllowSafeTags,
@@ -164,6 +214,8 @@
 		slugify: slugify,
 		safeLink: safeLink,
 		makeCache: makeCache,
-		trackSearch: trackSearch
+		trackSearch: trackSearch,
+		subjectUrl: subjectUrl,
+		categoryUrl: categoryUrl
 	});
 })(window);

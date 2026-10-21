@@ -51,6 +51,8 @@
 	var BR             = window.BR || {};
 	var escHtml        = BR.escHtml        || fallbackEscHtml;
 	var decodeEntities = BR.decodeEntities || fallbackDecodeEntities;
+	var subjectUrl     = BR.subjectUrl     || function () { return null; };
+	var categoryUrl    = BR.categoryUrl    || function () { return null; };
 
 	// Some registry summaries (esp. CTIS-sourced) carry literal structural HTML —
 	// "<b>Conditions</b>: ... <br />" — rather than plain text. Escape everything
@@ -418,11 +420,50 @@
 			'</div>';
 	}
 
+	// Subjects link to their page (a condition's page is its clinical-trials
+	// table). Categories link to the clinical-trials table filtered by that
+	// category where a condition offers it as a filter, otherwise to the
+	// research-papers table filtered by it.
+	function renderTopics(t) {
+		var subjects   = t.subjects || [];
+		var categories = t.team_categories || [];
+		if (!subjects.length && !categories.length) return '';
+		var subjectTags = subjects.map(function (s) {
+			var name = escHtml(decodeEntities(s.subject_name || s.name || ''));
+			if (!name) return '';
+			var url = subjectUrl(s);
+			return url
+				? '<a class="trial-topic" href="' + escHtml(url) + '">' + name + '</a>'
+				: '<span class="trial-topic">' + name + '</span>';
+		}).join('');
+		var categoryTags = categories.map(function (c) {
+			var name = escHtml(decodeEntities(c.category_name || c.category_slug || ''));
+			if (!name) return '';
+			var trialsUrl = categoryUrl(c.id, subjects, 'trials');
+			var url   = trialsUrl || categoryUrl(c.id, subjects, 'papers');
+			var title = trialsUrl ? 'Clinical trials in ' + name : 'Research papers in ' + name;
+			return url
+				? '<a class="trial-topic trial-topic--category" href="' + escHtml(url) + '" title="' + title + '"># ' + name + '</a>'
+				: '<span class="trial-topic trial-topic--category"># ' + name + '</span>';
+		}).join('');
+		return '<div class="trial-condition-box__row">' +
+			'<span class="trial-condition-box__label">Tracked by the Observatory under</span>' +
+			(subjectTags  ? '<div class="trial-topics">' + subjectTags + '</div>' : '') +
+			(categoryTags ? '<div class="trial-topics">' + categoryTags + '</div>' : '') +
+		'</div>';
+	}
+
 	function renderConditionBox(t) {
-		if (!t.condition) return '';
+		var topics = renderTopics(t);
+		if (!t.condition && !topics) return '';
 		return '<div class="trial-condition-box">' +
-			'<span class="trial-condition-box__label">Condition, as recorded by the registry</span>' +
-			'<span class="trial-condition-box__value">&ldquo;' + escHtml(decodeEntities(t.condition)) + '&rdquo;</span>' +
+			(t.condition
+				? '<div class="trial-condition-box__row">' +
+					'<span class="trial-condition-box__label">Condition, as recorded by the registry</span>' +
+					'<span class="trial-condition-box__value">&ldquo;' + escHtml(decodeEntities(t.condition)) + '&rdquo;</span>' +
+				'</div>'
+				: '') +
+			topics +
 		'</div>';
 	}
 

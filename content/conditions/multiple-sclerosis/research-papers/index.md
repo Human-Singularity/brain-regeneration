@@ -132,6 +132,8 @@ category_groups:
         name: Minocycline
       - id: 132
         name: Apotransferrin
+      - id: 133
+        name: Neuregulin-1 (NRG-1)
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
