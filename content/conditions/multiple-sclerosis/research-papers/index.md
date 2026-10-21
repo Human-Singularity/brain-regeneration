@@ -131,7 +131,7 @@ category_groups:
       - id: 131
         name: Minocycline
       - id: 132
-        name: Apotransferrin
+        name: Transferrin
       - id: 133
         name: Neuregulin-1 (NRG-1)
 ---
