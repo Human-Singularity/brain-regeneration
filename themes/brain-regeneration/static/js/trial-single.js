@@ -426,7 +426,7 @@
 	// research-papers table filtered by it.
 	function renderTopics(t) {
 		var subjects   = t.subjects || [];
-		var categories = t.team_categories || [];
+		var categories = t.categories || t.team_categories || [];
 		if (!subjects.length && !categories.length) return '';
 		var subjectTags = subjects.map(function (s) {
 			var name = escHtml(decodeEntities(s.subject_name || s.name || ''));

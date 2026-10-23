@@ -304,7 +304,7 @@
 
 		articles.forEach(function (a) {
 			var subs = a.subjects || [];
-			var cats = a.team_categories || [];
+			var cats = a.categories || a.team_categories || [];
 			subs.forEach(function (s) {
 				var name = s.subject_name || s.name;
 				if (!name) return;
@@ -378,7 +378,7 @@
 		var authors = (a.authors || []).map(function (x) { return x.full_name; }).filter(Boolean);
 		var coauthorCount = Math.max(0, authors.length - 1);
 		var accessOpen = a.access === 'open';
-		var categories = a.team_categories || [];
+		var categories = a.categories || a.team_categories || [];
 		var subjects = a.subjects || [];
 		var url = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		var year = a.published_date ? new Date(a.published_date).getFullYear() : '';
