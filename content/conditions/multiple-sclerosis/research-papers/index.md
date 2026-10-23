@@ -148,6 +148,8 @@ category_groups:
         name: CNM-Au8
       - id: 135
         name: GLP-1 Receptor Agonists
+      - id: 92
+        name: Hydroxychloroquine
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
