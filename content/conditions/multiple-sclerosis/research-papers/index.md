@@ -36,6 +36,12 @@ category_groups:
         name: "Natalizumab"
       - id: 95
         name: "Opicinumab"
+      - id: 31
+        name: "Frexalimab"
+      - id: 32
+        name: "Foralumab"
+      - id: 134
+        name: "Obexelimab"
   - label: "S1P Receptor Modulators"
     categories:
       - id: 35
@@ -131,9 +137,17 @@ category_groups:
       - id: 131
         name: Minocycline
       - id: 132
-        name: Apotransferrin
+        name: Transferrin
       - id: 133
         name: Neuregulin-1 (NRG-1)
+      - id: 4
+        name: Metformin
+      - id: 71
+        name: Clemastine
+      - id: 47
+        name: CNM-Au8
+      - id: 135
+        name: GLP-1 Receptor Agonists
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
