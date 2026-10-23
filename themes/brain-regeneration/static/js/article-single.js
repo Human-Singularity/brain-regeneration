@@ -492,7 +492,7 @@
 	// filtered by that category (BR.subjectUrl / BR.categoryUrl, br-utils.js).
 	function renderSubjects(a) {
 		var subjects   = a.subjects   || [];
-		var categories = a.team_categories || [];
+		var categories = a.categories || a.team_categories || [];
 		if (!subjects.length && !categories.length) return '';
 		var out = '';
 		if (subjects.length) {

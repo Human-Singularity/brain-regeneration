@@ -292,9 +292,10 @@
 			: '';
 
 		var categories = '';
-		if (p.team_categories && p.team_categories.length) {
+		var cats = p.categories || p.team_categories || [];
+		if (cats.length) {
 			categories = '<div class="paper-card-categories">' +
-				p.team_categories.map(function (c) {
+				cats.map(function (c) {
 					return '<span class="condition-tag" style="font-size:12px;padding:2px 8px;">' + escHtml(decodeEntities(c.category_name || c.category_slug || '')) + '</span>';
 				}).join('') +
 			'</div>';
