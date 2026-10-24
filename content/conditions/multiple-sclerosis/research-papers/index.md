@@ -72,6 +72,8 @@ category_groups:
         name: ALL BTKi Research
       - id: 34
         name: "Tolebrutinib"
+      - id: 21
+        name: "Evobrutinib"
   - label: "Cytotoxic Immunosuppressant"
     categories:
       - id: 38
