@@ -1,0 +1,4 @@
+<aside class="follow">
+	<p class="follow__label">{{ with .Get "title" }}{{ . }}{{ else }}Follow the research{{ end }}</p>
+	<div class="follow__body">{{ .Inner | markdownify }}</div>
+</aside>
