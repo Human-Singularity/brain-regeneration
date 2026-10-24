@@ -167,6 +167,10 @@
 	position: sticky;
 	top: 88px; /* nav 56 + progress 3 + breathing 29 */
 	padding-top: 6px;
+	/* Long outlines (H2 + H3) scroll inside the rail instead of running off-screen */
+	max-height: calc(100vh - 112px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
 }
 .toc__label {
 	color: var(--color-muted);
@@ -205,6 +209,11 @@
 .toc__item a {
 	color: inherit;
 	text-decoration: none;
+}
+/* H3 entries: indented and lighter so the H2s stay the outline */
+.toc__item--sub {
+	padding-left: 28px;
+	font-size: 12.5px;
 }
 
 /* ── Article body typography ─────────────────────────────────── */
@@ -247,6 +256,58 @@
 	padding-left: 22px;
 	margin-bottom: 1.1em;
 }
+
+/* ── "Follow the research" callout (shortcode: follow) ───────── */
+.b-col .follow {
+	margin: 28px 0 8px;
+	padding: 16px 20px 14px;
+	background: var(--color-tint);
+	border-left: 4px solid var(--color-primary);
+	border-radius: 0 var(--radius) var(--radius) 0;
+}
+.b-col .follow__label {
+	margin: 0 0 8px;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .1em;
+	text-transform: uppercase;
+	line-height: 1.4;
+	color: var(--color-primary);
+}
+.b-col .follow__body p {
+	margin: 0 0 .5em;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	line-height: 1.6;
+}
+.b-col .follow__body p:last-child { margin-bottom: 0; }
+.b-col .follow__body strong { font-weight: 600; }
+
+/* ── Footnotes (plain-English notes) ─────────────────────────── */
+.b-col sup[id^="fnref"] { line-height: 0; }
+.b-col sup[id^="fnref"] a {
+	padding: 0 1px;
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 600;
+	text-decoration: none;
+}
+.b-col .footnotes {
+	margin-top: 8px;
+	padding-top: 4px;
+}
+.b-col .footnotes hr { display: none; }
+.b-col .footnotes ol {
+	font-family: var(--font-heading);
+	font-size: 14.5px;
+	line-height: 1.6;
+	color: var(--color-muted);
+	padding-left: 24px;
+}
+.b-col .footnotes li { margin-bottom: 10px; scroll-margin-top: 88px; }
+.b-col .footnotes li p { font-family: inherit; font-size: inherit; line-height: inherit; color: inherit; margin: 0; }
+.b-col .footnotes li:target { color: var(--color-text); }
 
 /* ── Markdown images (render hook: layouts/news/_markup) ─────── */
 .b-col img {
@@ -692,7 +753,11 @@ figure { margin: 0; }
 	.b-toc {
 		position: static;
 		margin-bottom: 32px;
+		max-height: none;
+		overflow: visible;
 	}
+	/* The collapsed row stays H2-only; H3s would make it too long */
+	.toc__item--sub { display: none; }
 	.toc__list {
 		flex-direction: row;
 		flex-wrap: wrap;

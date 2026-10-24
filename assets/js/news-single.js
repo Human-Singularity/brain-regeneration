@@ -30,14 +30,14 @@
 		updateProgress();
 	}
 
-	/* ── 2. Build TOC from article H2s ──────────────────────── */
+	/* ── 2. Build TOC from article H2s and H3s ──────────────── */
 	var tocList = document.getElementById('js-toc-list');
-	var headings = document.querySelectorAll('.b-col h2[id]');
+	var headings = document.querySelectorAll('.b-col h2[id], .b-col h3[id]');
 
 	if (tocList && headings.length) {
 		headings.forEach(function (h, i) {
 			var li = document.createElement('li');
-			li.className = 'toc__item';
+			li.className = 'toc__item' + (h.tagName === 'H3' ? ' toc__item--sub' : '');
 			li.dataset.target = h.id;
 			li.setAttribute('tabindex', '0');
 			li.setAttribute('role', 'button');
@@ -50,7 +50,7 @@
 
 	/* ── 3. TOC: IntersectionObserver active state ───────────── */
 	var tocItems = document.querySelectorAll('.toc__item');
-	headings = document.querySelectorAll('.b-col h2[id]');
+	headings = document.querySelectorAll('.b-col h2[id], .b-col h3[id]');
 
 	if (tocItems.length && headings.length) {
 		var activeHeadingId = null;
@@ -72,6 +72,14 @@
 				var isActive = item.dataset.target === id;
 				item.classList.toggle('toc__item--active', isActive);
 				item.setAttribute('aria-current', isActive ? 'location' : 'false');
+				/* Keep the active entry visible in the (scrollable) rail without moving the page */
+				if (isActive && tocList && tocList.parentElement.scrollHeight > tocList.parentElement.clientHeight) {
+					var rail = tocList.parentElement;
+					var itemTop = item.offsetTop; /* li is position:relative, so this is relative to the rail */
+					if (itemTop < rail.scrollTop || itemTop + item.offsetHeight > rail.scrollTop + rail.clientHeight) {
+						rail.scrollTop = itemTop - rail.clientHeight / 3;
+					}
+				}
 			});
 		}
 
