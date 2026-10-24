@@ -32,3 +32,26 @@
 		</nav>
 	</div>
 </div>
+{{- /* Carry the selected category across tabs. The feeds write ?category= to the URL via
+       pushState/replaceState, so re-sync the tab links after every URL change. */ -}}
+<script>
+(function () {
+	var nav = document.querySelector('.section-tabs-nav');
+	if (!nav) return;
+	function sync() {
+		var cat = new URLSearchParams(window.location.search).get('category');
+		nav.querySelectorAll('a.section-tab').forEach(function (a) {
+			var url = new URL(a.getAttribute('href'), window.location.origin);
+			if (a.getAttribute('aria-current') === 'page') return;
+			if (cat) url.searchParams.set('category', cat); else url.searchParams.delete('category');
+			a.setAttribute('href', url.pathname + url.search);
+		});
+	}
+	['pushState', 'replaceState'].forEach(function (m) {
+		var orig = history[m];
+		history[m] = function () { var r = orig.apply(this, arguments); sync(); return r; };
+	});
+	window.addEventListener('popstate', sync);
+	sync();
+})();
+</script>
