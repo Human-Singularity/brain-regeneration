@@ -2,7 +2,7 @@
 title: Takeaways from MS Toronto Patient Community Day
 date: 2026-10-23T22:00:00
 draft: false
-description:
+description: "Our notes from the first ECTRIMS/ACTRIMS Patient Community Day: CAR-T, BTK inhibitors, remyelination, EBV, aging and MS, with plain-English explanations and links to the research we track."
 author: "Bruno Amaral"
 kicker: Summary
 image: MSToronto-2026-Website6.webp
