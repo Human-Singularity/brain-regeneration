@@ -74,6 +74,10 @@ category_groups:
         name: "Tolebrutinib"
       - id: 21
         name: "Evobrutinib"
+      - id: 24
+        name: "Fenibrutinib"
+      - id: 136
+        name: "Remibrutinib"
   - label: "Cytotoxic Immunosuppressant"
     categories:
       - id: 38
@@ -84,6 +88,8 @@ category_groups:
         name: Autologous hematopoietic stem cell transplant
       - id: 49
         name: "CAR-T Cell Therapy"
+      - id: 60
+        name: "YTB323"
       - id: 9
         name: "Stem Cells"
   - label: "Experimental & Repurposed"
