@@ -6,6 +6,13 @@
 const API_BASE = 'https://api.brain-regeneration.com';
 const SITE_ORIGIN = 'https://brain-regeneration.com';
 
+// This site's id in GregoryAi. Must match apiSitemapSiteId in hugo.toml.
+// Editorial rows are per site, and the API scopes them by the request's Origin.
+// A Function's request has no Origin, so without site_id it gets every site's rows.
+const SITE_ID = 3;
+
+const ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
+
 function decodeEntities(str) {
 	if (!str) return '';
 	// Named entities first — some titles double-encode (e.g. "&amp;#946;" for β),
@@ -68,6 +75,51 @@ function buildDescription(rawHtmlOrText, maxLen = 155) {
 // where literal "&lt;i&gt;" or leftover markup would look broken.
 function cleanText(str) {
 	return toPlainText(str).replace(/\s+/g, ' ').trim();
+}
+
+// Plain text of the first <p> long enough to read as a sentence, so a summary that
+// opens with headings ("<h2>…</h2><h3>About this page</h3><p>…") describes itself
+// by its opening paragraph. Falls back to the whole text.
+// Keep in step with leadText() in article-single.js.
+function leadText(html) {
+	const str = String(html || '');
+	const re = /<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+	let m;
+	while ((m = re.exec(str))) {
+		const text = cleanText(m[1]);
+		if (text.length >= 40) return text;
+	}
+	return cleanText(str);
+}
+
+// The editorial row for this site, or null. Filtered here as well as by site_id
+// in the request, so an API change can never show another site's text.
+function ownEditorial(data) {
+	const rows = data && Array.isArray(data.editorial) ? data.editorial : [];
+	return rows.find((e) => e && e.site && Number(e.site.id) === SITE_ID) || null;
+}
+
+// Accepts a bare ORCID iD or an https://orcid.org/… URL; returns the bare iD or null.
+function normalizeOrcid(value) {
+	if (!value) return null;
+	const m = String(value).trim().toUpperCase().match(/(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\/?$/);
+	return m && ORCID_RE.test(m[1]) ? m[1] : null;
+}
+
+// subject-links.json (built from partials/subject-links.html): subject id →
+// { name, url, rank, … }. Among the record's subjects that have a page on this
+// site, returns the entry with the lowest rank, or null.
+// Keep in step with BR.primarySubject() in br-utils.js.
+function primarySubjectLink(subjects, links) {
+	if (!links || !Array.isArray(subjects)) return null;
+	let best = null;
+	for (const s of subjects) {
+		const entry = s && links[String(s.id)];
+		if (!entry || !entry.url) continue;
+		const rank = Number.isFinite(Number(entry.rank)) ? Number(entry.rank) : Infinity;
+		if (!best || rank < best.rank) best = { ...entry, rank };
+	}
+	return best;
 }
 
 function authorName(author) {
@@ -148,6 +200,12 @@ class AppendJsonLd {
 export {
 	API_BASE,
 	SITE_ORIGIN,
+	SITE_ID,
+	ORCID_RE,
+	leadText,
+	ownEditorial,
+	normalizeOrcid,
+	primarySubjectLink,
 	decodeEntities,
 	stripHtml,
 	truncate,

@@ -68,6 +68,7 @@
 
 	var BR                   = window.BR || {};
 	var subjectUrl  = BR.subjectUrl  || function () { return null; };
+	var primarySubject = BR.primarySubject || function () { return null; };
 	var categoryUrl = BR.categoryUrl || function () { return null; };
 	var escHtml              = BR.escHtml              || fallbackEscHtml;
 	var escHtmlAllowSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
@@ -218,13 +219,55 @@
 		return (e && e.summary_plain_english) || a.summary_plain_english || '';
 	}
 
+	// Tags stripped and entities decoded in either order, like toPlainText() in
+	// functions/_shared/meta.js, so the meta description this script sets matches
+	// the one the Pages Function served.
+	function plainText(str) {
+		return stripHtml(decodeEntities(stripHtml(str)));
+	}
+
+	// Truncate on a word boundary. Same as truncate() in functions/_shared/meta.js.
+	function truncateAtWord(text, maxLen) {
+		var clean = String(text || '').replace(/\s+/g, ' ').trim();
+		if (clean.length <= maxLen) return clean;
+		var cut = clean.slice(0, maxLen);
+		var lastSpace = cut.lastIndexOf(' ');
+		return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+	}
+
+	// First <p> long enough to read as a sentence (skips leading headings such as
+	// "About this page"). Same as leadText() in functions/_shared/meta.js.
+	function leadText(html) {
+		var str = String(html || '');
+		var re = /<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+		var m;
+		while ((m = re.exec(str))) {
+			var text = plainText(m[1]);
+			if (text.length >= 40) return text;
+		}
+		return plainText(str);
+	}
+
+	// Plain-English summary → takeaways → abstract. Same order as
+	// descriptionSource() in functions/articles/[id].js.
+	function articleDescriptionSource(a) {
+		var e = a.editorial && a.editorial[0];
+		var plain = leadText((e && e.summary_plain_english) || a.summary_plain_english);
+		if (plain) return plain;
+		var takeaways = plainText(e && e.takeaways);
+		if (takeaways) return takeaways;
+		return plainText(a.summary);
+	}
+
+	var META_DESCRIPTION_LEN = 160; // same as the Pages Function
+
 	function articleDescription(a) {
-		var summary = stripHtml(editorialSummary(a) || a.abstract || a.description || '');
-		if (summary) return truncate(summary, 180);
+		var summary = articleDescriptionSource(a);
+		if (summary) return truncateAtWord(summary, META_DESCRIPTION_LEN);
 		var subject = (a.subjects && a.subjects[0] && (a.subjects[0].subject_name || a.subjects[0].name)) || '';
 		var fallback = 'Read this research article on ' + (subject || 'brain regeneration') +
 			': summary, source details, related trials, and relevance signals.';
-		return truncate(fallback, 180);
+		return truncateAtWord(fallback, META_DESCRIPTION_LEN);
 	}
 
 	function browserTitle(a) {
@@ -240,9 +283,11 @@
 		return parts.filter(Boolean).join(' | ');
 	}
 
+	// Only runs when the Pages Function failed open (no server JSON-LD). Mirrors the
+	// core of its ScholarlyArticle, so a fail-open page never contradicts a normal
+	// one: the journal's publisher (not this site), DOI/PMID/PMCID identifiers, and
+	// no dateModified (the API has none; discovery_date is when we indexed it).
 	function updateStructuredData(a, pageUrl, descriptionText) {
-		// The Pages Function already injects a ScholarlyArticle; a second,
-		// differing entity confuses crawlers. Only fill in when it's missing.
 		var existing = document.querySelectorAll('script[type="application/ld+json"]:not(#article-jsonld-dynamic)');
 		for (var i = 0; i < existing.length; i++) {
 			if (/"@type"\s*:\s*"ScholarlyArticle"/.test(existing[i].textContent)) return;
@@ -256,40 +301,41 @@
 		}
 
 		var authors = (a.authors || []).map(function (author) {
-			var name = decodeEntities(displayName(author).trim());
+			var name = plainText(displayName(author));
 			if (!name) return null;
-			return { '@type': 'Person', 'name': name };
+			var person = { '@type': 'Person', 'name': name };
+			if (author.ORCID && /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/i.test(author.ORCID)) {
+				person.url = window.location.origin + '/authors/' + author.ORCID.toUpperCase() + '/';
+				person.sameAs = 'https://orcid.org/' + author.ORCID.toUpperCase();
+			}
+			return person;
 		}).filter(Boolean);
 
 		var data = {
 			'@context': 'https://schema.org',
 			'@type': 'ScholarlyArticle',
-			'headline': stripHtml(a.title || ''),
-			'description': descriptionText,
+			'headline': plainText(a.title || ''),
 			'url': pageUrl,
-			'isPartOf': {
-				'@type': 'WebSite',
-				'name': siteTitle,
-				'url': window.location.origin + '/'
-			},
-			'publisher': {
-				'@type': 'Organization',
-				'name': siteTitle,
-				'url': window.location.origin + '/'
-			}
+			'mainEntityOfPage': pageUrl
 		};
+		if (descriptionText) data.description = descriptionText;
 
 		var publishedIso = toISOStringSafe(a.published_date);
-		var modifiedIso = toISOStringSafe(a.discovery_date || a.added_date);
 		if (publishedIso) data.datePublished = publishedIso;
-		if (modifiedIso) data.dateModified = modifiedIso;
-		if (a.doi) data.identifier = a.doi;
+		if (authors.length) data.author = authors;
+		if (a.publisher) data.publisher = { '@type': 'Organization', 'name': plainText(a.publisher) };
+		if (a.container_title) data.isPartOf = { '@type': 'Periodical', 'name': plainText(a.container_title) };
+
+		var identifiers = [['DOI', a.doi], ['PMID', a.pmid], ['PMCID', a.pmcid]]
+			.filter(function (p) { return p[1]; })
+			.map(function (p) { return { '@type': 'PropertyValue', 'propertyID': p[0], 'value': String(p[1]).trim() }; });
+		if (identifiers.length) data.identifier = identifiers;
+
 		var sourceLink = safeLink(a.link);
 		if (sourceLink && sourceLink !== '#') data.sameAs = sourceLink;
-		if (a.container_title) data.isPartOf = { '@type': 'Periodical', 'name': stripHtml(a.container_title) };
-		if (authors.length) data.author = authors;
+		if (a.access) data.isAccessibleForFree = a.access === 'open';
 
-		el.textContent = JSON.stringify(data);
+		el.textContent = JSON.stringify(data).replace(/</g, '\\u003c');
 	}
 
 	function updateRuntimeMetadata(a) {
@@ -311,9 +357,8 @@
 		upsertMetaByProperty('og:type', 'article');
 
 		var publishedIso = toISOStringSafe(a.published_date);
-		var modifiedIso = toISOStringSafe(a.discovery_date || a.added_date);
 		if (publishedIso) upsertMetaByProperty('article:published_time', publishedIso);
-		if (modifiedIso) upsertMetaByProperty('article:modified_time', modifiedIso);
+		// No article:modified_time — see updateStructuredData().
 
 		updateStructuredData(a, pageUrl, descriptionText);
 	}
@@ -616,6 +661,22 @@
 		'</section>';
 	}
 
+	// Home / {primary subject's papers page} / article. The Pages Function emits the
+	// matching BreadcrumbList from the same map and the same rule (lowest rank,
+	// papers page before landing page), so the two agree. No linked subject → no
+	// breadcrumb (and no BreadcrumbList).
+	function renderBreadcrumb(a) {
+		var subject = primarySubject(a.subjects);
+		if (!subject) return '';
+		return '<nav class="breadcrumb-nav article-breadcrumb" aria-label="Breadcrumb">' +
+			'<a href="/">Home</a>' +
+			'<span class="separator" aria-hidden="true">/</span>' +
+			'<a href="' + escHtml(subject.papers || subject.url) + '">' + escHtml(decodeEntities(subject.name)) + '</a>' +
+			'<span class="separator" aria-hidden="true">/</span>' +
+			'<span class="current" aria-current="page">' + escHtml(plainText(a.title || '')) + '</span>' +
+		'</nav>';
+	}
+
 	function renderArticle(a) {
 		var mlGrouped = groupPredictions(a.ml_predictions);
 		var summary   = editorialSummary(a);
@@ -651,7 +712,8 @@
 			(mlGrouped.length ? renderMLWidget(mlGrouped) : '') +
 			renderSubscribeCTA(a);
 
-		return (a.retracted ? renderRetractedBanner() : '') +
+		return renderBreadcrumb(a) +
+			(a.retracted ? renderRetractedBanner() : '') +
 			'<div class="article-grid">' +
 				'<div class="article-grid__main">' + main + '</div>' +
 				'<aside class="article-grid__aside">' + aside + '</aside>' +

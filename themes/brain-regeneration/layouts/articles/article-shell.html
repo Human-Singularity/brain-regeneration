@@ -33,10 +33,13 @@
 {{ end }}
 
 {{ define "page-scripts" }}
+{{- $subjectLinks := partial "subject-links" . | jsonify -}}
+{{- /* Same map as a static file, for functions/articles/[id].js (BreadcrumbList). */ -}}
+{{- with resources.FromString "subject-links.json" $subjectLinks }}{{ .Publish }}{{ end -}}
 <script>
 	window.__API_BASE__ = {{ .Site.Params.apiBase | default "https://api.brain-regeneration.com" | jsonify }};
 	// Subject id → landing page + papers/trials tables + curated categories (partials/subject-links.html).
-	window.__SUBJECT_LINKS__ = {{ partial "subject-links" . | jsonify | safeJS }};
+	window.__SUBJECT_LINKS__ = {{ $subjectLinks | safeJS }};
 </script>
 <script src="{{ "js/article-single.js" | relURL }}"></script>
 {{ end }}

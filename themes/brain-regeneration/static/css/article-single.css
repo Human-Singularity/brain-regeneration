@@ -4,29 +4,15 @@
  */
 
 /* ── Breadcrumb ──────────────────────────────────────────────── */
+/* Light .breadcrumb-nav (main.css) on the sand background. Rendered by
+   article-single.js; matches the BreadcrumbList from functions/articles/[id].js.
+   One line: a long title ends in an ellipsis rather than wrapping. */
 .article-breadcrumb {
-	background: var(--color-primary);
-	border-top: 1px solid rgba(255, 255, 255, 0.1);
-	padding: 10px 0;
-	font-family: var(--font-heading);
-	font-size: 13px;
-	color: rgba(255, 255, 255, 0.65);
-}
-.article-breadcrumb a {
-	color: rgba(255, 255, 255, 0.65);
-	text-decoration: none;
-}
-.article-breadcrumb a:hover { color: #fff; }
-.article-breadcrumb__sep {
-	color: rgba(255, 255, 255, 0.4);
-	margin: 0 6px;
-}
-.article-breadcrumb__placeholder {
-	color: rgba(255, 255, 255, 0.65);
-}
-#article-breadcrumb-label {
-	color: rgba(255, 255, 255, 0.9);
-	font-weight: 500;
+	padding: 0;
+	margin: -16px 0 20px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* ── Loading skeleton ────────────────────────────────────────── */

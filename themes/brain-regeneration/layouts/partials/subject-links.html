@@ -11,13 +11,19 @@
     trials      — clinical-trials table ("" if none; conditions only)
     categories  — category ids curated in that page's category_groups (the
                   ones the tables offer as filters)
+    rank        — fixed order for picking ONE subject when a record has several
+                  (breadcrumbs): conditions before research areas, then page
+                  Weight, then title. Lowest wins. Read by BR.primarySubject
+                  (br-utils.js) and primarySubjectLink (functions/_shared/meta.js).
   }
+
+  Also published as /subject-links.json by articles/article-shell.html, for the
+  /articles/{id}/ Pages Function.
 
   Param: any page (unused; the map is site-wide)
 */ -}}
 {{- $links := dict -}}
-{{- range where (where site.Pages "Section" "conditions") "Kind" "section" -}}
-	{{- $cond := . -}}
+{{- range $i, $cond := sort (where (where site.Pages "Section" "conditions") "Kind" "section") "Title" -}}
 	{{- $sid := "" -}}
 	{{- with .Params.api -}}{{- with .subject_id -}}{{- $sid = string . -}}{{- end -}}{{- end -}}
 	{{- if $sid -}}
@@ -33,11 +39,11 @@
 			"url" $cond.RelPermalink
 			"papers" $papers
 			"trials" $cond.RelPermalink
-			"categories" $cats)) -}}
+			"categories" $cats
+			"rank" (add (mul $cond.Weight 1000) $i))) -}}
 	{{- end -}}
 {{- end -}}
-{{- range where site.RegularPages "Section" "research-areas" -}}
-	{{- $area := . -}}
+{{- range $i, $area := sort (where site.RegularPages "Section" "research-areas") "Title" -}}
 	{{- $sid := "" -}}
 	{{- with .Params.api -}}{{- with .subject_id -}}{{- $sid = string . -}}{{- end -}}{{- end -}}
 	{{- if $sid -}}
@@ -48,7 +54,8 @@
 			"url" $area.RelPermalink
 			"papers" $area.RelPermalink
 			"trials" ""
-			"categories" $cats)) -}}
+			"categories" $cats
+			"rank" (add 1000000 (mul $area.Weight 1000) $i))) -}}
 	{{- end -}}
 {{- end -}}
 {{- return $links -}}

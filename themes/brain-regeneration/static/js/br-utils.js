@@ -181,6 +181,22 @@
 		return e ? e.url : null;
 	}
 
+	// One subject for a record that has several (breadcrumbs): among the record's
+	// subjects that have a page on this site, the entry with the lowest `rank`
+	// (conditions before research areas; see partials/subject-links.html).
+	// Returns { name, url, papers, rank } or null. Keep in step with primarySubjectLink() in
+	// functions/_shared/meta.js, which builds the matching BreadcrumbList.
+	function primarySubject(subjects) {
+		var best = null;
+		(subjects || []).forEach(function (s) {
+			var e = subjectEntry(s);
+			if (!e || !e.url) return;
+			var rank = isFinite(Number(e.rank)) ? Number(e.rank) : Infinity;
+			if (!best || rank < best.rank) best = { name: e.name, url: e.url, papers: e.papers, rank: rank };
+		});
+		return best;
+	}
+
 	// The table filtered to one category. kind: 'papers' (any category works:
 	// research-feed.js resolves names it doesn't curate) or 'trials' (only
 	// curated categories, because the trials filter only offers those).
@@ -216,6 +232,7 @@
 		makeCache: makeCache,
 		trackSearch: trackSearch,
 		subjectUrl: subjectUrl,
+		primarySubject: primarySubject,
 		categoryUrl: categoryUrl
 	});
 })(window);
