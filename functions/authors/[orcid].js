@@ -1,6 +1,7 @@
 import {
 	API_BASE,
 	SITE_ORIGIN,
+	ORCID_RE,
 	buildDescription,
 	cleanText,
 	authorName,
@@ -9,8 +10,6 @@ import {
 	SetAttr,
 	AppendJsonLd,
 } from '../_shared/meta.js';
-
-const ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
 
 async function findAuthorByOrcid(orcid) {
 	const url = new URL(`${API_BASE}/authors/`);
