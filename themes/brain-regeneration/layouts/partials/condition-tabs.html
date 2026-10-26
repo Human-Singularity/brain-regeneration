@@ -1,11 +1,11 @@
 {{- /*
-  condition-tabs.html — Clinical Trials / Research Papers / Patents tab strip
+  condition-tabs.html — Research Papers / Clinical Trials / Patents / Medicines tab strip
   for a condition section. A tab whose sibling page doesn't exist renders as a
   disabled "Coming soon" tab.
 
   Params (dict):
     condition — the condition section page (e.g. /conditions/multiple-sclerosis/)
-    active    — "trials" | "papers" | "patents"
+    active    — "trials" | "papers" | "patents" | "medicines"
 */ -}}
 {{- $condition := .condition -}}
 {{- $active := .active -}}
@@ -13,10 +13,13 @@
 {{- with where $condition.Pages "Params.layout" "research-papers" -}}{{- $rpPage = index . 0 -}}{{- end -}}
 {{- $patentsPage := "" -}}
 {{- with where $condition.Pages "Params.layout" "patents" -}}{{- $patentsPage = index . 0 -}}{{- end -}}
+{{- $medicinesPage := "" -}}
+{{- with where $condition.Pages "Params.layout" "medicines" -}}{{- $medicinesPage = index . 0 -}}{{- end -}}
 {{- $tabs := slice
-	(dict "key" "trials"  "label" "Clinical Trials" "page" $condition)
 	(dict "key" "papers"  "label" "Research Papers" "page" $rpPage)
-	(dict "key" "patents" "label" "Patents"         "page" $patentsPage) -}}
+	(dict "key" "trials"  "label" "Clinical Trials" "page" $condition)
+	(dict "key" "patents" "label" "Patents"         "page" $patentsPage)
+	(dict "key" "medicines" "label" "Medicines"       "page" $medicinesPage) -}}
 <div class="section-tabs">
 	<div class="container">
 		<nav class="section-tabs-nav">

@@ -15,6 +15,9 @@
                       (+ new patent families, only on the page using the patents layout)
     research-areas/*  relevant research, all research
 
+  Medicines feed: site-wide only — the backend has per-category and per-site medicine
+  feeds, no per-subject one. medicines-feed.js adds the selected category's feed.
+
   Patent feed: links only — never abstracts or claims (EPO licence forbids syndicating them).
 
   Param: the page (.)
@@ -51,6 +54,12 @@
 				"title" (printf "New %s patent families" $name)
 				"desc" "New patent families, newest first by first publication date"
 				"href" (printf "%spatents/subject/%s/" $base $slug)) -}}
+		{{- end -}}
+		{{- if eq $page.Params.layout "medicines" -}}
+			{{- $items = $items | append (dict "key" "medicines" "label" "Medicine approvals"
+				"title" "Medicine approvals"
+				"desc" "EU regulatory events for the medicines we track"
+				"href" (printf "%smedicines/" $base)) -}}
 		{{- end -}}
 	{{- end -}}
 {{- end -}}
