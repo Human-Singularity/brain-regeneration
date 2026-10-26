@@ -219,7 +219,7 @@
 
 	function emptyMessage() {
 		if (!state.products.length) {
-			return 'No centrally authorised medicines are linked to ' + escHtml(condition) + ' yet. Medicines authorised by individual EU countries don’t appear in EMA’s central register.';
+			return 'No centrally authorised medicines for ' + escHtml(condition) + ' yet. Medicines authorised by individual EU countries don’t appear in EMA’s central register.';
 		}
 		if (state.category && !state.products.some(function (p) { return hasCategory(p, state.category); })) {
 			return escHtml(categoryLabel(state.category)) + ': no centrally authorised medicine. It may still be in trials, or authorised by individual countries.';
@@ -229,6 +229,13 @@
 
 	function chip(text, title) {
 		return '<span class="medicine-chip"' + (title ? ' title="' + escHtml(title) + '"' : '') + '>' + escHtml(text) + '</span>';
+	}
+
+	function productById(id) {
+		for (var i = 0; i < state.products.length; i++) {
+			if (String(state.products[i].id) === String(id)) return state.products[i];
+		}
+		return null;
 	}
 
 	function buildCard(p) {
@@ -255,6 +262,9 @@
 				: '<span' + attrs + '>' + label + '</span>';
 		}).join('');
 
+		var lead = p.grouped_under ? productById(p.grouped_under) : null;
+		var sameAs = lead ? '<div class="medicine-muted">Same medicine as ' + escHtml(decodeEntities(lead.name || '')) + '</div>' : '';
+
 		var ec = '';
 		if (p.latest_ec_decision_date && p.latest_ec_decision_date !== p.authorisation_date) {
 			ec = '<span class="medicine-muted">Latest EC decision ' + escHtml(formatDate(p.latest_ec_decision_date)) + '</span>';
@@ -267,6 +277,7 @@
 				'<span class="medicine-badge medicine-badge--' + b.cls + '">' + escHtml(b.label) + '</span>' +
 			'</div>' +
 			(inn ? '<div class="medicine-inn">' + escHtml(inn) + '</div>' : '') +
+			sameAs +
 			(b.date ? '<div class="medicine-date">' + escHtml(b.date) + '</div>' : '') +
 			(indication
 				? '<div class="paper-card-abstract medicine-indication' + (long ? ' is-clamped' : '') + '">' + escHtml(indication) + '</div>' +
@@ -296,9 +307,16 @@
 	}
 
 	// ── Card interactions ───────────────────────────────────────────────────
-	function historyHtml(events) {
-		if (!events || !events.length) return '<p class="medicine-muted">No recorded events yet.</p>';
-		return '<ul class="medicine-history-list">' + events.map(function (e) {
+	function historyHtml(d) {
+		var events = d.events, grouped = d.grouped || [];
+		var also = grouped.length
+			? '<p class="medicine-muted">Also authorised as: ' + grouped.map(function (g) {
+				var name = escHtml(decodeEntities(g.name || ''));
+				return g.url ? '<a href="' + escHtml(safeLink(g.url)) + '" target="_blank" rel="noopener noreferrer">' + name + '</a>' : name;
+			}).join(', ') + '</p>'
+			: '';
+		if (!events || !events.length) return also + '<p class="medicine-muted">No recorded events yet.</p>';
+		return also + '<ul class="medicine-history-list">' + events.map(function (e) {
 			return '<li><span class="medicine-history-date">' + escHtml(formatDate(e.event_date)) + '</span> ' + escHtml(e.kind_label || e.kind || '') + '</li>';
 		}).join('') + '</ul>';
 	}
@@ -333,7 +351,7 @@
 		panel.innerHTML = '<p class="medicine-muted">Loading…</p>';
 		fetch(apiBase + '/medicines/' + encodeURIComponent(id) + '/?format=json')
 			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-			.then(function (d) { historyCache[id] = d.events || []; panel.innerHTML = historyHtml(historyCache[id]); })
+			.then(function (d) { historyCache[id] = { events: d.events || [], grouped: d.grouped_products || [] }; panel.innerHTML = historyHtml(historyCache[id]); })
 			.catch(function () { panel.innerHTML = '<p class="medicine-muted">We could not load the history.</p>'; });
 	});
 
