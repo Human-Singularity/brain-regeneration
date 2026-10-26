@@ -155,7 +155,7 @@
 <link rel="preload" as="style" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="{{ $mainCSS.RelPermalink }}" integrity="{{ $mainCSS.Data.Integrity }}"></noscript>
 
-{{- $feedLayouts := slice "single" "research-papers" "patents" }}
+{{- $feedLayouts := slice "single" "research-papers" "patents" "medicines" }}
 {{- $needsFeedsMobileCSS := or (in $feedLayouts .Params.layout) (and (eq .Section "research-areas") (eq .Kind "page")) }}
 {{- if $needsFeedsMobileCSS }}
 	{{- $feedsMobileCSS := resources.Get "css/feeds-mobile.css" | minify | fingerprint }}
