@@ -1,0 +1,229 @@
+{{ define "extra-head" }}
+{{ partial "feeds/rss-head.html" . }}
+{{ end }}
+
+{{ define "main" }}
+
+{{/* Resolve parent condition page (e.g. /conditions/multiple-sclerosis/) */}}
+{{ $conditionPage := .Parent }}
+
+{{- $apiBase := .Site.Params.apiBase -}}
+{{- $subjectId := "" -}}
+{{- with .Params.api }}{{ $subjectId = .subject_id | string }}{{ end -}}
+{{- $endpoint := partial "api-endpoint" (dict "api" .Params.api "apiBase" $apiBase) -}}
+
+{{/* Category filter reuses the research-papers sibling's curated groups — the category IDs are shared with medicines */}}
+{{- $categoryGroups := .Params.category_groups -}}
+{{- if not $categoryGroups -}}
+	{{- with where $conditionPage.Pages "Params.layout" "research-papers" -}}{{- $categoryGroups = (index . 0).Params.category_groups -}}{{- end -}}
+{{- end -}}
+
+{{- $statuses := slice
+	(dict "value" "authorised"  "label" "Authorised")
+	(dict "value" "review"      "label" "Under review")
+	(dict "value" "refused"     "label" "Refused")
+	(dict "value" "ended"       "label" "No longer authorised")
+	(dict "value" "application_withdrawn" "label" "Application withdrawn") -}}
+{{- $sorts := slice
+	(dict "value" "approval"     "label" "Newest approval")
+	(dict "value" "approval_asc" "label" "Oldest approval")
+	(dict "value" "updated"      "label" "Recently updated") -}}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
+		<span>/</span>
+		<a href="{{ $conditionPage.RelPermalink }}">{{ $conditionPage.Title }}</a>
+		<span>/</span>
+		<strong>Medicines</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }} — Medicines</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── SECTION TABS ── -->
+{{ partial "condition-tabs" (dict "condition" $conditionPage "active" "medicines") }}
+
+<!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
+<div class="d-none d-lg-block">
+<div class="filter-bar" id="medicines-filters">
+	<div class="container">
+		<form id="medicines-filter-form" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-4">
+					<label for="medicines-search-input">Search medicines</label>
+					<input type="text" class="form-control" id="medicines-search-input" placeholder="Name or active substance, e.g. ocrelizumab" autocomplete="off">
+				</div>
+				<div class="col-12 col-md-3">
+					<label for="medicines-category-select">Category</label>
+					<select class="form-select" id="medicines-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-3">
+					<label for="medicines-status-select">EU status</label>
+					<select class="form-select" id="medicines-status-select">
+						<option value="">All statuses</option>
+						{{- range $statuses }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+					</select>
+				</div>
+				<div class="col-12 col-md-2 d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="medicines-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mt-1">
+				<div class="col-12 col-md-auto">
+					<div class="search-toggle-row">
+						<input type="checkbox" class="search-toggle-input" id="medicines-generics" role="switch">
+						<label for="medicines-generics" class="search-toggle-label">Show generics and biosimilars</label>
+					</div>
+				</div>
+				<div class="col-12 col-md-auto ms-auto d-flex align-items-center gap-3">
+					<span class="results-count" id="medicines-result-count" style="white-space: nowrap;"></span>
+					<label for="medicines-sort-select" class="visually-hidden">Sort by</label>
+					<select class="form-select" id="medicines-sort-select" style="max-width: 210px; font-size: 13px;">
+						{{- range $sorts }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+					</select>
+					{{ partial "feeds/rss-dropdown" (dict "page" . "id" "medicines-rss-toggle") }}
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</div>{{/* end d-none d-lg-block */}}
+
+<!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
+<div class="mobile-feeds-bar d-lg-none" id="medicines-mobile-bar">
+	<div class="container">
+		<div class="mobile-search-wrap">
+			<label for="medicines-mobile-search" class="visually-hidden">Search medicines</label>
+			<input type="text" class="form-control" id="medicines-mobile-search" placeholder="Search medicines…" autocomplete="off">
+			<button type="button" class="mobile-search-clear" id="medicines-mobile-clear" hidden aria-label="Clear search">
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="filter-tokens" id="medicines-filter-tokens" hidden>
+			<button type="button" class="token-add-filters"
+				data-bs-toggle="offcanvas"
+				data-bs-target="#medicines-filter-sheet"
+				aria-controls="medicines-filter-sheet">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+				+ Filters
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── MOBILE FILTER BOTTOM SHEET ── -->
+<div class="offcanvas offcanvas-bottom filter-sheet d-lg-none"
+	tabindex="-1"
+	id="medicines-filter-sheet"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Filter medicines">
+	<div class="offcanvas-header">
+		<div class="title-row">
+			<h5 class="offcanvas-title">Filters</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+	</div>
+	<div class="offcanvas-body">
+		<div class="sheet-group">
+			<div class="sheet-group-label">Category</div>
+			<div class="sheet-chips" id="medicines-sheet-category">
+				<button type="button" class="sheet-chip active" data-value="">All categories</button>
+				{{/* chips populated by JS from category groups */}}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">EU status</div>
+			<div class="sheet-chips" id="medicines-sheet-status">
+				<button type="button" class="sheet-chip active" data-value="">All statuses</button>
+				{{- range $statuses }}
+				<button type="button" class="sheet-chip" data-value="{{ .value }}">{{ .label }}</button>
+				{{- end }}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Generics and biosimilars</div>
+			<div class="sheet-chips" id="medicines-sheet-generics">
+				<button type="button" class="sheet-chip active" data-value="false">Hide</button>
+				<button type="button" class="sheet-chip" data-value="true">Show</button>
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Sort by</div>
+			<div class="sheet-chips" id="medicines-sheet-sort">
+				{{- range $i, $s := $sorts }}
+				<button type="button" class="sheet-chip{{ if eq $i 0 }} active{{ end }}" data-value="{{ $s.value }}">{{ $s.label }}</button>
+				{{- end }}
+			</div>
+		</div>
+	</div>
+	<div class="sheet-footer">
+		<button type="button" class="btn-outline-teal" id="medicines-sheet-reset">Reset</button>
+		<button type="button" class="btn-amber" id="medicines-sheet-apply">Show results</button>
+	</div>
+</div>
+
+<!-- ── MOBILE FAB ── -->
+<button type="button" class="filter-fab d-lg-none" id="medicines-filter-fab"
+	data-bs-toggle="offcanvas"
+	data-bs-target="#medicines-filter-sheet"
+	aria-controls="medicines-filter-sheet"
+	aria-label="Open filters">
+	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+	Filters
+	<span class="fab-count" id="medicines-fab-count" hidden>0</span>
+</button>
+
+<!-- ── MEDICINE LISTING ── -->
+<section class="section bg-sand" style="padding-top: 24px;">
+	<div class="container">
+		<noscript>
+			<p>JavaScript is required to load medicines.</p>
+		</noscript>
+
+		<div class="mobile-feed-bar d-lg-none">
+		<p class="mobile-result-count d-lg-none" id="medicines-mobile-result-count" aria-live="polite"></p>
+		{{ partial "feeds/rss-dropdown" (dict "page" . "id" "medicines-rss-toggle-mobile") }}
+		</div>
+
+		<div
+			id="medicines-list"
+			data-api-base="{{ $apiBase }}"
+			data-endpoint="{{ $endpoint }}"
+			data-subject-id="{{ $subjectId }}"
+			data-condition="{{ $conditionPage.Title }}"
+			data-papers-url="{{ with where $conditionPage.Pages "Params.layout" "research-papers" }}{{ (index . 0).RelPermalink }}{{ end }}"
+			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
+		</div>
+
+		<h2 class="medicines-events-heading">Latest EU regulatory events</h2>
+		<div id="medicines-events" class="medicines-events"></div>
+
+		<p class="medicines-source-note">
+			Medicine data from the <a href="https://www.ema.europa.eu/en/medicines" target="_blank" rel="noopener noreferrer">European Medicines Agency</a>, updated twice a day.
+			Only medicines authorised centrally for the whole EU are listed; some medicines are authorised by individual countries instead and don't appear here.
+		</p>
+	</div>
+</section>
+
+{{ partial "feeds/rss-follow.html" . }}
+
+<script src="{{ "js/medicines-feed.js" | relURL }}" defer></script>
+
+{{ end }}
