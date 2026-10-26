@@ -6,7 +6,7 @@ draft: false
 
 description: "Medicines for Alzheimer's Disease and where they stand with the European Medicines Agency: authorised, under review, refused or withdrawn."
 
-hero_description: "Every medicine we track for Alzheimer's Disease that has gone through the European Medicines Agency, with its EU status, approval date, indication and latest regulatory events. Each record links to its page on ema.europa.eu."
+hero_description: "Every medicine the European Medicines Agency has assessed for Alzheimer's Disease, with its EU status, approval date, indication and latest regulatory events. Each record links to its page on ema.europa.eu."
 
 feed_slug: "alzheimer-disease"
 
