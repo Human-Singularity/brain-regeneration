@@ -251,14 +251,16 @@
 	var truncate  = BR.truncate;  // pure truncate \u2014 strip HTML at the call site
 
 	// ── API URL builder ──────────────────────────────────────────────────────
-	function buildURL(page) {
+	// `fuzzyAcronym` swaps the exact ?acronym= filter for the substring
+	// ?acronym_contains= one (used as a fallback when the exact match is empty).
+	function buildURL(page, fuzzyAcronym) {
 		var url = new URL(endpoint);
 		url.searchParams.set('format', 'json');
 		if (teamId)       url.searchParams.set('team_id',    teamId);
 		if (subjectId)    url.searchParams.set('subject_id', subjectId);
 		if (state.keyword)     url.searchParams.set('search',             state.keyword);
 		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
-		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
+		if (state.acronym)     url.searchParams.set(fuzzyAcronym ? 'acronym_contains' : 'acronym', state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
 		if (state.country)     setCountryParam(url, state.country);
@@ -482,7 +484,47 @@
 		if (noResults) noResults.style.display = 'block';
 		if (paginationEl) paginationEl.style.display = 'none';
 		if (resultsCountEl) resultsCountEl.innerHTML = '<strong>0</strong> trials found';
-		return; // pagination already hidden above
+		suggestAllStatuses();
+	}
+
+	// When a status filter is what emptied the list, offer to drop it, but only
+	// if the same search without it actually has results.
+	function suggestAllStatuses() {
+		if (!noResults) return;
+		var old = noResults.querySelector('.broaden-status');
+		if (old) old.remove();
+		if (!state.status) return;
+		var saved = state.status;
+		state.status = '';
+		var url = buildURL(1);
+		state.status = saved;
+		fetch(url)
+			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+			.then(function (data) {
+				// Ignore stale replies: the user may have changed filters meanwhile.
+				if (state.status !== saved || !data || !(data.count > 0)) return;
+				var prev = noResults.querySelector('.broaden-status');
+				if (prev) prev.remove();
+				var label = (STATUS_MAP[saved] && STATUS_MAP[saved].label) || saved;
+				var p = document.createElement('p');
+				p.className = 'broaden-status';
+				p.appendChild(document.createTextNode('No \u201c' + label + '\u201d trials match, but ' +
+					data.count.toLocaleString() + ' ' + (data.count === 1 ? 'trial matches' : 'trials match') + ' across all statuses. '));
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'btn-outline-teal';
+				btn.textContent = 'Show all statuses';
+				btn.addEventListener('click', function () {
+					state.status = '';
+					if (filterStatus) filterStatus.value = '';
+					if (typeof trialsDraft !== 'undefined' && trialsDraft) trialsDraft.status = '';
+					state.page = 1;
+					fetchPage(1, true);
+				});
+				p.appendChild(btn);
+				noResults.appendChild(p);
+			})
+			.catch(function () { /* suggestion is optional */ });
 	}
 
 	function renderError() {
@@ -622,7 +664,12 @@
 	}
 
 	// ── Fetch ─────────────────────────────────────────────────────────────────
+	// True when the last search only matched via the ?acronym_contains= fallback,
+	// so the CSV download exports the same rows the user is looking at.
+	var acronymFuzzy = false;
+
 	function fetchPage(page, push) {
+		acronymFuzzy = false;
 		var url = buildURL(page);
 		var cacheKey = 'brTrialsFeed:' + url;
 		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
@@ -638,10 +685,26 @@
 		}
 
 		renderLoading();
-		fetch(url)
-			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+		function getJSON(u) {
+			return fetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+		}
+		getJSON(url)
 			.then(function (data) {
+				// Exact acronym matched nothing: retry as a case-insensitive substring match.
+				if (state.acronym && !(data && data.count > 0)) {
+					var fuzzyUrl = buildURL(page, true);
+					var fuzzyKey = 'brTrialsFeed:' + fuzzyUrl;
+					var hit = getCached(fuzzyKey);
+					if (hit && hit.count > 0) { acronymFuzzy = true; return hit; }
+					return getJSON(fuzzyUrl).then(function (fuzzy) {
+						if (fuzzy && fuzzy.count > 0) { setCached(fuzzyKey, fuzzy); acronymFuzzy = true; return fuzzy; }
+						return data;
+					});
+				}
 				if (data && data.count > 0) setCached(cacheKey, data);
+				return data;
+			})
+			.then(function (data) {
 				renderCards(data.results || []);
 				updatePagination(data.current_page || page, data.total_pages || 1, data.count || 0);
 				if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (data.count || 0).toLocaleString();
@@ -867,7 +930,7 @@
 		if (subjectId)     url.searchParams.set('subject_id', subjectId);
 		if (state.keyword)     url.searchParams.set('search',             state.keyword);
 		if (state.identifiers) url.searchParams.set('identifiers',        state.identifiers);
-		if (state.acronym)     url.searchParams.set('acronym',            state.acronym);
+		if (state.acronym)     url.searchParams.set(acronymFuzzy ? 'acronym_contains' : 'acronym', state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
 		if (state.country)     setCountryParam(url, state.country);
