@@ -534,12 +534,15 @@
 		if (!summary && !takeaways) return '';
 		return '<div class="plain-english">' +
 			'<span class="plain-english__label">' + icon('sparkle', 12) + ' AI generated</span>' +
-			(summary ? '<div class="plain-english__body">' + sanitizeSummaryHtml(String(summary)) + '</div>' : '') +
 			(takeaways ?
 				'<div class="plain-english__takeaways">' +
 					'<h3 class="plain-english__subhead">Key takeaways</h3>' +
 					'<div class="plain-english__body">' + sanitizeSummaryHtml(String(takeaways)) + '</div>' +
 				'</div>' : '') +
+			(summary ? '<div class="plain-english__summary">' +
+				(takeaways ? '<h3 class="plain-english__subhead">Summary</h3>' : '') +
+				'<div class="plain-english__body">' + sanitizeSummaryHtml(String(summary)) + '</div>' +
+			'</div>' : '') +
 		'</div>';
 	}
 
