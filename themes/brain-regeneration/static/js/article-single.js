@@ -219,6 +219,11 @@
 		return (e && e.summary_plain_english) || a.summary_plain_english || '';
 	}
 
+	function editorialTakeaways(a) {
+		var e = a.editorial && a.editorial[0];
+		return (e && e.takeaways) || '';
+	}
+
 	// Tags stripped and entities decoded in either order, like toPlainText() in
 	// functions/_shared/meta.js, so the meta description this script sets matches
 	// the one the Pages Function served.
@@ -525,11 +530,19 @@
 		return out.innerHTML;
 	}
 
-	function renderPlainEnglish(summary) {
-		if (!summary) return '';
+	function renderPlainEnglish(summary, takeaways) {
+		if (!summary && !takeaways) return '';
 		return '<div class="plain-english">' +
 			'<span class="plain-english__label">' + icon('sparkle', 12) + ' AI generated</span>' +
-			'<div class="plain-english__body">' + sanitizeSummaryHtml(String(summary)) + '</div>' +
+			(takeaways ?
+				'<div class="plain-english__takeaways">' +
+					'<h3 class="plain-english__subhead">Key takeaways</h3>' +
+					'<div class="plain-english__body">' + sanitizeSummaryHtml(String(takeaways)) + '</div>' +
+				'</div>' : '') +
+			(summary ? '<div class="plain-english__summary">' +
+				(takeaways ? '<h3 class="plain-english__subhead">Summary</h3>' : '') +
+				'<div class="plain-english__body">' + sanitizeSummaryHtml(String(summary)) + '</div>' +
+			'</div>' : '') +
 		'</div>';
 	}
 
@@ -680,15 +693,16 @@
 	function renderArticle(a) {
 		var mlGrouped = groupPredictions(a.ml_predictions);
 		var summary   = editorialSummary(a);
+		var takeaways = editorialTakeaways(a);
 		var trials    = a.clinical_trials || [];
 
 		var main = renderArticleHeader(a) +
 			renderMetaInline(a) +
 			renderActionRow(a);
 
-		if (summary) {
+		if (summary || takeaways) {
 			main += '<section class="article-section">' +
-				renderPlainEnglish(summary) +
+				renderPlainEnglish(summary, takeaways) +
 			'</section>';
 		}
 
