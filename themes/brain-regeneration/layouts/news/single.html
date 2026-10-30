@@ -8,7 +8,9 @@
 <!-- ── Reading progress bar ── -->
 <div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
 
-<div class="b-shell">
+{{- /* `toc: false` in front matter hides the TOC rail and centres the page on one reading column */ -}}
+{{- $showTOC := ne .Params.toc false }}
+<div class="b-shell{{ if not $showTOC }} b-shell--no-toc{{ end }}">
 
 	<!-- ── Header ── -->
 	<div class="b-header">
@@ -121,11 +123,13 @@
 			{{ end }}
 		</article>
 
+		{{- if $showTOC }}
 		<!-- Right-rail: sticky TOC (populated by JS) -->
 		<aside class="b-toc" aria-label="Table of contents">
 			<div class="toc__label">On this page</div>
 			<ul class="toc__list" id="js-toc-list" role="list"></ul>
 		</aside>
+		{{- end }}
 
 	</div>
 </div>
