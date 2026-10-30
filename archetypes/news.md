@@ -19,6 +19,9 @@ image_caption: ""
 # TopRight, BottomLeft, BottomRight.
 image_anchor: ""
 
+# Optional: set to false to hide the "On this page" table of contents. Shown by default.
+toc: true
+
 # Tags for categorisation
 tags: []
 

@@ -157,6 +157,13 @@
 	gap: 80px;
 	align-items: start;
 }
+/* Page set `toc: false`: no right rail. Centre one 720px reading column and
+   narrow the header and hero caption to it, so title, meta, caption and text
+   share the same left edge under the (still wide) hero. */
+.b-shell--no-toc .b-body { grid-template-columns: 1fr; }
+.b-shell--no-toc .b-col { margin: 0 auto; }
+.b-shell--no-toc .b-header { max-width: 784px; } /* 720 + 2 × 32px padding */
+.b-shell--no-toc .b-hero-caption .caption { margin-left: auto; margin-right: auto; }
 .b-col {
 	max-width: 720px;
 	min-width: 0; /* prevent overflow in grid */
