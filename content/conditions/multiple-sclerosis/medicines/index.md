@@ -4,9 +4,9 @@ layout: medicines
 date: 2026-10-25
 draft: false
 
-description: "Medicines for Multiple Sclerosis and where they stand with the European Medicines Agency: authorised, under review, refused or withdrawn."
+description: "Medicines for Multiple Sclerosis and where they stand with the European Medicines Agency and the U.S. FDA: authorised, approved, under review, refused or withdrawn."
 
-hero_description: "Every medicine the European Medicines Agency has assessed for Multiple Sclerosis, with its EU status, approval date, indication and latest regulatory events. Each record links to its page on ema.europa.eu."
+hero_description: "Every medicine the European Medicines Agency has assessed or the U.S. FDA has approved for Multiple Sclerosis, with its status at each regulator, approval date, indication and latest regulatory events. Each record links to its page at the regulator that issued it."
 
 feed_slug: "multiple-sclerosis"
 

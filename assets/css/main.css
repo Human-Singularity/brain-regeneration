@@ -3934,6 +3934,13 @@ a:hover {
 .medicine-badge--review { background-color: #FCEBD9; color: #8A4A0C; }
 .medicine-badge--bad    { background-color: #F8DEDC; color: #8E2A22; }
 .medicine-badge--ended  { background-color: var(--color-tint); color: var(--color-muted); }
+.medicine-badge--reg    { background-color: transparent; color: var(--color-primary); border: 1px solid currentColor; }
+.medicine-lines { list-style: none; margin: 10px 0 0; padding: 0; }
+.medicine-line { padding: 8px 0; border-top: 1px solid var(--color-tint); }
+.medicine-line:first-child { border-top: 0; }
+.medicine-line-main { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-family: var(--font-heading); font-size: 14px; }
+.medicine-line-main .medicine-date { margin-top: 0; }
+.medicine-source-link { color: var(--color-primary); font-size: 13px; }
 
 .medicine-indication { margin-top: 8px; }
 .medicine-indication.is-clamped {
