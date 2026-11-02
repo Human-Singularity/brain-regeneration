@@ -24,6 +24,11 @@
 	(dict "value" "refused"     "label" "Refused")
 	(dict "value" "ended"       "label" "No longer authorised")
 	(dict "value" "application_withdrawn" "label" "Application withdrawn") -}}
+{{- $fdaStatuses := slice
+	(dict "value" "fda_approved"     "label" "Approved")
+	(dict "value" "fda_tentative"    "label" "Tentatively approved")
+	(dict "value" "fda_discontinued" "label" "Discontinued")
+	(dict "value" "fda_revoked"      "label" "Revoked") -}}
 {{- $sorts := slice
 	(dict "value" "approval"     "label" "Newest approval")
 	(dict "value" "approval_asc" "label" "Oldest approval")
@@ -69,16 +74,31 @@
 						<option value="">All categories</option>
 					</select>
 				</div>
-				<div class="col-12 col-md-3">
-					<label for="medicines-status-select">EU status</label>
+				<div class="col-6 col-md-2">
+					<label for="medicines-regulator-select">Regulator</label>
+					<select class="form-select" id="medicines-regulator-select">
+						<option value="">Both</option>
+						<option value="ema">EMA</option>
+						<option value="fda">FDA</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="medicines-status-select">Status</label>
 					<select class="form-select" id="medicines-status-select">
 						<option value="">All statuses</option>
+						<optgroup label="EMA (EU)">
 						{{- range $statuses }}
 						<option value="{{ .value }}">{{ .label }}</option>
 						{{- end }}
+						</optgroup>
+						<optgroup label="FDA (US)">
+						{{- range $fdaStatuses }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+						</optgroup>
 					</select>
 				</div>
-				<div class="col-12 col-md-2 d-flex align-items-end">
+				<div class="col-12 col-md-1 d-flex align-items-end">
 					<button type="button" class="btn-outline-teal w-100" id="medicines-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
 				</div>
 			</div>
@@ -149,11 +169,22 @@
 			</div>
 		</div>
 		<div class="sheet-group">
-			<div class="sheet-group-label">EU status</div>
+			<div class="sheet-group-label">Regulator</div>
+			<div class="sheet-chips" id="medicines-sheet-regulator">
+				<button type="button" class="sheet-chip active" data-value="">Both</button>
+				<button type="button" class="sheet-chip" data-value="ema">EMA</button>
+				<button type="button" class="sheet-chip" data-value="fda">FDA</button>
+			</div>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Status</div>
 			<div class="sheet-chips" id="medicines-sheet-status">
 				<button type="button" class="sheet-chip active" data-value="">All statuses</button>
 				{{- range $statuses }}
-				<button type="button" class="sheet-chip" data-value="{{ .value }}">{{ .label }}</button>
+				<button type="button" class="sheet-chip" data-value="{{ .value }}">EMA: {{ .label }}</button>
+				{{- end }}
+				{{- range $fdaStatuses }}
+				<button type="button" class="sheet-chip" data-value="{{ .value }}">FDA: {{ .label }}</button>
 				{{- end }}
 			</div>
 		</div>
@@ -212,12 +243,13 @@
 			{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}>
 		</div>
 
-		<h2 class="medicines-events-heading">Latest EU regulatory events</h2>
+		<h2 class="medicines-events-heading">Latest regulatory events</h2>
 		<div id="medicines-events" class="medicines-events"></div>
 
 		<p class="medicines-source-note">
-			Medicine data from the <a href="https://www.ema.europa.eu/en/medicines" target="_blank" rel="noopener noreferrer">European Medicines Agency</a>, updated twice a day.
-			Only medicines authorised centrally for the whole EU are listed; some medicines are authorised by individual countries instead and don't appear here.
+			Source: <a href="https://www.ema.europa.eu/en/medicines" target="_blank" rel="noopener noreferrer">European Medicines Agency</a> and <a href="https://www.accessdata.fda.gov/scripts/cder/daf/" target="_blank" rel="noopener noreferrer">U.S. Food and Drug Administration</a>. FDA label text from <a href="https://dailymed.nlm.nih.gov/" target="_blank" rel="noopener noreferrer">DailyMed</a> (U.S. National Library of Medicine). Updated twice a day. Not for clinical decisions.
+			EMA: only medicines authorised centrally for the whole EU are listed; some are authorised by individual countries instead.
+			FDA: new drugs and biologics only (NDAs and BLAs). Generic drugs, applications under review and unapproved products are not included, so a medicine missing from the FDA data is not necessarily unapproved in the US.
 		</p>
 	</div>
 </section>
