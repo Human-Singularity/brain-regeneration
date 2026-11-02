@@ -158,6 +158,8 @@ category_groups:
         name: GLP-1 Receptor Agonists
       - id: 92
         name: Hydroxychloroquine
+      - id: 155
+        name: Furapyrrodole
 ---
 
 Over 40,000 research papers on Multiple Sclerosis are tracked here, newest first. Use the filters to narrow by category or search for specific topics, treatments, or authors.
