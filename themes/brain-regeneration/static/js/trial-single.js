@@ -624,6 +624,50 @@
 		return '<h2 class="trial-section-heading">Research on this trial</h2><div class="trial-research-list">' + cards + '</div>';
 	}
 
+	// ── Linked patents ─────────────────────────────────────────────────────
+	// `patent_links` comes from the default API response (no include_subject_links).
+	// Every field except patent_id/title may be null; render only what is present.
+	function formatDays(n) {
+		return Number(n).toLocaleString('en-GB') + ' day' + (Number(n) === 1 ? '' : 's');
+	}
+
+	function patentTimingLine(p) {
+		var before = Number(p.days_before_start);
+		var after  = Number(p.days_after_completion);
+		if (p.timing === 'before') {
+			return p.days_before_start != null && Number.isFinite(before)
+				? 'Filed ' + formatDays(before) + ' before this trial started' : '';
+		}
+		if (p.timing === 'during') return 'Filed during this trial';
+		if (p.timing === 'after') {
+			return p.days_after_completion != null && Number.isFinite(after)
+				? 'Filed ' + formatDays(after) + ' after this trial ended' : '';
+		}
+		return '';
+	}
+
+	function renderLinkedPatents(t) {
+		var links = (t.patent_links || []).filter(function (p) { return p && p.title; });
+		if (!links.length) return '';
+		var cards = links.map(function (p) {
+			var url = p.link ? safeLink(p.link) : '';
+			var pub = p.representative_publication;
+			var timing = patentTimingLine(p);
+			return '<div class="trial-patent-card">' +
+				'<p class="trial-patent-card__title">' + escHtml(decodeEntities(p.title)) + '</p>' +
+				(pub ? '<span class="trial-patent-card__pub">' + escHtml(pub) + '</span>' : '') +
+				(p.source === 'manual' ? '<span class="trial-patent-card__badge">Editor&rsquo;s pick</span>' : '') +
+				(timing ? '<p class="trial-patent-card__timing">' + escHtml(timing) + '</p>' : '') +
+				(url && url !== '#'
+					? '<a class="trial-patent-card__link" href="' + escHtml(url) + '" target="_blank" rel="noopener noreferrer">View on Espacenet &#8599;</a>'
+					: '') +
+			'</div>';
+		}).join('');
+		return '<h2 class="trial-section-heading">Linked patents</h2>' +
+			'<div class="trial-patent-list">' + cards + '</div>' +
+			'<p class="trial-disclaimer">Patent data from Espacenet (European Patent Office).</p>';
+	}
+
 	// ── Identifiers ────────────────────────────────────────────────────────
 	//
 	// The API's `identifiers` map is keyed by registry, but several keys can
@@ -854,6 +898,7 @@
 			renderLocations(t) +
 			renderStudyDesign(t) +
 			renderLinkedResearch(t) +
+			renderLinkedPatents(t) +
 			renderProvenance(t);
 	}
 
