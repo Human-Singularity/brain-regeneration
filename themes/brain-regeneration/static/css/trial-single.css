@@ -663,8 +663,11 @@ a.trial-topic:focus-visible {
 	font-size: 13px;
 }
 .trial-patent-card__link {
-	display: inline-block;
-	margin-top: 10px;
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	min-width: 44px;
+	margin-top: 2px;
 	font-size: 13px;
 	font-weight: 600;
 }
