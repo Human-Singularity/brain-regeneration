@@ -649,7 +649,10 @@
 		if (!trials || !trials.length) return '';
 		var cards = trials.map(function (t) {
 			var title  = t.title || '';
-			var href   = safeLink(t.link) || '#';
+			// Prefer our own trial page; fall back to the registry link for
+			// records without a trial_id.
+			var internal = t.trial_id != null && /^\d+$/.test(String(t.trial_id));
+			var href   = internal ? '/trials/' + t.trial_id + '/' : (safeLink(t.link) || '#');
 			// Extract NCT ID from the ClinicalTrials.gov link if present
 			var nct    = '';
 			if (t.link) {
@@ -657,7 +660,7 @@
 				if (m) nct = m[0].toUpperCase();
 			}
 
-			return '<a class="related-trial" href="' + escHtml(href) + '" target="_blank" rel="noopener noreferrer">' +
+			return '<a class="related-trial" href="' + escHtml(href) + '"' + (internal ? '' : ' target="_blank" rel="noopener noreferrer"') + '>' +
 				'<div class="related-trial__head">' +
 					'<p class="related-trial__title">' + escHtmlAllowSafeTags(decodeEntities(title)) + '</p>' +
 				'</div>' +
