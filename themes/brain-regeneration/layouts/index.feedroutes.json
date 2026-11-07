@@ -1,0 +1,32 @@
+{{- /*
+  /feed-routes.json — built from the front matter of every page that shows an API feed.
+
+    subjects: { "<api.subject_id>": { "<kind>": "<page path>" } }
+    search:   { "<kind>": "<page path>" }   the site-wide pages under /search/
+
+  <kind> is the last segment of the page's api.endpoint: articles, trials, patents or
+  medicines. When two pages show the same subject and kind, the first one wins.
+  Read by functions/_shared/feed-link.js.
+*/ -}}
+{{- $subjects := dict -}}
+{{- $search := dict -}}
+{{- range site.Pages -}}
+	{{- $page := . -}}
+	{{- with .Params.api -}}
+		{{- with .endpoint -}}
+			{{- $kind := path.Base (strings.TrimSuffix "/" (urls.Parse .).Path) -}}
+			{{- with $page.Params.api.subject_id -}}
+				{{- $key := string . -}}
+				{{- $entry := index $subjects $key | default dict -}}
+				{{- if not (isset $entry $kind) -}}
+					{{- $subjects = merge $subjects (dict $key (merge $entry (dict $kind $page.RelPermalink))) -}}
+				{{- end -}}
+			{{- else -}}
+				{{- if and (eq $page.Section "search") (not (isset $search $kind)) -}}
+					{{- $search = merge $search (dict $kind $page.RelPermalink) -}}
+				{{- end -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- dict "subjects" $subjects "search" $search | jsonify (dict "indent" "  ") -}}

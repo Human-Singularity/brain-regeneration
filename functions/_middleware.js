@@ -1,10 +1,14 @@
-// Runs for every request. Two jobs:
+// Runs for every request. Three jobs:
 //   1. Redirects the bare production *.pages.dev alias to the custom domain.
 //   2. Gates every hostname that is not the production domain behind Basic Auth.
+//   3. Sends RSS feed links (/?kind=…) to the page the feed comes from
+//      (see _shared/feed-link.js).
 // AUTH_USERNAME / AUTH_PASSWORD are Preview-scoped env vars/secrets set in the
 // Cloudflare Pages dashboard (Settings > Environment variables), so every
 // non-production deployment has them and the production one deliberately
 // does not.
+
+import { feedLinkTarget, loadFeedRoutes } from './_shared/feed-link.js';
 
 const PRODUCTION_HOST = 'brain-regeneration.com';
 
@@ -35,11 +39,20 @@ export async function onRequest(context) {
 	// hostname wired to the wrong deployment served publicly — which is exactly
 	// how preview.brain-regeneration.com ended up as an unauthenticated copy of
 	// production. Asking "is this the production domain?" cannot fail that way.
+	const serve = () => redirectFeedLink(url, env).then((response) => response || next());
 	if (url.hostname !== PRODUCTION_HOST) {
-		return requireBasicAuth(request, env, next);
+		return requireBasicAuth(request, env, serve);
 	}
 
-	return next();
+	return serve();
+}
+
+// A feed's channel link is the homepage plus the feed's scope. 302, not 301: the
+// page a subject lives on can move, and a cached permanent redirect would outlive it.
+async function redirectFeedLink(url, env) {
+	if (url.pathname !== '/' || !url.searchParams.has('kind')) return null;
+	const target = feedLinkTarget(url.searchParams, await loadFeedRoutes(env, url.origin));
+	return target ? Response.redirect(new URL(target, url.origin).toString(), 302) : null;
 }
 
 function requireBasicAuth(request, env, next) {

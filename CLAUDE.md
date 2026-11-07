@@ -119,8 +119,11 @@ Each script is self-invoking and **no-ops unless its mount element exists** (e.g
 
 ```
 functions/
+  _middleware.js         Every request: pages.dev → custom domain, Basic Auth on non-production
+                          hosts, and RSS feed links (/?kind=…) → the page the feed comes from
   _shared/meta.js       Entity decoding, HTML-escaping HTMLRewriter handlers, JSON-LD helpers.
                          Underscore prefix excludes it from Pages' file-based routing.
+  _shared/feed-link.js  Maps a feed link to its page, using /feed-routes.json (see below)
   articles/[id].js       GET /articles/{id}/ → rewrites <head> with real title/description/
                           canonical/OG/Twitter/ScholarlyArticle JSON-LD
   authors/[orcid].js     GET /authors/{orcid}/ → same pattern for author Person JSON-LD
@@ -130,7 +133,9 @@ This is **Cloudflare Pages Functions**, not a standalone Cloudflare Worker — i
 
 How it works: each function fetches the static shell via `env.ASSETS.fetch()`, fetches the matching record from the GregoryAi API, and uses `HTMLRewriter` to replace the `<title>`, `<meta name="description">`, canonical `<link>`, OG/Twitter tags, and appends JSON-LD — before the response reaches the browser. `article-single.js`/`author-profile.js` still hydrate the page body client-side exactly as before; only the `<head>` is server-rendered. Cloudflare Pages Functions take precedence over `static/_redirects` for matching routes, so the `_redirects` rewrite for `/articles/*` / `/authors/*` still serves as the fallback for paths the functions don't touch (non-numeric IDs, malformed ORCIDs, IDs the API doesn't recognize) — in those cases the function returns the unmodified shell (fail-open).
 
-Test locally with `wrangler pages dev public` after `hugo --minify` (not via `make hugo-dev`, which is a plain Hugo server with no Functions runtime).
+Test locally with `wrangler pages dev public` after `hugo --minify` (not via `make hugo-dev`, which is a plain Hugo server with no Functions runtime). Unit tests for the plain-JS helpers: `node --test tests/`.
+
+**RSS feed links.** GregoryAi links each RSS feed's title to the homepage with the feed's scope in the query string (`/?kind=articles&subject_id=1&category_id=111&…&utm_medium=rss&utm_source=…`). The middleware 302s those to the page that shows the same thing, translating feed parameters into the page's own (`category_id` → `category`, `search` → `q`, `recruitment_status_normalized` → `status`, …) and keeping the `utm_*` parameters. Which page shows which subject comes from `/feed-routes.json`, built by `layouts/index.feedroutes.json` from every page's `api.subject_id` and `api.endpoint`, so a new condition or research-area page is picked up without touching the function. A subject with no page goes to `/search/` or `/search/clinical-trials/`; a link nothing matches serves the homepage as before.
 
 ## Configuration (`hugo.toml`)
 
