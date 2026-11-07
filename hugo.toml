@@ -67,9 +67,18 @@ summary = "A comprehensive knowledge hub tracking therapeutic approaches for rev
 description = "The Brain Regeneration Observatory tracks research and clinical trials for MS, Alzheimer's, Parkinson's, and other neuro-degenerative diseases."
 og_image = "images/getty-images-G1FpRJcLoCw-unsplash.jpg"
 [outputs]
-	home = [ "HTML", "RSS" ]
+	home = [ "HTML", "RSS", "FeedRoutes" ]
 	section = [ "HTML", "RSS"]
 	term = [ "HTML", "RSS"]
+
+# /feed-routes.json: which page shows each subject's articles, trials, patents and
+# medicines. functions/_middleware.js reads it to send readers who click an RSS
+# feed's title to the page the feed comes from (see functions/_shared/feed-link.js).
+[outputFormats.FeedRoutes]
+baseName = "feed-routes"
+mediaType = "application/json"
+isPlainText = true
+notAlternative = true
 
 [outputFormats.Search]
 baseName = "index"
