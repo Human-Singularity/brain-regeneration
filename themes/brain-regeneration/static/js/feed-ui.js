@@ -362,7 +362,7 @@
 
 	// Wire the hero "Try:" hint tags; onPick(hint) runs the feed-specific search.
 	function wireHintTags(onPick) {
-		document.querySelectorAll('.search-hero__hint-tag').forEach(function (btn) {
+		document.querySelectorAll('.search-hero__hint-tag, .search-hero__syntax-example').forEach(function (btn) {
 			btn.addEventListener('click', function () { onPick(btn.dataset.hint || ''); });
 		});
 	}
