@@ -42,127 +42,10 @@
 {{- $researchAreaPages = sort $researchAreaPages "Title" -}}
 
 <!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
+{{/* Advanced search renders its filters as a sidebar beside the results
+     (see PAPER LISTING below), so only the standard bar lives up here. */}}
+{{- if not $advanced }}
 <div class="d-none d-lg-block">
-{{- if $advanced }}
-
-<!-- ── ADVANCED SEARCH: chip filter card ── -->
-<div class="search-filter-wrap" id="papers-filters">
-	<div class="container">
-
-		<div class="search-filter-card">
-			{{- if $conditionPages }}
-			<div class="search-filter-group">
-				<div class="search-filter-label-row">
-					<span class="search-filter-label">Filter by condition</span>
-					<div class="subjects-mode" id="papers-subjects-mode">
-						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
-						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
-					</div>
-				</div>
-				<div class="search-chips" id="papers-condition-chips">
-					{{- range $conditionPages }}
-					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
-					{{- end }}
-				</div>
-			</div>
-			{{- end }}
-
-			{{- if $researchAreaPages }}
-			<div class="search-filter-group">
-				<div class="search-filter-label-row">
-					<span class="search-filter-label">Research focus</span>
-					<div class="subjects-mode" id="papers-areas-mode">
-						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
-						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
-					</div>
-				</div>
-				<div class="search-chips" id="papers-area-chips">
-					{{- range $researchAreaPages }}
-					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
-					{{- end }}
-				</div>
-			</div>
-			{{- end }}
-
-			<button type="button" class="search-more-btn" id="papers-more-filters-btn">
-				<span class="search-more-btn__arrow" id="papers-more-arrow">▼</span>
-				<span class="search-more-btn__label">More filters</span>
-			</button>
-
-			<div class="search-advanced-panel" id="papers-advanced-panel" hidden>
-				<form id="papers-filter-form" action="javascript:void(0)">
-					<div class="row g-3 align-items-end mt-1">
-						<div class="col-12 col-md-4" style="position:relative">
-							<label for="papers-author-input">Author name</label>
-							<input type="text" class="form-control" id="papers-author-input" placeholder="Search by author…" autocomplete="off">
-							<input type="hidden" id="papers-author-id">
-							<div id="papers-author-suggestions" class="author-suggestions" hidden></div>
-						</div>
-						<div class="col-12 col-md-5">
-							<label>Published between</label>
-							<div class="d-flex gap-2 align-items-center">
-								<input type="date" class="form-control" id="papers-date-from">
-								<span style="font-size:13px;color:var(--color-muted)">to</span>
-								<input type="date" class="form-control" id="papers-date-to">
-							</div>
-						</div>
-						<div class="col-12 col-md-3 d-flex align-items-center" style="padding-top:24px">
-							<div class="search-toggle-row">
-								<input type="checkbox" class="search-toggle-input" id="papers-open-access" role="switch">
-								<label for="papers-open-access" class="search-toggle-label">
-									Open access only <span class="search-toggle-hint">— free to read</span>
-								</label>
-							</div>
-						</div>
-					</div>
-					<div class="row g-3 mt-1">
-						<div class="col-12">
-							<label for="papers-doi-input">DOI — article identifier</label>
-							<input type="text" class="form-control" id="papers-doi-input"
-								placeholder="e.g. 10.1038/s41593-025-01812-5 — separate multiple with commas"
-								autocomplete="off">
-							<div class="form-text">Paste the unique identifier printed on a paper to find it directly. Enter several by separating them with commas.</div>
-						</div>
-					</div>
-					<div class="d-flex gap-2 mt-3 align-items-center flex-wrap">
-						<select class="form-select" id="papers-category-select" style="max-width:200px;font-size:13px">
-							<option value="">All categories</option>
-						</select>
-						<select class="form-select" id="papers-relevant-select" style="max-width:210px;font-size:13px">
-							<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers only</option>
-							<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
-							<option value="has_clinical_trials_true">With clinical trials</option>
-							<option value="has_clinical_trials_false">Without clinical trials</option>
-						</select>
-						<button type="button" class="btn-outline-teal" id="papers-reset-btn" style="padding:8px 16px;font-size:13px">Reset</button>
-					</div>
-				</form>
-			</div>
-		</div>
-
-		<div class="search-tokens" id="papers-desktop-tokens" hidden></div>
-
-		<div class="papers-results-bar">
-			<span class="results-count" id="papers-result-count"></span>
-			<div class="results-actions">
-				<select class="results-sort-select" id="papers-sort-select">
-					<option value="date">Newest published</option>
-					<option value="date_asc">Oldest published</option>
-					<option value="discovery">Recently discovered</option>
-					<option value="discovery_asc">First discovered</option>
-					<option value="title_asc">Title A→Z</option>
-					<option value="title_desc">Title Z→A</option>
-					<option value="ml_score">AI relevance</option>
-				</select>
-				{{ partial "feeds/search-rss" (dict "site" $page.Site "id" "papers-search-rss-toggle") }}
-				{{ partial "feeds/rss-dropdown" (dict "page" $page "id" "papers-rss-toggle") }}
-				{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
-			</div>
-		</div>
-	</div>
-</div>
-
-{{- else }}
 
 <div class="filter-bar" id="papers-filters">
 	<div class="container">
@@ -238,8 +121,8 @@
 	</div>
 </div>
 
-{{- end }}
 </div>{{/* end d-none d-lg-block */}}
+{{- end }}
 
 <!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
 {{- $conditionPagesMobile := slice -}}
@@ -435,8 +318,117 @@
 </div>
 
 <!-- ── PAPER LISTING ── -->
-<section class="section bg-sand" style="padding-top: 24px;">
+<section class="section bg-sand{{ if $advanced }} search-results{{ end }}" style="padding-top: 24px;">
 	<div class="container">
+		{{- if $advanced }}
+		<div class="search-layout">
+
+		<!-- ── ADVANCED SEARCH: filter sidebar (desktop; mobile uses the bottom sheet) ── -->
+		<aside class="search-sidebar d-none d-lg-block" id="papers-filters" aria-labelledby="papers-refine-heading">
+			<form id="papers-filter-form" action="javascript:void(0)">
+				<div class="search-sidebar__head">
+					<h2 class="search-sidebar__title" id="papers-refine-heading">Refine results</h2>
+					<button type="button" class="search-sidebar__reset" id="papers-reset-btn">Reset</button>
+				</div>
+
+				{{- if $conditionPages }}
+				<div class="search-filter-group">
+					<div class="search-filter-label-row">
+						<span class="search-filter-label" id="papers-condition-label">Condition</span>
+						<div class="subjects-mode" id="papers-subjects-mode" role="group" aria-label="Match any or all conditions">
+							<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
+							<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
+						</div>
+					</div>
+					<div class="search-chips" id="papers-condition-chips" role="group" aria-labelledby="papers-condition-label">
+						{{- range $conditionPages }}
+						<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+						{{- end }}
+					</div>
+				</div>
+				{{- end }}
+
+				{{- if $researchAreaPages }}
+				<div class="search-filter-group">
+					<div class="search-filter-label-row">
+						<span class="search-filter-label" id="papers-area-label">Research focus</span>
+						<div class="subjects-mode" id="papers-areas-mode" role="group" aria-label="Match any or all research areas">
+							<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
+							<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
+						</div>
+					</div>
+					<div class="search-chips" id="papers-area-chips" role="group" aria-labelledby="papers-area-label">
+						{{- range $researchAreaPages }}
+						<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+						{{- end }}
+					</div>
+				</div>
+				{{- end }}
+
+				<div class="search-filter-group">
+					<span class="search-filter-label">Published</span>
+					<div class="search-date-range">
+						<label for="papers-date-from">From</label>
+						<input type="date" class="form-control" id="papers-date-from">
+						<label for="papers-date-to">To</label>
+						<input type="date" class="form-control" id="papers-date-to">
+					</div>
+				</div>
+
+				<div class="search-filter-group search-filter-group--last">
+					<span class="search-filter-label">Access and feed</span>
+					<div class="search-toggle-row">
+						<input type="checkbox" class="search-toggle-input" id="papers-open-access" role="switch">
+						<label for="papers-open-access" class="search-toggle-label">
+							Open access only <span class="search-toggle-hint">— free to read</span>
+						</label>
+					</div>
+					<label for="papers-relevant-select" class="search-sidebar__field-label">Show</label>
+					<select class="form-select" id="papers-relevant-select">
+						<option value="true"{{ if eq $requireRelevant "true" }} selected{{ end }}>Relevant papers only</option>
+						<option value="false"{{ if eq $requireRelevant "false" }} selected{{ end }}>Full feed</option>
+						<option value="has_clinical_trials_true">With clinical trials</option>
+						<option value="has_clinical_trials_false">Without clinical trials</option>
+					</select>
+					<label for="papers-category-select" class="search-sidebar__field-label">Category</label>
+					<select class="form-select" id="papers-category-select">
+						<option value="">All categories</option>
+					</select>
+				</div>
+			</form>
+		</aside>
+
+		<div class="search-main">
+			<!-- Results summary: filled by research-feed.js after every search -->
+			<div class="search-summary" id="papers-search-summary" hidden>
+				<div class="search-summary__body">
+					<h2 class="search-summary__title" id="papers-summary-title" tabindex="-1"></h2>
+					<p class="search-summary__sub" id="papers-summary-sub"></p>
+					<div class="search-tokens" id="papers-desktop-tokens" hidden></div>
+				</div>
+			</div>
+			<p class="visually-hidden" id="papers-search-status" role="status" aria-live="polite"></p>
+
+			<div class="papers-results-bar search-main__bar">
+				<span class="results-count" id="papers-result-count"></span>
+				<div class="results-actions">
+					<label for="papers-sort-select" class="visually-hidden">Sort by</label>
+					<select class="results-sort-select" id="papers-sort-select">
+						<option value="date">Newest published</option>
+						<option value="date_asc">Oldest published</option>
+						<option value="discovery">Recently discovered</option>
+						<option value="discovery_asc">First discovered</option>
+						<option value="title_asc">Title A→Z</option>
+						<option value="title_desc">Title Z→A</option>
+						<option value="ml_score">AI relevance</option>
+					</select>
+					{{ partial "feeds/search-rss" (dict "site" $page.Site "id" "papers-search-rss-toggle") }}
+					{{ partial "feeds/rss-dropdown" (dict "page" $page "id" "papers-rss-toggle") }}
+					{{ partial "feeds/download-dropdown" (dict "toggleId" "papers-download-toggle" "umamiEvent" "click--research-papers-download" "umamiContext" $contextTitle "allLabel" "All matching results") }}
+				</div>
+			</div>
+		{{- end }}
+
 		<noscript>
 			<p>JavaScript is required to load papers.</p>
 		</noscript>
@@ -474,6 +466,10 @@
 				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
 			</button>
 		</div>
+		{{- if $advanced }}
+		</div>{{/* end .search-main */}}
+		</div>{{/* end .search-layout */}}
+		{{- end }}
 	</div>
 </section>
 

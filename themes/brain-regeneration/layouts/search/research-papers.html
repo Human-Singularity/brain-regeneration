@@ -36,33 +36,90 @@
 	<div class="container">
 		<h1>{{ .Title }}</h1>
 		<p class="search-hero__desc">{{ .Params.hero_description | default .Description }}</p>
-		<div class="search-hero__bar">
-			<input
-				type="search"
-				class="search-hero__input"
-				id="papers-search-input"
-				placeholder="e.g. stem cells myelin · remyelination OR neuroprotection · -vaccine…"
-				autocomplete="off">
-			<button
-				class="search-hero__btn"
-				type="button"
-				id="papers-search-btn"
-				data-search-context="Advanced Search">Search</button>
+		{{/* Search mode switch: one bar, three ways in. research-feed.js shows the
+		     matching field and help line; all three fields stay in the DOM so their
+		     values (and the filters they set) survive a mode switch. */}}
+		<div class="search-mode" id="search-mode">
+			<span class="search-mode__label" id="search-mode-label">Search by</span>
+			<div class="search-mode__group" role="group" aria-labelledby="search-mode-label">
+				<button type="button" class="search-mode__btn" data-mode="keywords" aria-pressed="true">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+					Keywords
+				</button>
+				<button type="button" class="search-mode__btn" data-mode="author" aria-pressed="false">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+					Author
+				</button>
+				<button type="button" class="search-mode__btn" data-mode="doi" aria-pressed="false">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4a2 2 0 0 1 2-2h14v18H4a2 2 0 0 1-2-2z"/><path d="M18 2v18"/></svg>
+					DOI
+				</button>
+			</div>
 		</div>
-		<div class="search-hero__hints">
-			<span class="search-hero__hints-label">Try:</span>
-			<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="ALS clinical trial">ALS clinical trial</button>
+
+		<div class="search-hero__bar-wrap">
+			<div class="search-hero__bar">
+				<div class="search-hero__field" data-mode-field="keywords">
+					<label for="papers-search-input" class="visually-hidden">Search by keywords</label>
+					<input
+						type="search"
+						class="search-hero__input"
+						id="papers-search-input"
+						placeholder="Words in the title or abstract, e.g. remyelination OR neuroprotection"
+						autocomplete="off">
+				</div>
+				<div class="search-hero__field" data-mode-field="author" hidden>
+					<label for="papers-author-input" class="visually-hidden">Search by author</label>
+					<input
+						type="search"
+						class="search-hero__input"
+						id="papers-author-input"
+						placeholder="Researcher name, e.g. Franklin"
+						autocomplete="off"
+						role="combobox"
+						aria-autocomplete="list"
+						aria-expanded="false"
+						aria-controls="papers-author-suggestions">
+					<input type="hidden" id="papers-author-id">
+				</div>
+				<div class="search-hero__field" data-mode-field="doi" hidden>
+					<label for="papers-doi-input" class="visually-hidden">Search by DOI</label>
+					<input
+						type="search"
+						class="search-hero__input search-hero__input--mono"
+						id="papers-doi-input"
+						placeholder="DOI, e.g. 10.7554/eLife.110038"
+						autocomplete="off">
+				</div>
+				<button
+					class="search-hero__btn"
+					type="button"
+					id="papers-search-btn"
+					data-search-context="Advanced Search">
+					<span class="search-hero__btn-spinner" aria-hidden="true"></span>
+					<span class="search-hero__btn-label">Search</span>
+				</button>
+			</div>
+			<div id="papers-author-suggestions" class="author-suggestions author-suggestions--hero" role="listbox" aria-label="Matching researchers" hidden></div>
 		</div>
-		<div class="search-hero__hints">
-			<span class="search-hero__hints-label">Boolean:</span>
-			<button class="search-hero__hint-tag" type="button" data-hint="remyelination OR neuroprotection">remyelination OR neuroprotection</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="stem cells -cancer">stem cells -cancer</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="&quot;myelin repair&quot;">"myelin repair"</button>
+
+		<div class="search-hero__help" data-mode-help="keywords">
+			<div class="search-hero__hints">
+				<span class="search-hero__hints-label">Try:</span>
+				<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="ALS clinical trial">ALS clinical trial</button>
+			</div>
+			<ul class="search-hero__syntax" aria-label="Search tips">
+				<li><button class="search-hero__syntax-example" type="button" data-hint="remyelination OR neuroprotection">A OR B</button> either word</li>
+				<li><button class="search-hero__syntax-example" type="button" data-hint="stem cells -cancer">-word</button> leave a word out</li>
+				<li><button class="search-hero__syntax-example" type="button" data-hint="&quot;myelin repair&quot;">"exact phrase"</button> words together</li>
+			</ul>
 		</div>
+		<p class="search-hero__help search-hero__help-text" data-mode-help="author" hidden>Type a surname and pick a researcher from the list. Some appear more than once because journals spell names differently.</p>
+		<p class="search-hero__help search-hero__help-text" data-mode-help="doi" hidden>Paste the identifier printed on a paper, e.g. <code>10.7554/eLife.110038</code>. Several? Separate them with commas.</p>
 	</div>
 </section>
 
