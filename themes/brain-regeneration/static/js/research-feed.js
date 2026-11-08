@@ -73,6 +73,7 @@
 	var currentMode    = 'keywords';
 	var announceNext   = false; // true after a user-run search: move focus to the summary once results land
 	var totalPapers    = null;  // size of the unfiltered feed, for "We looked in all N papers"
+	var fetchSeq       = 0;     // bumps per papers request; older responses are dropped
 
 	// ── State ─────────────────────────────────────────────────────────────
 	var state = {
@@ -213,9 +214,12 @@
 	}
 
 	window.addEventListener('popstate', function () {
+		var prevAuthor = state.authorId;
 		readURL();
 		syncUIFromState();
-		if (!state.authorId && authorInput) authorInput.value = '';
+		// A name shown for another researcher must not label these results.
+		if (authorInput && (!state.authorId || state.authorId !== prevAuthor)) authorInput.value = '';
+		setMode(modeFromState(), false);
 		restoreAuthorName();
 		fetchPage(state.page, false);
 	});
@@ -836,6 +840,7 @@
 
 	function fetchPage(page, push) {
 		var url = buildURL(page);
+		var seq = ++fetchSeq;
 		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
 		var cached = getCached(url);
 		if (cached && cached.count > 0) {
@@ -848,6 +853,8 @@
 			if (tabPapersCount && page === 1) tabPapersCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
 			renderDesktopTokens();
+			if (summaryEl) renderTokens();
+			setLoading(false);
 			rememberTotal(cached.count || 0);
 			renderSummary(cached.count || 0);
 			syncSearchFeed();
@@ -868,6 +875,7 @@
 			})
 			.then(function (data) {
 				if (data && data.count > 0) setCached(url, data);
+				if (seq !== fetchSeq) return; // a newer search has started
 				state.results  = data.results || [];
 				state.pageSize = state.results.length || state.pageSize;
 				state.totalCount = data.count || 0;
@@ -883,12 +891,14 @@
 				if (tabPapersCount && page === 1) tabPapersCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
 				renderDesktopTokens();
+				if (summaryEl) renderTokens();
 				setLoading(false);
 				rememberTotal(data.count || 0);
 				renderSummary(data.count || 0);
 				syncSearchFeed();
 			})
 			.catch(function () {
+				if (seq !== fetchSeq) return;
 				setLoading(false);
 				if (summaryEl) {
 					summaryTitle.textContent = 'We could not run this search';
@@ -905,6 +915,7 @@
 		if (!summaryEl || totalPapers !== null) return;
 		if (!state.keyword && countActiveFilters() === 0 && !state.category) { totalPapers = count; return; }
 		totalPapers = 0; // mark as in flight so this runs once
+		var seq = fetchSeq;
 		var url = new URL(articlesEndpoint);
 		if (teamId) url.searchParams.set('team_id', teamId);
 		if (subjectId) url.searchParams.set('subject_id', subjectId);
@@ -914,7 +925,10 @@
 		fetch(url.toString())
 			.then(function (r) { return r.ok ? r.json() : null; })
 			.then(function (d) {
-				if (d && d.count) { totalPapers = d.count; renderSummary(state.totalCount || 0); }
+				if (!d || !d.count) return;
+				totalPapers = d.count;
+				// Refresh the subline only if the search it belongs to is still shown.
+				if (seq === fetchSeq && !summaryEl.classList.contains('is-loading')) renderSummary(state.totalCount || 0);
 			})
 			.catch(function () {});
 	}
@@ -1020,7 +1034,7 @@
 	// ── Author typeahead ───────────────────────────────────────────────────
 
 	function hideAuthorSuggestions() {
-		if (authorSuggestions) authorSuggestions.hidden = true;
+		if (authorSuggestions) { authorSuggestions.hidden = true; authorSuggestions.innerHTML = ''; }
 		if (authorInput) authorInput.setAttribute('aria-expanded', 'false');
 	}
 
@@ -1064,7 +1078,7 @@
 				showAuthorSuggestions(list);
 				if (pickFirstAuthor) {
 					pickFirstAuthor = false;
-					var first = authorSuggestions && authorSuggestions.querySelector('.author-suggestion-item');
+					var first = list.length && authorSuggestions && authorSuggestions.querySelector('.author-suggestion-item');
 					if (first) selectAuthor(first);
 					else {
 						setLoading(false);
@@ -1076,7 +1090,17 @@
 					}
 				}
 			})
-			.catch(function () { pickFirstAuthor = false; hideAuthorSuggestions(); });
+			.catch(function () {
+				hideAuthorSuggestions();
+				if (!pickFirstAuthor) return;
+				pickFirstAuthor = false;
+				setLoading(false);
+				if (summaryEl) {
+					summaryTitle.textContent = 'We could not look up researchers';
+					summarySub.textContent = 'The connection to our database failed. Try again in a moment.';
+					if (searchStatus) searchStatus.textContent = summaryTitle.textContent + '.';
+				}
+			});
 	}
 
 	// Bold the typed substring within a suggestion name. Matching runs on the
@@ -1630,6 +1654,11 @@
 	// Shows one field (keywords / author / DOI) at a time. Hidden fields keep
 	// their values, and any filter they set stays on as a removable chip.
 
+	// The field that matches the current filters: a DOI or author link lands on it.
+	function modeFromState() {
+		return state.doi ? 'doi' : (state.authorId && !state.keyword ? 'author' : 'keywords');
+	}
+
 	function setMode(mode, focus) {
 		if (!searchModeEl) return;
 		currentMode = mode;
@@ -1670,6 +1699,7 @@
 				if (!a || String(a.author_id) !== String(state.authorId)) return;
 				authorInput.value = displayName(a);
 				renderDesktopTokens();
+				renderTokens();
 			})
 			.catch(function () {});
 	}
@@ -1678,7 +1708,7 @@
 	readURL();
 	syncUIFromState();
 	// Open in the mode that matches the URL: a DOI or author link lands on that field.
-	setMode(state.doi ? 'doi' : (state.authorId && !state.keyword ? 'author' : 'keywords'), false);
+	setMode(modeFromState(), false);
 	restoreAuthorName();
 
 	try {
