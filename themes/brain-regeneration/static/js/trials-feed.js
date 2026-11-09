@@ -52,6 +52,26 @@
 	var trialsDesktopCategoryRow   = document.getElementById('trials-category-row');
 	var trialsDesktopCategoryChips = document.getElementById('trials-category-chips');
 
+	// Advanced search page only: search modes, sponsor lookup and the results
+	// summary. Everything below checks for these, so condition pages are unchanged.
+	var summaryEl     = document.getElementById('trials-search-summary');
+	var summaryTitle  = document.getElementById('trials-summary-title');
+	var summarySub    = document.getElementById('trials-summary-sub');
+	var searchStatus  = document.getElementById('trials-search-status');
+	var desktopTokens = document.getElementById('trials-desktop-tokens');
+	var searchModeEl  = document.getElementById('search-mode');
+	var sponsorInput  = document.getElementById('trials-sponsor-input');
+	var sponsorList   = document.getElementById('trials-sponsor-suggestions');
+	var apiBase       = endpoint.replace(/\/trials\/?$/, '') || 'https://api.brain-regeneration.com';
+	var currentMode   = 'keywords';
+	var announceNext  = false; // set by an explicit search: move focus to the outcome
+	var totalTrials   = null;  // all trials we track, for "We looked through all N trials"
+	var summaryCount  = null;  // count shown in the summary; null while loading or after a failure
+	var lastCount     = null;  // last count the summary showed; null after a failure
+	var trialsPending = false; // a trials request is in flight
+	var fetchSeq      = 0;     // bumps per trials request; older responses are dropped
+	var sponsorPicked = false; // the sponsor field holds a picked sponsor, not just typed text
+
 	// Per-condition category groups embedded by Hugo (advanced search only)
 	var categoriesBySubject = {};
 	try {
@@ -87,6 +107,9 @@
 		dateFrom:     '',
 		dateTo:       '',
 		categoryId:   '',
+		sponsorId:    '',
+		sponsorName:  '',
+		shown:        0,  // trials on the current page, for "Showing X–Y of N"
 	};
 
 	// ── URL state ─────────────────────────────────────────────────────────────
@@ -108,6 +131,7 @@
 		state.dateFrom     = params.get('date_from')       || '';
 		state.dateTo       = params.get('date_to')         || '';
 		state.sort         = params.get('sort')            || '-discovery_date';
+		state.sponsorId    = params.get('sponsor')         || '';
 		state.page         = Math.max(1, parseInt(params.get('page') || '1', 10) || 1);
 	}
 
@@ -131,6 +155,7 @@
 		if (state.dateFrom)               params.set('date_from',       state.dateFrom);
 		if (state.dateTo)                 params.set('date_to',         state.dateTo);
 		if (state.sort !== '-discovery_date') params.set('sort',        state.sort);
+		if (state.sponsorId)              params.set('sponsor',         state.sponsorId);
 		if (state.page > 1)               params.set('page',            String(state.page));
 		var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
 		if (push) {
@@ -270,6 +295,7 @@
 		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
 		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
 		if (state.categoryId)  url.searchParams.set('category_id', state.categoryId);
+		if (state.sponsorId)   url.searchParams.set('sponsor_id',  state.sponsorId);
 		url.searchParams.set('ordering', state.sort);
 		url.searchParams.set('page', String(page));
 		return url.toString();
@@ -480,6 +506,7 @@
 	}
 
 	function renderEmpty() {
+		if (summaryEl) { renderEmptyTips(); suggestAllStatuses(); return; }
 		listEl.innerHTML = '';
 		if (noResults) noResults.style.display = 'block';
 		if (paginationEl) paginationEl.style.display = 'none';
@@ -490,8 +517,9 @@
 	// When a status filter is what emptied the list, offer to drop it, but only
 	// if the same search without it actually has results.
 	function suggestAllStatuses() {
-		if (!noResults) return;
-		var old = noResults.querySelector('.broaden-status');
+		var host = (summaryEl && listEl.querySelector('.search-empty')) || noResults;
+		if (!host) return;
+		var old = host.querySelector('.broaden-status');
 		if (old) old.remove();
 		if (!state.status) return;
 		var saved = state.status;
@@ -503,7 +531,8 @@
 			.then(function (data) {
 				// Ignore stale replies: the user may have changed filters meanwhile.
 				if (state.status !== saved || !data || !(data.count > 0)) return;
-				var prev = noResults.querySelector('.broaden-status');
+				if (!host.isConnected) return; // the list was redrawn meanwhile
+				var prev = host.querySelector('.broaden-status');
 				if (prev) prev.remove();
 				var label = (STATUS_MAP[saved] && STATUS_MAP[saved].label) || saved;
 				var p = document.createElement('p');
@@ -522,7 +551,7 @@
 					fetchPage(1, true);
 				});
 				p.appendChild(btn);
-				noResults.appendChild(p);
+				host.appendChild(p);
 			})
 			.catch(function () { /* suggestion is optional */ });
 	}
@@ -550,6 +579,10 @@
 		setEl('stat-active',     stats.active_not_recruiting);
 		setEl('stat-completed',  stats.completed);
 		setEl('stat-total',      stats.total);
+		if (stats.total) {
+			totalTrials = stats.total;
+			if (summaryCount !== null && !summaryEl.classList.contains('is-loading')) renderSummary(summaryCount);
+		}
 	}
 
 	// Fetches aggregate stats with NO filters (just team + subject) so the stats
@@ -583,7 +616,16 @@
 		state.totalPages = totalPages;
 		state.total      = total;
 
-		if (resultsCountEl) {
+		if (resultsCountEl && summaryEl) {
+			// The summary carries the headline count; this line says which slice is shown.
+			if (total > 0 && state.shown) {
+				var first = currentPage < totalPages ? (currentPage - 1) * state.shown + 1 : total - state.shown + 1;
+				resultsCountEl.textContent = 'Showing ' + first.toLocaleString('en') + '–' +
+					(first + state.shown - 1).toLocaleString('en') + ' of ' + total.toLocaleString('en');
+			} else {
+				resultsCountEl.textContent = 'No trials';
+			}
+		} else if (resultsCountEl) {
 			resultsCountEl.innerHTML =
 				'<strong>' + total.toLocaleString() + '</strong> trial' + (total !== 1 ? 's' : '') + ' found';
 		}
@@ -629,7 +671,7 @@
 	function syncSearchFeed() {
 		var feedUI = BR.feedUI;
 		if (!feedUI || !feedUI.updateSearchFeed) return;
-		if (state.identifiers || state.acronym || state.hasResults || state.studyType || state.dateFrom || state.dateTo) {
+		if (state.identifiers || state.acronym || state.hasResults || state.studyType || state.dateFrom || state.dateTo || state.sponsorId) {
 			feedUI.hideSearchFeed();
 			return;
 		}
@@ -670,21 +712,29 @@
 
 	function fetchPage(page, push) {
 		acronymFuzzy = false;
+		var seq = ++fetchSeq;
 		var url = buildURL(page);
 		var cacheKey = 'brTrialsFeed:' + url;
 		if (BR.feedUI && BR.feedUI.hideSearchFeed) BR.feedUI.hideSearchFeed(); // shown again once this search has run
 		var cached = getCached(cacheKey);
 		if (cached && cached.count > 0) {
+			state.shown = (cached.results || []).length;
 			renderCards(cached.results || []);
 			updatePagination(cached.current_page || page, cached.total_pages || 1, cached.count || 0);
 			if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (cached.count || 0).toLocaleString();
 			writeURL(push === true);
 			renderTrialsTokens();
+			renderDesktopTokens();
+			trialsPending = false;
+			setLoading(false);
+			renderSummary(cached.count || 0);
 			syncSearchFeed();
 			return;
 		}
 
 		renderLoading();
+		trialsPending = true;
+		setLoading(true);
 		function getJSON(u) {
 			return fetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
 		}
@@ -705,14 +755,507 @@
 				return data;
 			})
 			.then(function (data) {
+				if (seq !== fetchSeq) return; // a newer search has started
+				state.shown = (data.results || []).length;
 				renderCards(data.results || []);
 				updatePagination(data.current_page || page, data.total_pages || 1, data.count || 0);
 				if (tabTrialsCount && page === 1) tabTrialsCount.textContent = (data.count || 0).toLocaleString();
 				writeURL(push === true);
 				renderTrialsTokens();
+				renderDesktopTokens();
+				trialsPending = false;
+				setLoading(false);
+				renderSummary(data.count || 0);
 				syncSearchFeed();
 			})
-			.catch(renderError);
+			.catch(function () {
+				if (seq !== fetchSeq) return;
+				trialsPending = false;
+				setLoading(false);
+				if (summaryEl) {
+					summaryCount = null;
+					lastCount = null;
+					summaryEl.hidden = false;
+					summaryEl.classList.remove('is-empty');
+					summaryTitle.textContent = 'We could not run this search';
+					summarySub.textContent = 'The connection to our database failed. Your filters are kept.';
+					if (searchStatus) searchStatus.textContent = 'Search failed.';
+				}
+				renderError();
+			});
+	}
+
+	// ── Advanced search: summary, tokens, modes, sponsor lookup ───────────────
+	// All of this no-ops without #trials-search-summary (condition pages).
+
+	var SORT_SENTENCES = {
+		'-discovery_date': 'Newest added first',
+		'discovery_date':  'Oldest added first',
+		'-last_updated':   'Most recently updated first',
+		'-published_date': 'Newest published first',
+		'published_date':  'Oldest published first',
+		'title':           'Sorted by title, A–Z',
+		'-title':          'Sorted by title, Z–A'
+	};
+
+	// Filters from the sidebar. Keywords, sponsor and trial ID are the search
+	// itself, so they don't count here.
+	function countActiveFilters() {
+		var n = 0;
+		if (state.subjects)   n += state.subjects.split(',').filter(Boolean).length;
+		if (state.categoryId) n++;
+		if (state.status)     n++;
+		if (state.phase)      n++;
+		if (state.studyType)  n++;
+		if (state.acronym)    n++;
+		if (state.country)    n++;
+		if (state.hasResults) n++;
+		if (state.dateFrom || state.dateTo) n++;
+		return n;
+	}
+
+	function plural(n, one, many) { return n === 1 ? one : many; }
+
+	function setLoading(on) {
+		if (!summaryEl) return;
+		if (searchBtn) {
+			searchBtn.classList.toggle('is-loading', on);
+			searchBtn.setAttribute('aria-busy', on ? 'true' : 'false');
+			var label = searchBtn.querySelector('.search-hero__btn-label');
+			if (label) label.textContent = on ? 'Searching…' : 'Search';
+		}
+		if (on) {
+			summaryCount = null;
+			summaryEl.hidden = false;
+			summaryEl.classList.add('is-loading');
+			var what = state.keyword ? ' for “' + state.keyword + '”'
+				: (state.sponsorId && state.sponsorName ? ' from ' + state.sponsorName : '');
+			var pool = totalTrials ? totalTrials.toLocaleString('en') + ' trials' : 'trials';
+			summaryTitle.textContent = 'Searching ' + pool + what + '…';
+			summarySub.textContent = '';
+		} else {
+			summaryEl.classList.remove('is-loading');
+		}
+	}
+
+	function renderSummary(count) {
+		if (!summaryEl) return;
+		summaryCount = count;
+		lastCount = count;
+		var kw = state.keyword;
+		var filters = countActiveFilters();
+		var n = count.toLocaleString('en');
+		var idCount = state.identifiers ? state.identifiers.split(',').filter(function (v) { return v.trim(); }).length : 0;
+		var sponsor = state.sponsorId ? (state.sponsorName || 'this sponsor') : '';
+		var title;
+		if (idCount && !kw) {
+			// Trial-ID lookups read as lookups, not as a filtered feed.
+			if (count === 0) title = idCount > 1 ? 'No trials with these IDs' : 'No trial with this ID';
+			else if (idCount > 1) title = n + ' ' + plural(count, 'trial matches', 'trials match') + ' these IDs';
+			else title = count === 1 ? '1 trial has this ID' : n + ' trials have this ID';
+		} else if (sponsor && !kw) {
+			title = count === 0 ? 'No trials sponsored by ' + sponsor : n + ' ' + plural(count, 'trial', 'trials') + ' sponsored by ' + sponsor;
+		} else if (count === 0) {
+			title = kw ? 'No trials match “' + kw + '”' : 'No trials match these filters';
+		} else if (kw) {
+			title = n + ' ' + plural(count, 'trial matches', 'trials match') + ' “' + kw + '”';
+		} else if (filters) {
+			title = n + ' ' + plural(count, 'trial matches', 'trials match') + ' your filters';
+		} else {
+			title = 'All ' + n + ' trials';
+		}
+		var sub = [];
+		if (count > 0) {
+			if (kw && totalTrials) sub.push('We looked through all ' + totalTrials.toLocaleString('en') + ' trials we track.');
+			if (count > 1) sub.push((SORT_SENTENCES[state.sort] || 'Sorted') + '.');
+		} else {
+			// Say what else is narrowing an empty result.
+			if (sponsor && (kw || idCount)) sub.push('Only trials sponsored by ' + sponsor + ' are included.');
+			if (filters) sub.push(filters === 1 ? 'One filter is on.' : filters + ' filters are on.');
+		}
+		summaryEl.hidden = false;
+		summaryEl.classList.remove('is-loading');
+		summaryEl.classList.toggle('is-empty', count === 0);
+		summaryTitle.textContent = title;
+		summarySub.textContent = sub.join(' ');
+		if (searchStatus) searchStatus.textContent = title + '.';
+
+		if (announceNext) {
+			announceNext = false;
+			// Bring the outcome into view (and to screen readers' focus) only
+			// when it isn't already on screen — no jump for in-view searches.
+			var rect = summaryEl.getBoundingClientRect();
+			if (rect.top < 0 || rect.top > window.innerHeight * 0.6) {
+				summaryEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+			summaryTitle.focus({ preventScroll: true });
+		}
+	}
+
+	function scrollToResults() {
+		if (!summaryEl) return;
+		var target = summaryEl.hidden ? listEl : summaryEl;
+		if (target.getBoundingClientRect().top < 0) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	function renderEmptyTips() {
+		var tips = [];
+		if (state.identifiers) {
+			tips.push('<li>Check the registry number is complete, e.g. <code>NCT02521311</code>.</li>');
+			tips.push('<li>We only list trials in the conditions we follow, so this one may not be here.</li>');
+		}
+		if (state.keyword) {
+			tips.push('<li>Check the spelling of each word.</li>');
+			tips.push('<li>Use <code>OR</code> for alternatives, e.g. <code>myelin OR remyelination</code>.</li>');
+		}
+		if (state.sponsorId && (state.keyword || state.identifiers)) {
+			tips.push('<li>Remove the sponsor to search every trial.</li>');
+		} else if (state.sponsorId) {
+			tips.push('<li>Registries spell sponsors in different ways. <button type="button" class="search-empty__link" data-switch-mode="sponsor">Try another spelling</button>.</li>');
+		}
+		if (countActiveFilters() > 0) tips.push('<li>Remove a filter to widen the search.</li>');
+		tips.push('<li>Looking for a company or a specific trial? <button type="button" class="search-empty__link" data-switch-mode="sponsor">Search by sponsor</button> or <button type="button" class="search-empty__link" data-switch-mode="trialid">by trial ID</button>.</li>');
+		var papersTab = document.querySelector('.section-tabs-nav .section-tab:not(.active)');
+		var papersHref = papersTab ? papersTab.getAttribute('href') + (state.keyword ? '?q=' + encodeURIComponent(state.keyword) : '') : '';
+		listEl.innerHTML =
+			'<div class="search-empty">' +
+				'<p class="search-empty__title">Things to try</p>' +
+				'<ul class="search-empty__list">' + tips.join('') + '</ul>' +
+				(papersHref ? '<a class="btn-outline-teal search-empty__trials" href="' + escHtml(papersHref) + '">Look in research papers instead →</a>' : '') +
+			'</div>';
+		listEl.querySelectorAll('[data-switch-mode]').forEach(function (btn) {
+			btn.addEventListener('click', function () { setMode(btn.dataset.switchMode, true); });
+		});
+		if (paginationEl) paginationEl.style.display = 'none';
+	}
+
+	function categoryName(id) {
+		var name = '';
+		function scan(groups) {
+			(groups || []).forEach(function (grp) {
+				(grp.categories || []).forEach(function (cat) { if (String(cat.id) === String(id)) name = cat.name; });
+			});
+		}
+		scan(categoryGroups);
+		if (!name) Object.keys(categoriesBySubject).forEach(function (k) { if (!name) scan(categoriesBySubject[k]); });
+		return name || String(id);
+	}
+
+	function renderDesktopTokens() {
+		if (!desktopTokens) return;
+		var items = [];
+		if (state.keyword) items.push({ label: 'Keywords: ' + state.keyword, key: 'q' });
+		if (state.sponsorId) items.push({ label: 'Sponsor: ' + (state.sponsorName || '…'), key: 'sponsor' });
+		if (state.identifiers) {
+			var ids = state.identifiers.length > 34 ? state.identifiers.slice(0, 34) + '…' : state.identifiers;
+			items.push({ label: 'Trial ID: ' + ids, key: 'identifiers' });
+		}
+		if (state.subjects) {
+			state.subjects.split(',').filter(Boolean).forEach(function (id) {
+				var label = id;
+				if (trialsConditionChips) trialsConditionChips.querySelectorAll('.search-chip').forEach(function (c) {
+					if (c.dataset.value === id) label = c.textContent.trim();
+				});
+				items.push({ label: label, key: 'subject:' + id });
+			});
+		}
+		if (state.categoryId) items.push({ label: categoryName(state.categoryId), key: 'categoryId' });
+		if (state.status)     items.push({ label: statusLabel(state.status), key: 'status' });
+		if (state.phase)      items.push({ label: phaseLabel(state.phase), key: 'phase' });
+		if (state.studyType)  items.push({ label: state.studyType.charAt(0).toUpperCase() + state.studyType.slice(1), key: 'studyType' });
+		if (state.acronym)    items.push({ label: 'Acronym: ' + state.acronym, key: 'acronym' });
+		if (state.dateFrom || state.dateTo) items.push({ label: 'Registered: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…'), key: 'dateRange' });
+		if (state.country)    items.push({ label: 'Country: ' + state.country, key: 'country' });
+		if (state.hasResults) items.push({ label: 'Results posted', key: 'hasResults' });
+
+		desktopTokens.hidden = items.length === 0;
+		if (items.length === 0) { desktopTokens.innerHTML = ''; return; }
+		desktopTokens.innerHTML = '<span class="search-tokens__label">Searching for:</span>' +
+			items.map(function (item) {
+				return '<span class="search-token">' + escHtml(item.label) +
+					'<button type="button" class="search-token__x" data-key="' + escHtml(item.key) + '" aria-label="Remove ' + escHtml(item.label) + '">×</button>' +
+					'</span>';
+			}).join('') +
+			'<button type="button" class="search-clear-all" id="trials-desktop-clear-all">' + (items.length > 1 ? 'Clear all' : 'Clear') + '</button>';
+	}
+
+	function removeDesktopToken(key) {
+		if (key === 'q') state.keyword = '';
+		else if (key === 'sponsor') {
+			state.sponsorId = ''; state.sponsorName = ''; sponsorPicked = false;
+			if (sponsorInput) sponsorInput.value = '';
+		}
+		else if (key === 'identifiers') state.identifiers = '';
+		else if (key.indexOf('subject:') === 0) {
+			var drop = key.slice(8);
+			state.subjects = state.subjects.split(',').filter(function (id) { return id && id !== drop; }).join(',');
+		}
+		else if (key === 'categoryId') state.categoryId = '';
+		else if (key === 'status')     state.status = '';
+		else if (key === 'phase')      state.phase = '';
+		else if (key === 'studyType')  state.studyType = '';
+		else if (key === 'acronym')    state.acronym = '';
+		else if (key === 'dateRange')  { state.dateFrom = ''; state.dateTo = ''; }
+		else if (key === 'country')    state.country = '';
+		else if (key === 'hasResults') state.hasResults = false;
+		state.page = 1;
+		syncUIFromState();
+		fetchPage(1, true);
+	}
+
+	if (desktopTokens) {
+		desktopTokens.addEventListener('click', function (e) {
+			var x = e.target.closest('.search-token__x');
+			if (x) { removeDesktopToken(x.dataset.key); return; }
+			if (e.target.closest('#trials-desktop-clear-all')) {
+				// The Reset button also clears the mobile sheet and token strip.
+				if (resetBtn) resetBtn.click(); else resetAll();
+			}
+		});
+	}
+
+	// ── Search modes ──
+	// Shows one field (keywords / sponsor / trial ID) at a time. Hidden fields
+	// keep their values, and any filter they set stays on as a removable chip.
+
+	function modeFromState() {
+		return state.identifiers ? 'trialid' : (state.sponsorId && !state.keyword ? 'sponsor' : 'keywords');
+	}
+
+	function setMode(mode, focus) {
+		if (!searchModeEl) return;
+		currentMode = mode;
+		searchModeEl.querySelectorAll('.search-mode__btn').forEach(function (b) {
+			b.setAttribute('aria-pressed', b.dataset.mode === mode ? 'true' : 'false');
+		});
+		document.querySelectorAll('[data-mode-field]').forEach(function (el) {
+			el.hidden = el.dataset.modeField !== mode;
+		});
+		document.querySelectorAll('[data-mode-help]').forEach(function (el) {
+			el.hidden = el.dataset.modeHelp !== mode;
+		});
+		if (mode !== 'sponsor') { cancelSponsorLookup(); hideSponsorList(); }
+		if (focus) {
+			var field = document.querySelector('[data-mode-field="' + mode + '"] input');
+			if (field) {
+				var hero = document.querySelector('.search-hero');
+				if (hero) hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				field.focus({ preventScroll: true });
+			}
+		}
+	}
+
+	if (searchModeEl) {
+		searchModeEl.addEventListener('click', function (e) {
+			var btn = e.target.closest('.search-mode__btn');
+			if (btn) setMode(btn.dataset.mode, true);
+		});
+	}
+
+	// Search button / Enter. In sponsor mode a typed name isn't a filter yet:
+	// take the top suggestion, waiting for it if needed.
+	function doSearch() {
+		if (currentMode === 'sponsor' && sponsorInput) {
+			var q = sponsorInput.value.trim();
+			if (!q) {
+				if (state.sponsorId) {
+					state.sponsorId = ''; state.sponsorName = ''; sponsorPicked = false;
+					announceNext = true;
+					fetchPage(1, true);
+				} else {
+					sponsorInput.focus();
+				}
+				return;
+			}
+			if (!sponsorPicked) {
+				if (q.length < 2) { sponsorInput.focus(); return; }
+				var first = sponsorList && !sponsorList.hidden && sponsorList.querySelector('.author-suggestion-item');
+				if (first) { selectSponsor(first); return; }
+				pickFirstSponsor = true;
+				setLoading(true);
+				clearTimeout(sponsorTimer);
+				fetchSponsorSuggestions(q);
+				return;
+			}
+		}
+		announceNext = true;
+		applyFilters();
+	}
+
+	// ── Sponsor lookup ──
+
+	var pickFirstSponsor = false; // set when Search/Enter is pressed before suggestions arrive
+	var sponsorTimer;
+	var sponsorSeq = 0;           // bumps per lookup; older responses are dropped
+
+	// Drop any lookup in flight. If Search/Enter was waiting on it, undo the
+	// "Searching…" it showed, unless a trials request is running on its own.
+	function cancelSponsorLookup() {
+		sponsorSeq++;
+		clearTimeout(sponsorTimer);
+		if (!pickFirstSponsor) return;
+		pickFirstSponsor = false;
+		if (trialsPending || !summaryEl) return;
+		setLoading(false);
+		if (lastCount !== null) renderSummary(lastCount);
+		else summaryEl.hidden = true;
+	}
+	var SPONSOR_TYPES = {
+		industry: 'Industry',
+		academic_medical: 'University or hospital',
+		government: 'Government',
+		nonprofit: 'Non-profit',
+		non_profit: 'Non-profit',
+		individual: 'Individual'
+	};
+
+	function sponsorMeta(sp) {
+		var bits = [];
+		var type = SPONSOR_TYPES[sp.sponsor_type] || '';
+		if (type) bits.push(type);
+		if (sp.trials_count != null) bits.push(sp.trials_count + ' ' + plural(sp.trials_count, 'trial', 'trials'));
+		return bits.join(' · ');
+	}
+
+	function hideSponsorList() {
+		if (sponsorList) { sponsorList.hidden = true; sponsorList.innerHTML = ''; }
+		if (sponsorInput) sponsorInput.setAttribute('aria-expanded', 'false');
+	}
+
+	function highlightMatch(name, q) {
+		var i = q ? name.toLowerCase().indexOf(q.toLowerCase()) : -1;
+		if (i < 0) return escHtml(name);
+		return escHtml(name.slice(0, i)) + '<mark class="author-suggestion-match">' +
+			escHtml(name.slice(i, i + q.length)) + '</mark>' + escHtml(name.slice(i + q.length));
+	}
+
+	function showSponsorList(list, q) {
+		if (!sponsorList) return;
+		if (!list.length) { hideSponsorList(); return; }
+		sponsorList.innerHTML =
+			'<p class="author-suggestions__head">Sponsors matching “' + escHtml(q) + '”</p>' +
+			list.map(function (sp) {
+				var meta = sponsorMeta(sp);
+				return '<button type="button" class="author-suggestion-item" role="option" data-id="' + escHtml(String(sp.id)) + '" data-name="' + escHtml(sp.name) + '" title="' + escHtml(sp.name) + '">' +
+					'<span class="author-suggestion-name">' + highlightMatch(sp.name, q) + '</span>' +
+					(meta ? '<span class="author-suggestion-meta">' + escHtml(meta) + '</span>' : '') +
+				'</button>';
+			}).join('') +
+			'<p class="author-suggestions__foot">Some sponsors appear more than once because registries spell names differently.</p>';
+		sponsorList.hidden = false;
+		if (sponsorInput) sponsorInput.setAttribute('aria-expanded', 'true');
+	}
+
+	function selectSponsor(item) {
+		state.sponsorId   = item.dataset.id || '';
+		state.sponsorName = item.dataset.name || item.textContent.trim();
+		sponsorPicked = true;
+		if (sponsorInput) sponsorInput.value = state.sponsorName;
+		hideSponsorList();
+		state.page = 1;
+		announceNext = true;
+		BR.trackSearch('Trials: Sponsor', state.sponsorName, searchContext);
+		fetchPage(1, true);
+	}
+
+	function sponsorLookupMessage(title, sub) {
+		setLoading(false);
+		if (!summaryEl) return;
+		summaryEl.hidden = false;
+		summaryTitle.textContent = title;
+		summarySub.textContent = sub;
+		if (searchStatus) searchStatus.textContent = title + '.';
+	}
+
+	function fetchSponsorSuggestions(q) {
+		var token = ++sponsorSeq;
+		var url = new URL(apiBase + '/sponsors/');
+		url.searchParams.set('search', q);
+		url.searchParams.set('format', 'json');
+		url.searchParams.set('page_size', '12');
+		fetch(url.toString())
+			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+			.then(function (data) {
+				// Stale response: a newer lookup, a mode switch or an edit came since.
+				if (token !== sponsorSeq || !sponsorInput || sponsorInput.value.trim() !== q) return;
+				var list = (data.results || [])
+					.filter(function (sp) { return sp.trials_count == null || sp.trials_count > 0; })
+					.sort(function (a, b) { return (b.trials_count || 0) - (a.trials_count || 0); })
+					.slice(0, 8);
+				showSponsorList(list, q);
+				if (pickFirstSponsor) {
+					pickFirstSponsor = false;
+					var first = list.length && sponsorList && sponsorList.querySelector('.author-suggestion-item');
+					if (first) selectSponsor(first);
+					else sponsorLookupMessage('No sponsors match “' + q + '”', 'Try another spelling, or a shorter part of the name.');
+				}
+			})
+			.catch(function () {
+				if (token !== sponsorSeq) return;
+				hideSponsorList();
+				if (!pickFirstSponsor) return;
+				pickFirstSponsor = false;
+				sponsorLookupMessage('We could not look up sponsors', 'The connection to our database failed. Try again in a moment.');
+			});
+	}
+
+	if (sponsorInput) {
+		sponsorInput.addEventListener('input', function () {
+			var q = sponsorInput.value.trim();
+			sponsorPicked = false;
+			cancelSponsorLookup();
+			hideSponsorList();
+			if (q.length < 2) return;
+			sponsorTimer = setTimeout(function () { fetchSponsorSuggestions(q); }, 300);
+		});
+		sponsorInput.addEventListener('keydown', function (e) {
+			if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+			else if (e.key === 'ArrowDown') {
+				var first = sponsorList && !sponsorList.hidden && sponsorList.querySelector('.author-suggestion-item');
+				if (first) { e.preventDefault(); first.focus(); }
+			}
+			else if (e.key === 'Escape') hideSponsorList();
+		});
+	}
+	if (sponsorList) {
+		sponsorList.addEventListener('click', function (e) {
+			var item = e.target.closest('.author-suggestion-item');
+			if (item) selectSponsor(item);
+		});
+		sponsorList.addEventListener('keydown', function (e) {
+			var items = Array.from(sponsorList.querySelectorAll('.author-suggestion-item'));
+			var i = items.indexOf(document.activeElement);
+			if (i === -1) return;
+			if (e.key === 'ArrowDown') { e.preventDefault(); (items[i + 1] || items[i]).focus(); }
+			else if (e.key === 'ArrowUp') { e.preventDefault(); (i === 0 ? sponsorInput : items[i - 1]).focus(); }
+			else if (e.key === 'Escape') { hideSponsorList(); sponsorInput.focus(); }
+		});
+		document.addEventListener('click', function (e) {
+			if (!sponsorInput.contains(e.target) && !sponsorList.contains(e.target)) hideSponsorList();
+		});
+	}
+
+	// A sponsor id in the URL (shared link, back button) has no name on the
+	// page yet; fetch it so the field, the chips and the summary can show it.
+	function restoreSponsorName() {
+		if (!state.sponsorId || !sponsorInput || sponsorPicked) return;
+		var id = state.sponsorId;
+		var typed = sponsorInput.value; // the user may start typing a new name meanwhile
+		fetch(apiBase + '/sponsors/' + encodeURIComponent(id) + '/?format=json')
+			.then(function (r) { return r.ok ? r.json() : null; })
+			.then(function (sp) {
+				if (!sp || String(sp.id) !== String(state.sponsorId) || sponsorPicked) return;
+				// The applied filter always gets its name; the field only if untouched.
+				state.sponsorName = sp.name || '';
+				if (sponsorInput.value === typed) {
+					sponsorInput.value = state.sponsorName;
+					sponsorPicked = true;
+				}
+				renderDesktopTokens();
+				renderTrialsTokens();
+				if (summaryCount !== null && !summaryEl.classList.contains('is-loading')) renderSummary(summaryCount);
+			})
+			.catch(function () {});
 	}
 
 	// ── Event listeners ───────────────────────────────────────────────────────
@@ -810,6 +1353,11 @@
 		state.dateFrom     = '';
 		state.dateTo       = '';
 		state.categoryId   = '';
+		state.sponsorId    = '';
+		state.sponsorName  = '';
+		sponsorPicked      = false;
+		if (sponsorInput) sponsorInput.value = '';
+		hideSponsorList();
 		if (trialsSubjectsModeEl) {
 			trialsSubjectsModeEl.querySelectorAll('.subjects-mode-btn').forEach(function (b) {
 				b.classList.toggle('active', b.dataset.mode === 'all');
@@ -892,7 +1440,9 @@
 
 	// ── Hero hint tags ───────────────────────────────────────────────────────
 	BR.feedUI.wireHintTags(function (hint) {
+		setMode('keywords', false);
 		if (searchInput) searchInput.value = hint;
+		announceNext = !!summaryEl;
 		applyFilters();
 	});
 
@@ -902,24 +1452,33 @@
 	// #search-btn is the form's submit button and is handled by the form submit
 	// listener — binding here too would fire a second, stale-state fetch.
 	if (heroSearchBtn && heroSearchBtn.type !== 'submit') {
-		heroSearchBtn.addEventListener('click', applyFilters);
+		heroSearchBtn.addEventListener('click', summaryEl ? doSearch : applyFilters);
+	}
+	// Advanced search has no form around the hero, so Enter runs the search here.
+	if (summaryEl) {
+		[searchInput, filterIdentifiers].forEach(function (input) {
+			if (!input) return;
+			input.addEventListener('keydown', function (e) {
+				if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+			});
+		});
 	}
 
 	if (prevBtn) {
 		prevBtn.addEventListener('click', function () {
-			if (state.page > 1) fetchPage(state.page - 1, true);
+			if (state.page > 1) { scrollToResults(); fetchPage(state.page - 1, true); }
 		});
 	}
 
 	if (nextBtn) {
 		nextBtn.addEventListener('click', function () {
-			if (state.page < state.totalPages) fetchPage(state.page + 1, true);
+			if (state.page < state.totalPages) { scrollToResults(); fetchPage(state.page + 1, true); }
 		});
 	}
 
 	document.addEventListener('click', function (e) {
 		var btn = e.target.closest && e.target.closest('.pagination-btn.page-num');
-		if (btn && !btn.disabled) fetchPage(parseInt(btn.dataset.page, 10), true);
+		if (btn && !btn.disabled) { scrollToResults(); fetchPage(parseInt(btn.dataset.page, 10), true); }
 	});
 
 	// ── CSV download ─────────────────────────────────────────────────────────
@@ -940,6 +1499,7 @@
 		if (state.dateFrom)    url.searchParams.set('date_registration_after',  state.dateFrom);
 		if (state.dateTo)      url.searchParams.set('date_registration_before', state.dateTo);
 		if (state.categoryId)  url.searchParams.set('category_id', state.categoryId);
+		if (state.sponsorId)   url.searchParams.set('sponsor_id',  state.sponsorId);
 		url.searchParams.set('ordering', state.sort);
 		if (allResults) {
 			url.searchParams.set('all_results', 'true');
@@ -957,6 +1517,7 @@
 		if (state.phase)       parts.push(state.phase.toLowerCase());
 		if (state.status)      parts.push(state.status.toLowerCase().replace(/_/g, '-'));
 		if (state.country)     parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
+		if (state.sponsorId)   parts.push('sponsor-' + state.sponsorId);
 		if (!allResults)       parts.push('page-' + state.page);
 		return parts.join('_') + '.csv';
 	}
@@ -1004,6 +1565,8 @@
 
 	// ── Init ──────────────────────────────────────────────────────────────────
 	readURL();
+	setMode(modeFromState(), false); // a sponsor or trial-ID link lands on that field
+	restoreSponsorName();
 
 	if (filterStatus && state.status) filterStatus.value = state.status;
 	if (filterPhase  && state.phase)  filterPhase.value  = state.phase;
@@ -1041,8 +1604,8 @@
 	// Wire first/last page buttons added for numbered pagination
 	var trialsFirstBtn = document.getElementById('trials-first-btn');
 	var trialsLastBtn  = document.getElementById('trials-last-btn');
-	if (trialsFirstBtn) trialsFirstBtn.addEventListener('click', function () { if (state.page > 1) fetchPage(1, true); });
-	if (trialsLastBtn)  trialsLastBtn.addEventListener('click',  function () { if (state.page < state.totalPages) fetchPage(state.totalPages, true); });
+	if (trialsFirstBtn) trialsFirstBtn.addEventListener('click', function () { if (state.page > 1) { scrollToResults(); fetchPage(1, true); } });
+	if (trialsLastBtn)  trialsLastBtn.addEventListener('click',  function () { if (state.page < state.totalPages) { scrollToResults(); fetchPage(state.totalPages, true); } });
 
 	fetchStats(); // always fetches unfiltered aggregate stats
 	fetchPage(state.page, false);
@@ -1108,8 +1671,19 @@
 	}
 
 	window.addEventListener('popstate', function () {
+		var prevSponsor = state.sponsorId;
 		readURL();
 		syncUIFromState();
+		// A name shown for another sponsor must not label these results.
+		if (!state.sponsorId || state.sponsorId !== prevSponsor) {
+			state.sponsorName = '';
+			sponsorPicked = false;
+			if (sponsorInput) sponsorInput.value = '';
+		} else {
+			state.sponsorName = sponsorInput ? sponsorInput.value : state.sponsorName;
+		}
+		setMode(modeFromState(), false);
+		restoreSponsorName();
 		fetchPage(state.page, false);
 	});
 
@@ -1236,6 +1810,10 @@
 		if (filterKey === 'studyType')   state.studyType = '';
 		if (filterKey === 'dateRange')   { state.dateFrom = ''; state.dateTo = ''; }
 		if (filterKey === 'categoryId')  state.categoryId = '';
+		if (filterKey === 'sponsor') {
+			state.sponsorId = ''; state.sponsorName = ''; sponsorPicked = false;
+			if (sponsorInput) sponsorInput.value = '';
+		}
 		// Sync desktop controls
 		if (filterPhase)       filterPhase.value        = state.phase;
 		if (filterStatus)      filterStatus.value       = state.status;
@@ -1282,6 +1860,10 @@
 		}
 		if (state.studyType) {
 			trialsTokenStrip.appendChild(buildTrialsToken(state.studyType.charAt(0).toUpperCase() + state.studyType.slice(1), 'studyType'));
+			hasTokens = true;
+		}
+		if (state.sponsorId) {
+			trialsTokenStrip.appendChild(buildTrialsToken(state.sponsorName || 'Sponsor', 'sponsor'));
 			hasTokens = true;
 		}
 		if (state.identifiers) {
@@ -1353,6 +1935,7 @@
 
 	function updateTrialsFabCount() {
 		var count = 0;
+		if (state.sponsorId) count++;
 		if (state.identifiers) count++;
 		if (state.acronym) count++;
 		if (state.phase) count++;
@@ -1504,5 +2087,6 @@
 	// ── Init mobile ───────────────────────────────────────────────────────────
 	syncUIFromState();
 	renderTrialsTokens();
+	updateTrialsMobileCount(); // a cached first page rendered before the patch above
 
 })();
