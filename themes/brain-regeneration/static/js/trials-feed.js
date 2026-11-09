@@ -109,7 +109,7 @@
 		if (!raw) return '';
 		var n = Number(raw);
 		if (!isFinite(n) || n < 0 || n > 120) return '';
-		return String(Math.round(n * 10) / 10);
+		return String(n); // unrounded: rounding could push an age past a trial's bound
 	}
 
 	var state = {
@@ -476,8 +476,15 @@
 	}
 	function formatAge(n) {
 		if (n < 1) {
+			// Registries also give bounds in weeks and days (e.g. newborn trials).
 			var months = Math.round(n * 12);
-			return months + (months === 1 ? ' month' : ' months');
+			if (months >= 1) return months + (months === 1 ? ' month' : ' months');
+			var days = Math.max(1, Math.round(n * 365.25));
+			if (days >= 14) {
+				var weeks = Math.round(days / 7);
+				return weeks + ' weeks';
+			}
+			return days + (days === 1 ? ' day' : ' days');
 		}
 		var years = Math.round(n * 10) / 10;
 		return years + (years === 1 ? ' year' : ' years');

@@ -460,9 +460,10 @@
 			root.addEventListener('focusout', function (e) {
 				if (e.relatedTarget && !root.contains(e.relatedTarget)) setOpen(false);
 			});
+			// Capture phase: other dropdowns (e.g. Download) stop their clicks bubbling.
 			document.addEventListener('click', function (e) {
 				if (!panel.hidden && !root.contains(e.target)) setOpen(false);
-			});
+			}, true);
 		}
 
 		render();
