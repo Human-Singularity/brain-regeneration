@@ -49,6 +49,13 @@ test('trial feeds carry their status, and show every status when they have none'
 	assert.equal(target('kind=trials&subject_id=1'), '/conditions/multiple-sclerosis/clinical-trials/?status=');
 });
 
+test('trial feeds carry their phases and patient age', () => {
+	assert.equal(
+		target('kind=trials&subject_id=1&recruitment_status_normalized=recruiting&phase_normalized=phase_2,phase_3&age_eligible=40'),
+		'/conditions/multiple-sclerosis/clinical-trials/?status=recruiting&phase=phase_2%2Cphase_3&age=40',
+	);
+});
+
 test('patent and medicine feeds map their own filters', () => {
 	assert.equal(
 		target('kind=patents&subject_id=1&has_grant=true&has_trial_link=true&applicant_sponsor_slug=acme'),

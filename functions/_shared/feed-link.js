@@ -29,6 +29,7 @@ const PAGE_PARAMS = {
 		search: 'q',
 		recruitment_status_normalized: 'status',
 		phase_normalized: 'phase',
+		age_eligible: 'age',
 		country: 'country',
 	},
 	patents: {

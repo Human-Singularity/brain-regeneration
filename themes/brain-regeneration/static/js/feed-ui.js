@@ -367,8 +367,112 @@
 		});
 	}
 
+	// Pick-one-or-more control (partials/forms/multi-check.html). The root gets
+	// a .value ("a,b" in list order; "" for none) that can also be set, and the
+	// checkboxes' "change" events bubble from it, so callers use it like a
+	// <select>. The dropdown variant opens a panel of checkboxes from a
+	// select-like button; the chips variant is always open.
+	function wireMultiCheck(root) {
+		if (!root || !root.classList.contains('multi-check') || root._multiCheck) return root;
+		root._multiCheck = true;
+		var inputs = Array.prototype.slice.call(root.querySelectorAll('.multi-check__input'));
+		var toggle = root.querySelector('.multi-check__toggle');
+		var panel = root.querySelector('.multi-check__panel');
+		var textEl = root.querySelector('.multi-check__text');
+		var clearBtn = root.querySelector('.multi-check__clear');
+		var placeholder = root.dataset.placeholder || '';
+
+		function picked() { return inputs.filter(function (i) { return i.checked; }); }
+		function labelOf(input) {
+			var l = input.closest('label');
+			return l ? (l.dataset.label || l.textContent.trim()) : input.value;
+		}
+		function render() {
+			var on = picked();
+			inputs.forEach(function (i) {
+				var chip = i.closest('.search-chip');
+				if (chip) chip.classList.toggle('search-chip--active', i.checked);
+			});
+			if (textEl) {
+				var text = on.length ? on.map(labelOf).join(', ') : placeholder;
+				textEl.textContent = text;
+				if (toggle) {
+					toggle.title = on.length ? text : '';
+					toggle.classList.toggle('has-value', on.length > 0);
+				}
+			}
+			if (clearBtn) clearBtn.hidden = on.length === 0;
+		}
+
+		Object.defineProperty(root, 'value', {
+			configurable: true,
+			get: function () { return picked().map(function (i) { return i.value; }).join(','); },
+			set: function (v) {
+				var list = String(v || '').split(',').map(function (s) { return s.trim(); });
+				inputs.forEach(function (i) { i.checked = list.indexOf(i.value) !== -1; });
+				render();
+			}
+		});
+		root.addEventListener('change', render);
+
+		if (clearBtn) {
+			clearBtn.addEventListener('click', function () {
+				inputs.forEach(function (i) { i.checked = false; });
+				render();
+				if (inputs[0]) inputs[0].focus();
+				root.dispatchEvent(new Event('change', { bubbles: true }));
+			});
+		}
+
+		if (toggle && panel) {
+			var setOpen = function (open, refocus) {
+				panel.hidden = !open;
+				toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+				root.classList.toggle('is-open', open);
+				if (!open && refocus) toggle.focus();
+			};
+			var focusOption = function (step) {
+				var idx = inputs.indexOf(document.activeElement);
+				var next = idx === -1 ? (step > 0 ? 0 : inputs.length - 1) : idx + step;
+				if (inputs[next]) inputs[next].focus();
+			};
+			toggle.addEventListener('click', function () {
+				var open = panel.hidden;
+				setOpen(open);
+				if (open) { var first = picked()[0] || inputs[0]; if (first) first.focus(); }
+			});
+			root.addEventListener('keydown', function (e) {
+				if (e.key === 'Escape' && !panel.hidden) { e.preventDefault(); setOpen(false, true); }
+				else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+					var step = e.key === 'ArrowDown' ? 1 : -1;
+					if (e.target === toggle) {
+						e.preventDefault();
+						if (panel.hidden) setOpen(true);
+						focusOption(step);
+					} else if (inputs.indexOf(e.target) !== -1) {
+						e.preventDefault();
+						focusOption(step);
+					}
+				}
+			});
+			// Close when focus or a click lands elsewhere. (Safari doesn't focus
+			// checkboxes on click, so a null relatedTarget is not "elsewhere".)
+			root.addEventListener('focusout', function (e) {
+				if (e.relatedTarget && !root.contains(e.relatedTarget)) setOpen(false);
+			});
+			// Capture phase: other dropdowns (e.g. Download) stop their clicks bubbling.
+			document.addEventListener('click', function (e) {
+				if (!panel.hidden && !root.contains(e.target)) setOpen(false);
+			}, true);
+		}
+
+		render();
+		return root;
+	}
+
 	window.BR = window.BR || {};
 	window.BR.feedUI = {
+		wireMultiCheck: wireMultiCheck,
 		buildToken: buildToken,
 		setSearchChipActive: setSearchChipActive,
 		setActiveChip: setActiveChip,

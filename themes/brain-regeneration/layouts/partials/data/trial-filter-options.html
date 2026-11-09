@@ -1,0 +1,36 @@
+{{- /*
+  data/trial-filter-options.html — the trials API's normalized status and
+  phase values, with their labels. One list for every trials filter (sidebar,
+  condition filter bar, mobile sheet). `short` is a compact chip label; the
+  full label stays available to screen readers.
+
+  Usage: {{ $opts := partial "data/trial-filter-options.html" . }}
+*/ -}}
+{{- return dict
+	"status" (slice
+		(dict "value" "not_yet_recruiting" "label" "Not yet recruiting")
+		(dict "value" "recruiting" "label" "Recruiting")
+		(dict "value" "enrolling_by_invitation" "label" "Enrolling by invitation")
+		(dict "value" "active_not_recruiting" "label" "Active, not recruiting")
+		(dict "value" "not_recruiting" "label" "Not recruiting")
+		(dict "value" "suspended" "label" "Suspended")
+		(dict "value" "completed" "label" "Completed")
+		(dict "value" "terminated" "label" "Terminated")
+		(dict "value" "withdrawn" "label" "Withdrawn")
+		(dict "value" "unknown" "label" "Unknown")
+		(dict "value" "other" "label" "Other")
+	)
+	"phase" (slice
+		(dict "value" "early_phase_1" "label" "Early Phase 1" "short" "Early 1")
+		(dict "value" "phase_1" "label" "Phase 1" "short" "1")
+		(dict "value" "phase_1_2" "label" "Phase 1/2" "short" "1/2")
+		(dict "value" "phase_2" "label" "Phase 2" "short" "2")
+		(dict "value" "phase_2_3" "label" "Phase 2/3" "short" "2/3")
+		(dict "value" "phase_3" "label" "Phase 3" "short" "3")
+		(dict "value" "phase_3_4" "label" "Phase 3/4" "short" "3/4")
+		(dict "value" "phase_4" "label" "Phase 4" "short" "4")
+		(dict "value" "post_market" "label" "Post-market")
+		(dict "value" "not_applicable" "label" "Not applicable")
+		(dict "value" "other" "label" "Other")
+	)
+-}}

@@ -3663,6 +3663,142 @@ a:hover {
 .search-sidebar .form-control,
 .search-sidebar .form-select { font-size: 14px; }
 .search-sidebar__toggle { margin-top: 16px; }
+.search-sidebar__field-hint,
+.sheet-group-hint {
+	margin-left: 4px;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--color-muted);
+}
+.search-sidebar__help {
+	margin: 6px 0 0;
+	font-family: var(--font-heading);
+	font-size: 12.5px;
+	line-height: 1.4;
+	color: var(--color-muted);
+}
+
+/* ── Patient age field (number + "years") ── */
+.age-input { position: relative; }
+.age-input .form-control { padding-right: 52px; }
+.age-input .form-control:invalid { border-color: #B3261E; }
+.age-input__unit {
+	position: absolute;
+	top: 50%;
+	right: 12px;
+	transform: translateY(-50%);
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-muted);
+	pointer-events: none;
+}
+
+/* ── Pick one or more: trial status / phase (partials/forms/multi-check) ── */
+.multi-check { position: relative; }
+/* Chips: real checkboxes, hidden; the chip shows the state */
+.multi-check--chips .multi-check__input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+.multi-check__chip {
+	position: relative;
+	justify-content: center;
+	min-width: 44px;
+	min-height: 44px; /* 44×44px minimum tap target */
+	margin: 0;
+}
+.multi-check__chip:has(.multi-check__input:focus-visible) {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+/* Dropdown: a select-like button opening a list of checkboxes */
+.multi-check__toggle {
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.multi-check__toggle.has-value { color: var(--color-primary); font-weight: 600; }
+.multi-check.is-open .multi-check__toggle {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px rgba(26, 107, 106, 0.15);
+}
+.multi-check__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 120;
+	min-width: 100%;
+	width: max-content;
+	max-width: 300px;
+	max-height: 380px;
+	overflow-y: auto;
+	padding: 6px;
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: 0 6px 20px rgba(45, 45, 45, 0.14);
+}
+.multi-check__panel[hidden] { display: none; }
+/* (beats .filter-bar label, which is set for field labels) */
+.multi-check .multi-check__option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	margin: 0;
+	padding: 7px 10px;
+	border-radius: 6px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	letter-spacing: 0;
+	text-transform: none;
+	white-space: nowrap;
+	color: var(--color-text);
+	cursor: pointer;
+}
+.multi-check .multi-check__option:hover { background: var(--color-tint); }
+.multi-check__option .multi-check__input {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	accent-color: var(--color-primary);
+}
+.multi-check__foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 4px;
+	padding: 8px 10px 4px;
+	border-top: 1px solid #EEEAE2;
+	font-family: var(--font-heading);
+	font-size: 12px;
+	color: var(--color-muted);
+}
+.multi-check__clear {
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 4px;
+	border: 0;
+	background: none;
+	font-family: var(--font-heading);
+	font-size: 13px;
+	color: var(--color-primary);
+	text-decoration: underline;
+	cursor: pointer;
+}
 
 /* ── Advanced search: results summary ── */
 .search-summary {

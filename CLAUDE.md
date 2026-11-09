@@ -90,7 +90,8 @@ layouts/
               subscribe, thankyou, communication-tools, error
   partials/   head, nav, footer, research-papers-feed, api-endpoint, condition-tabs
     feeds/    stats-bar, download-dropdown, trials-pagination, trials-mobile-filters
-    forms/    newsletter-inline, country-datalist
+    forms/    newsletter-inline, country-datalist, multi-check (pick one or more trial statuses/phases)
+    data/     trial-filter-options (the trials API's status/phase values and labels)
   shortcodes/ figure
   conditions/ list, single, research-papers, patents   (tabs come from partials/condition-tabs; a missing sibling page shows "Coming soon")
   research-areas/ list, single
