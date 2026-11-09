@@ -169,36 +169,10 @@
 
 				<div class="search-filter-group">
 					<span class="search-filter-label">Trial</span>
-					<label for="filter-status" class="search-sidebar__field-label search-sidebar__field-label--first">Recruitment status</label>
-					<select class="form-select" id="filter-status">
-						<option value="">All statuses</option>
-						<option value="not_yet_recruiting">Not yet recruiting</option>
-						<option value="recruiting">Recruiting</option>
-						<option value="enrolling_by_invitation">Enrolling by invitation</option>
-						<option value="active_not_recruiting">Active, not recruiting</option>
-						<option value="not_recruiting">Not recruiting</option>
-						<option value="suspended">Suspended</option>
-						<option value="completed">Completed</option>
-						<option value="terminated">Terminated</option>
-						<option value="withdrawn">Withdrawn</option>
-						<option value="unknown">Unknown</option>
-						<option value="other">Other</option>
-					</select>
-					<label for="filter-phase" class="search-sidebar__field-label">Phase</label>
-					<select class="form-select" id="filter-phase">
-						<option value="">All phases</option>
-						<option value="early_phase_1">Early Phase 1</option>
-						<option value="phase_1">Phase 1</option>
-						<option value="phase_1_2">Phase 1/2</option>
-						<option value="phase_2">Phase 2</option>
-						<option value="phase_2_3">Phase 2/3</option>
-						<option value="phase_3">Phase 3</option>
-						<option value="phase_3_4">Phase 3/4</option>
-						<option value="phase_4">Phase 4</option>
-						<option value="post_market">Post-market</option>
-						<option value="not_applicable">Not applicable</option>
-						<option value="other">Other</option>
-					</select>
+					<span class="search-sidebar__field-label search-sidebar__field-label--first" id="filter-status-label">Recruitment status <span class="search-sidebar__field-hint">pick one or more</span></span>
+					{{ partial "forms/multi-check.html" (dict "id" "filter-status" "kind" "status" "labelId" "filter-status-label" "variant" "chips") }}
+					<span class="search-sidebar__field-label" id="filter-phase-label">Phase <span class="search-sidebar__field-hint">pick one or more</span></span>
+					{{ partial "forms/multi-check.html" (dict "id" "filter-phase" "kind" "phase" "labelId" "filter-phase-label" "variant" "chips") }}
 					<label for="filter-study-type" class="search-sidebar__field-label">Study type</label>
 					<select class="form-select" id="filter-study-type">
 						<option value="">All types</option>
@@ -207,6 +181,16 @@
 					</select>
 					<label for="filter-acronym" class="search-sidebar__field-label">Acronym</label>
 					<input type="text" class="form-control" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
+				</div>
+
+				<div class="search-filter-group">
+					<span class="search-filter-label">Who can take part</span>
+					<label for="filter-age" class="search-sidebar__field-label search-sidebar__field-label--first">Patient age</label>
+					<div class="age-input">
+						<input type="number" class="form-control" id="filter-age" min="0" max="120" step="1" inputmode="numeric" placeholder="Any age" aria-describedby="filter-age-help">
+						<span class="age-input__unit" aria-hidden="true">years</span>
+					</div>
+					<p class="search-sidebar__help" id="filter-age-help">Shows trials that accept someone of this age.</p>
 				</div>
 
 				<div class="search-filter-group">

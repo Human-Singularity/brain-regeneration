@@ -25,6 +25,7 @@
 	var filterAcronym     = document.getElementById('filter-acronym');
 	var filterPhase       = document.getElementById('filter-phase');
 	var filterStatus      = document.getElementById('filter-status');
+	var filterAge         = document.getElementById('filter-age');
 	var filterCountry     = document.getElementById('filter-country');
 	var filterHasResults  = document.getElementById('filter-has-results');
 	var filterStudyType   = document.getElementById('filter-study-type');
@@ -40,6 +41,11 @@
 	var prevBtn         = document.getElementById('prev-btn');
 	var nextBtn         = document.getElementById('next-btn');
 	var noResults       = document.getElementById('no-results');
+
+	// Status and phase take one or more values ("recruiting,completed"). Their
+	// controls (forms/multi-check.html) expose .value like a <select>.
+	BR.feedUI.wireMultiCheck(filterStatus);
+	BR.feedUI.wireMultiCheck(filterPhase);
 
 	// Tab count badges
 	var tabPapersCount = document.getElementById('tab-papers-count');
@@ -88,6 +94,23 @@
 	var rawDefaultStatus = listEl.dataset.defaultStatus || '';
 	var rawDefaultPhase  = listEl.dataset.defaultPhase  || '';
 	var normaliseValue   = function (s) { return s ? s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : ''; };
+	// Same for a comma-separated list ("Recruiting, Not yet recruiting"), deduplicated.
+	var normaliseList    = function (s) {
+		return String(s || '').split(',').map(normaliseValue).filter(function (v, i, all) {
+			return v && all.indexOf(v) === i;
+		}).join(',');
+	};
+	function listOf(csv) { return csv ? String(csv).split(',').filter(Boolean) : []; }
+	function dropFromList(csv, v) { return listOf(csv).filter(function (x) { return x !== v; }).join(','); }
+
+	// Patient age for ?age_eligible=: a number of years from 0 to 120, else ''.
+	function cleanAge(v) {
+		var raw = String(v == null ? '' : v).trim().replace(',', '.');
+		if (!raw) return '';
+		var n = Number(raw);
+		if (!isFinite(n) || n < 0 || n > 120) return '';
+		return String(Math.round(n * 10) / 10);
+	}
 
 	var state = {
 		page:         1,
@@ -96,8 +119,9 @@
 		keyword:      '',
 		identifiers:  '',
 		acronym:      '',
-		phase:        normaliseValue(rawDefaultPhase),
-		status:       normaliseValue(rawDefaultStatus),
+		phase:        normaliseList(rawDefaultPhase),
+		status:       normaliseList(rawDefaultStatus),
+		age:          '',
 		country:      '',
 		sort:         '-discovery_date',
 		hasResults:   false,
@@ -121,8 +145,9 @@
 		state.subjectsMode = params.get('conditions_mode') || 'all';
 		state.categoryId   = params.get('category')        || '';
 		// Use params.has() so an explicit empty param (user cleared a default) beats the data-attribute default.
-		state.phase        = params.has('phase')   ? (params.get('phase')  || '') : normaliseValue(rawDefaultPhase);
-		state.status       = params.has('status')  ? (params.get('status') || '') : normaliseValue(rawDefaultStatus);
+		state.phase        = normaliseList(params.has('phase')  ? params.get('phase')  : rawDefaultPhase);
+		state.status       = normaliseList(params.has('status') ? params.get('status') : rawDefaultStatus);
+		state.age          = cleanAge(params.get('age'));
 		state.studyType    = params.get('study_type')      || '';
 		state.country      = params.get('country')         || '';
 		state.identifiers  = params.get('identifiers')     || '';
@@ -137,8 +162,8 @@
 
 	function writeURL(push) {
 		var params = new URLSearchParams();
-		var defaultPhase  = normaliseValue(rawDefaultPhase);
-		var defaultStatus = normaliseValue(rawDefaultStatus);
+		var defaultPhase  = normaliseList(rawDefaultPhase);
+		var defaultStatus = normaliseList(rawDefaultStatus);
 		if (state.keyword)                params.set('q',               state.keyword);
 		if (state.subjects)               params.set('conditions',      state.subjects);
 		if (state.subjectsMode !== 'all') params.set('conditions_mode', state.subjectsMode);
@@ -147,6 +172,7 @@
 		// explicitly-cleared default (state='') is represented as param= in the URL.
 		if (state.phase  !== defaultPhase  && (state.phase  || defaultPhase))  params.set('phase',  state.phase);
 		if (state.status !== defaultStatus && (state.status || defaultStatus)) params.set('status', state.status);
+		if (state.age)                    params.set('age',             state.age);
 		if (state.studyType)              params.set('study_type',      state.studyType);
 		if (state.country)                params.set('country',         state.country);
 		if (state.identifiers)            params.set('identifiers',     state.identifiers);
@@ -288,6 +314,7 @@
 		if (state.acronym)     url.searchParams.set(fuzzyAcronym ? 'acronym_contains' : 'acronym', state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
+		if (state.age)         url.searchParams.set('age_eligible',                  state.age);
 		if (state.country)     setCountryParam(url, state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',        'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
@@ -438,6 +465,34 @@
 		return t.countries || '';
 	}
 
+	// ── Eligible ages ────────────────────────────────────────────────────────
+	// inclusion_age_min/max_years are floats in years (0.5 = 6 months); null
+	// means no stated bound, or one the registry text didn't give us. With
+	// neither bound we show nothing rather than claim "all ages".
+	function ageYears(v) {
+		if (v === null || v === undefined || v === '') return null;
+		var n = Number(v);
+		return isFinite(n) ? n : null;
+	}
+	function formatAge(n) {
+		if (n < 1) {
+			var months = Math.round(n * 12);
+			return months + (months === 1 ? ' month' : ' months');
+		}
+		var years = Math.round(n * 10) / 10;
+		return years + (years === 1 ? ' year' : ' years');
+	}
+	function formatAgeRange(t) {
+		var min = ageYears(t.inclusion_age_min_years);
+		var max = ageYears(t.inclusion_age_max_years);
+		if (min === 0) min = null; // "from birth" reads as no lower bound
+		if (min === null && max === null) return '';
+		if (min === null) return 'Up to ' + formatAge(max);
+		if (max === null) return formatAge(min) + ' and older';
+		if (min >= 1 && max >= 1) return (Math.round(min * 10) / 10) + '–' + formatAge(max);
+		return formatAge(min) + ' – ' + formatAge(max);
+	}
+
 	// ── View link label ───────────────────────────────────────────────────────
 	function viewLabel(link) {
 		if (!link) return 'View trial &rarr;';
@@ -471,6 +526,8 @@
 		var metaItems = [];
 		if (t.primary_sponsor) metaItems.push({ label: 'Sponsor',    value: escHtml(t.primary_sponsor) });
 		if (t.target_size)     metaItems.push({ label: 'Enrollment', value: escHtml(t.target_size) + ' participants' });
+		var ages = formatAgeRange(t);
+		if (ages)              metaItems.push({ label: 'Ages',       value: escHtml(ages) });
 		var countriesDisplay = formatCountries(t);
 		if (countriesDisplay) metaItems.push({ label: 'Countries',  value: escHtml(countriesDisplay) });
 		var updDate = t.date_registration || t.published_date;
@@ -534,10 +591,10 @@
 				if (!host.isConnected) return; // the list was redrawn meanwhile
 				var prev = host.querySelector('.broaden-status');
 				if (prev) prev.remove();
-				var label = (STATUS_MAP[saved] && STATUS_MAP[saved].label) || saved;
+				var label = listOf(saved).map(function (v) { return '\u201c' + statusLabel(v) + '\u201d'; }).join(' or ');
 				var p = document.createElement('p');
 				p.className = 'broaden-status';
-				p.appendChild(document.createTextNode('No \u201c' + label + '\u201d trials match, but ' +
+				p.appendChild(document.createTextNode('No ' + label + ' trials match, but ' +
 					data.count.toLocaleString() + ' ' + (data.count === 1 ? 'trial matches' : 'trials match') + ' across all statuses. '));
 				var btn = document.createElement('button');
 				btn.type = 'button';
@@ -700,6 +757,7 @@
 				subject_id:                    ids[0] || '',
 				recruitment_status_normalized: state.status,
 				phase_normalized:              state.phase,
+				age_eligible:                  state.age,
 				country:                       countryCode
 			}
 		});
@@ -804,8 +862,9 @@
 		var n = 0;
 		if (state.subjects)   n += state.subjects.split(',').filter(Boolean).length;
 		if (state.categoryId) n++;
-		if (state.status)     n++;
-		if (state.phase)      n++;
+		n += listOf(state.status).length;
+		n += listOf(state.phase).length;
+		if (state.age)        n++;
 		if (state.studyType)  n++;
 		if (state.acronym)    n++;
 		if (state.country)    n++;
@@ -960,8 +1019,9 @@
 			});
 		}
 		if (state.categoryId) items.push({ label: categoryName(state.categoryId), key: 'categoryId' });
-		if (state.status)     items.push({ label: statusLabel(state.status), key: 'status' });
-		if (state.phase)      items.push({ label: phaseLabel(state.phase), key: 'phase' });
+		listOf(state.status).forEach(function (v) { items.push({ label: statusLabel(v), key: 'status:' + v }); });
+		listOf(state.phase).forEach(function (v) { items.push({ label: phaseLabel(v), key: 'phase:' + v }); });
+		if (state.age)        items.push({ label: 'Accepts age ' + state.age, key: 'age' });
 		if (state.studyType)  items.push({ label: state.studyType.charAt(0).toUpperCase() + state.studyType.slice(1), key: 'studyType' });
 		if (state.acronym)    items.push({ label: 'Acronym: ' + state.acronym, key: 'acronym' });
 		if (state.dateFrom || state.dateTo) items.push({ label: 'Registered: ' + (state.dateFrom || '…') + ' – ' + (state.dateTo || '…'), key: 'dateRange' });
@@ -991,8 +1051,9 @@
 			state.subjects = state.subjects.split(',').filter(function (id) { return id && id !== drop; }).join(',');
 		}
 		else if (key === 'categoryId') state.categoryId = '';
-		else if (key === 'status')     state.status = '';
-		else if (key === 'phase')      state.phase = '';
+		else if (key.indexOf('status:') === 0) state.status = dropFromList(state.status, key.slice(7));
+		else if (key.indexOf('phase:') === 0)  state.phase = dropFromList(state.phase, key.slice(6));
+		else if (key === 'age')        state.age = '';
 		else if (key === 'studyType')  state.studyType = '';
 		else if (key === 'acronym')    state.acronym = '';
 		else if (key === 'dateRange')  { state.dateFrom = ''; state.dateTo = ''; }
@@ -1268,6 +1329,7 @@
 		state.acronym      = filterAcronym     ? filterAcronym.value.trim()     : '';
 		state.phase        = filterPhase      ? filterPhase.value              : '';
 		state.status       = filterStatus     ? filterStatus.value             : '';
+		state.age          = filterAge        ? cleanAge(filterAge.value)      : '';
 		state.country      = filterCountry    ? filterCountry.value.trim()     : '';
 		state.sort         = sortOrder        ? sortOrder.value                : '-discovery_date';
 		state.hasResults   = filterHasResults  ? filterHasResults.checked       : false;
@@ -1318,6 +1380,12 @@
 		filterStatus.addEventListener('change', applyFilters);
 	}
 
+	if (filterAge) {
+		// Typing and the spinner arrows both fire "input"; out-of-range ages
+		// (the browser flags them :invalid) simply leave the filter off.
+		filterAge.addEventListener('input', debounce(applyFilters, 600));
+	}
+
 	if (filterCountry) {
 		filterCountry.addEventListener('change', applyFilters);
 	}
@@ -1344,6 +1412,7 @@
 		state.acronym      = '';
 		state.phase        = '';
 		state.status       = '';
+		state.age          = '';
 		state.country      = '';
 		state.sort         = '-discovery_date';
 		state.hasResults   = false;
@@ -1369,6 +1438,7 @@
 		if (filterAcronym)     filterAcronym.value      = '';
 		if (filterPhase)       filterPhase.value        = '';
 		if (filterStatus)      filterStatus.value       = '';
+		if (filterAge)         filterAge.value          = '';
 		if (filterCountry)     filterCountry.value      = '';
 		if (sortOrder)         sortOrder.value          = '-discovery_date';
 		if (filterHasResults)  filterHasResults.checked = false;
@@ -1492,6 +1562,7 @@
 		if (state.acronym)     url.searchParams.set(acronymFuzzy ? 'acronym_contains' : 'acronym', state.acronym);
 		if (state.phase)       url.searchParams.set('phase_normalized',              state.phase);
 		if (state.status)      url.searchParams.set('recruitment_status_normalized', state.status);
+		if (state.age)         url.searchParams.set('age_eligible',                  state.age);
 		if (state.country)     setCountryParam(url, state.country);
 		if (state.hasResults)  url.searchParams.set('has_results',  'true');
 		if (state.subjects)    url.searchParams.set(state.subjectsMode === 'any' ? 'subjects_any' : 'subjects', state.subjects);
@@ -1514,8 +1585,9 @@
 		if (state.keyword)     parts.push(state.keyword.replace(/\s+/g, '-').toLowerCase());
 		if (state.identifiers) parts.push(state.identifiers.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
 		if (state.acronym)     parts.push(state.acronym.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase());
-		if (state.phase)       parts.push(state.phase.toLowerCase());
-		if (state.status)      parts.push(state.status.toLowerCase().replace(/_/g, '-'));
+		if (state.phase)       parts.push(state.phase.toLowerCase().replace(/,/g, '+'));
+		if (state.status)      parts.push(state.status.toLowerCase().replace(/_/g, '-').replace(/,/g, '+'));
+		if (state.age)         parts.push('age-' + state.age);
 		if (state.country)     parts.push(state.country.replace(/\s+/g, '-').toLowerCase());
 		if (state.sponsorId)   parts.push('sponsor-' + state.sponsorId);
 		if (!allResults)       parts.push('page-' + state.page);
@@ -1570,6 +1642,7 @@
 
 	if (filterStatus && state.status) filterStatus.value = state.status;
 	if (filterPhase  && state.phase)  filterPhase.value  = state.phase;
+	if (filterAge    && state.age)    filterAge.value    = state.age;
 
 	// Populate category controls from category groups
 	if (categoryGroups.length) {
@@ -1634,12 +1707,14 @@
 	var trialsMobileCount       = document.getElementById('trials-mobile-result-count');
 	var trialsSheetIdentifiers  = document.getElementById('trials-sheet-identifiers-input');
 	var trialsSheetAcronym      = document.getElementById('trials-sheet-acronym-input');
+	var trialsSheetAge          = document.getElementById('trials-sheet-age-input');
 
 	// ── Sync state → UI controls (used by init and popstate) ─────────────────
 	function syncUIFromState() {
 		if (searchInput)       searchInput.value        = state.keyword;
 		if (filterPhase)       filterPhase.value        = state.phase;
 		if (filterStatus)      filterStatus.value       = state.status;
+		if (filterAge)         filterAge.value          = state.age;
 		if (sortOrder)         sortOrder.value          = state.sort;
 		if (filterCountry)     filterCountry.value      = state.country;
 		if (filterHasResults)  filterHasResults.checked = state.hasResults;
@@ -1713,6 +1788,7 @@
 		trialsDraft = {
 			phase:        state.phase,
 			status:       state.status,
+			age:          state.age,
 			sort:         state.sort,
 			hasResults:   state.hasResults,
 			identifiers:  state.identifiers,
@@ -1729,8 +1805,9 @@
 	var setTrialsActiveChip = BR.feedUI.setActiveChip;
 
 	function syncTrialsSheetToDraft() {
-		setTrialsActiveChip('trials-sheet-phase',         trialsDraft.phase);
-		setTrialsActiveChip('trials-sheet-status',        trialsDraft.status);
+		syncTrialsMultiChips('trials-sheet-phase',        trialsDraft.phase);
+		syncTrialsMultiChips('trials-sheet-status',       trialsDraft.status);
+		if (trialsSheetAge) trialsSheetAge.value = trialsDraft.age || '';
 		setTrialsActiveChip('trials-sheet-sort',          trialsDraft.sort);
 		setTrialsActiveChip('trials-sheet-show',          trialsDraft.hasResults ? 'has_results' : '');
 		setTrialsActiveChip('trials-sheet-study-type',    trialsDraft.studyType || '');
@@ -1753,8 +1830,40 @@
 		});
 	}
 
-	wireTrialsChipGroup('trials-sheet-phase',         function (v) { trialsDraft.phase = v; });
-	wireTrialsChipGroup('trials-sheet-status',        function (v) { trialsDraft.status = v; });
+	// Status and phase: tap to add or remove; "All …" clears the group.
+	function syncTrialsMultiChips(groupId, csv) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		var selected = listOf(csv);
+		group.querySelectorAll('.sheet-chip').forEach(function (chip) {
+			var v = chip.dataset.value;
+			var on = v === '' ? selected.length === 0 : selected.indexOf(v) !== -1;
+			chip.classList.toggle('active', on);
+			chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+		});
+	}
+
+	function wireTrialsMultiChipGroup(groupId, key) {
+		var group = document.getElementById(groupId);
+		if (!group) return;
+		group.addEventListener('click', function (e) {
+			var chip = e.target.closest('.sheet-chip');
+			if (!chip) return;
+			var v = chip.dataset.value;
+			if (v === '') {
+				trialsDraft[key] = '';
+			} else {
+				var arr = listOf(trialsDraft[key]);
+				var idx = arr.indexOf(v);
+				if (idx === -1) arr.push(v); else arr.splice(idx, 1);
+				trialsDraft[key] = arr.join(',');
+			}
+			syncTrialsMultiChips(groupId, trialsDraft[key]);
+		});
+	}
+
+	wireTrialsMultiChipGroup('trials-sheet-phase',  'phase');
+	wireTrialsMultiChipGroup('trials-sheet-status', 'status');
 	wireTrialsChipGroup('trials-sheet-sort',          function (v) { trialsDraft.sort = v; });
 	wireTrialsChipGroup('trials-sheet-show',          function (v) { trialsDraft.hasResults = v === 'has_results'; });
 	wireTrialsChipGroup('trials-sheet-study-type',    function (v) { trialsDraft.studyType = v; });
@@ -1794,14 +1903,20 @@
 			trialsDraft.acronym = trialsSheetAcronym.value.trim();
 		});
 	}
+	if (trialsSheetAge) {
+		trialsSheetAge.addEventListener('input', function () {
+			trialsDraft.age = trialsSheetAge.value;
+		});
+	}
 
 	// ── Token strip ───────────────────────────────────────────────────────────
 
 	var buildTrialsToken = BR.feedUI.buildToken;
 
 	function removeTrialsToken(filterKey) {
-		if (filterKey === 'phase')       state.phase = '';
-		if (filterKey === 'status')      state.status = '';
+		if (filterKey.indexOf('phase:') === 0)  state.phase  = dropFromList(state.phase,  filterKey.slice(6));
+		if (filterKey.indexOf('status:') === 0) state.status = dropFromList(state.status, filterKey.slice(7));
+		if (filterKey === 'age')         state.age = '';
 		if (filterKey === 'sort')        state.sort = '-discovery_date';
 		if (filterKey === 'hasResults')  state.hasResults = false;
 		if (filterKey === 'identifiers') state.identifiers = '';
@@ -1817,6 +1932,7 @@
 		// Sync desktop controls
 		if (filterPhase)       filterPhase.value        = state.phase;
 		if (filterStatus)      filterStatus.value       = state.status;
+		if (filterAge)         filterAge.value          = state.age;
 		if (sortOrder)         sortOrder.value          = state.sort;
 		if (filterHasResults)  filterHasResults.checked = state.hasResults;
 		if (filterIdentifiers) filterIdentifiers.value  = state.identifiers;
@@ -1874,12 +1990,16 @@
 			trialsTokenStrip.appendChild(buildTrialsToken(state.acronym, 'acronym'));
 			hasTokens = true;
 		}
-		if (state.phase) {
-			trialsTokenStrip.appendChild(buildTrialsToken(phaseLabel(state.phase), 'phase'));
+		listOf(state.phase).forEach(function (v) {
+			trialsTokenStrip.appendChild(buildTrialsToken(phaseLabel(v), 'phase:' + v));
 			hasTokens = true;
-		}
-		if (state.status) {
-			trialsTokenStrip.appendChild(buildTrialsToken(statusLabel(state.status), 'status'));
+		});
+		listOf(state.status).forEach(function (v) {
+			trialsTokenStrip.appendChild(buildTrialsToken(statusLabel(v), 'status:' + v));
+			hasTokens = true;
+		});
+		if (state.age) {
+			trialsTokenStrip.appendChild(buildTrialsToken('Age ' + state.age, 'age'));
 			hasTokens = true;
 		}
 		if (state.sort && state.sort !== '-discovery_date') {
@@ -1940,6 +2060,7 @@
 		if (state.acronym) count++;
 		if (state.phase) count++;
 		if (state.status) count++;
+		if (state.age) count++;
 		if (state.sort && state.sort !== '-discovery_date') count++;
 		if (state.hasResults) count++;
 		if (state.subjects)   count++;
@@ -2012,6 +2133,7 @@
 		trialsSheetApply.addEventListener('click', function () {
 			state.phase        = trialsDraft.phase        !== undefined ? trialsDraft.phase        : state.phase;
 			state.status       = trialsDraft.status       !== undefined ? trialsDraft.status       : state.status;
+			state.age          = trialsDraft.age          !== undefined ? cleanAge(trialsDraft.age) : state.age;
 			state.sort         = trialsDraft.sort         !== undefined ? trialsDraft.sort         : state.sort;
 			state.hasResults   = trialsDraft.hasResults   !== undefined ? trialsDraft.hasResults   : state.hasResults;
 			state.identifiers  = trialsDraft.identifiers  !== undefined ? trialsDraft.identifiers  : state.identifiers;
@@ -2030,6 +2152,7 @@
 			// Keep desktop controls in sync
 			if (filterPhase)       filterPhase.value        = state.phase;
 			if (filterStatus)      filterStatus.value       = state.status;
+			if (filterAge)         filterAge.value          = state.age;
 			if (sortOrder)         sortOrder.value          = state.sort;
 			if (filterHasResults)  filterHasResults.checked = state.hasResults;
 			if (filterIdentifiers) filterIdentifiers.value  = state.identifiers;
@@ -2053,7 +2176,7 @@
 
 	if (trialsSheetReset) {
 		trialsSheetReset.addEventListener('click', function () {
-			trialsDraft = { phase: '', status: '', sort: '-discovery_date', hasResults: false, identifiers: '', acronym: '', subjects: '', subjectsMode: 'all', studyType: '', categoryId: '' };
+			trialsDraft = { phase: '', status: '', age: '', sort: '-discovery_date', hasResults: false, identifiers: '', acronym: '', subjects: '', subjectsMode: 'all', studyType: '', categoryId: '' };
 			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
 			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
 			syncTrialsSheetToDraft();
@@ -2067,6 +2190,7 @@
 			if (trialsMobileClear)      trialsMobileClear.hidden     = true;
 			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
 			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
+			if (trialsSheetAge)         trialsSheetAge.value         = '';
 			setTrialsActiveChip('trials-sheet-category', '');
 			syncTrialsSubjectChips();
 			renderTrialsTokens();
@@ -2078,6 +2202,7 @@
 			if (trialsMobileClear)      trialsMobileClear.hidden     = true;
 			if (trialsSheetIdentifiers) trialsSheetIdentifiers.value = '';
 			if (trialsSheetAcronym)     trialsSheetAcronym.value     = '';
+			if (trialsSheetAge)         trialsSheetAge.value         = '';
 			setTrialsActiveChip('trials-sheet-category', '');
 			syncTrialsSubjectChips();
 			renderTrialsTokens();

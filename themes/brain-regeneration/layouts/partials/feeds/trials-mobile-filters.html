@@ -78,37 +78,28 @@
 			<input type="text" class="form-control form-control-sm" id="trials-sheet-acronym-input" placeholder="e.g. ReCOVER, MODIF-MS" autocomplete="off">
 		</div>
 		<div class="sheet-group">
-			<div class="sheet-group-label">Phase</div>
-			<div class="sheet-chips" id="trials-sheet-phase">
-				<button type="button" class="sheet-chip active" data-value="">All phases</button>
-				<button type="button" class="sheet-chip" data-value="early_phase_1">Early Phase 1</button>
-				<button type="button" class="sheet-chip" data-value="phase_1">Phase 1</button>
-				<button type="button" class="sheet-chip" data-value="phase_1_2">Phase 1/2</button>
-				<button type="button" class="sheet-chip" data-value="phase_2">Phase 2</button>
-				<button type="button" class="sheet-chip" data-value="phase_2_3">Phase 2/3</button>
-				<button type="button" class="sheet-chip" data-value="phase_3">Phase 3</button>
-				<button type="button" class="sheet-chip" data-value="phase_3_4">Phase 3/4</button>
-				<button type="button" class="sheet-chip" data-value="phase_4">Phase 4</button>
-				<button type="button" class="sheet-chip" data-value="post_market">Post-market</button>
-				<button type="button" class="sheet-chip" data-value="not_applicable">Not applicable</button>
-				<button type="button" class="sheet-chip" data-value="other">Other</button>
+			<div class="sheet-group-label" id="trials-sheet-phase-label">Phase <span class="sheet-group-hint">pick one or more</span></div>
+			<div class="sheet-chips" id="trials-sheet-phase" data-multi="true" role="group" aria-labelledby="trials-sheet-phase-label">
+				<button type="button" class="sheet-chip active" data-value="" aria-pressed="true">All phases</button>
+				{{- range index (partial "data/trial-filter-options.html" .) "phase" }}
+				<button type="button" class="sheet-chip" data-value="{{ .value }}" aria-pressed="false">{{ .label }}</button>
+				{{- end }}
 			</div>
 		</div>
 		<div class="sheet-group">
-			<div class="sheet-group-label">Status</div>
-			<div class="sheet-chips" id="trials-sheet-status">
-				<button type="button" class="sheet-chip active" data-value="">All statuses</button>
-				<button type="button" class="sheet-chip" data-value="not_yet_recruiting">Not yet recruiting</button>
-				<button type="button" class="sheet-chip" data-value="recruiting">Recruiting</button>
-				<button type="button" class="sheet-chip" data-value="enrolling_by_invitation">Enrolling by invitation</button>
-				<button type="button" class="sheet-chip" data-value="active_not_recruiting">Active, not recruiting</button>
-				<button type="button" class="sheet-chip" data-value="not_recruiting">Not recruiting</button>
-				<button type="button" class="sheet-chip" data-value="suspended">Suspended</button>
-				<button type="button" class="sheet-chip" data-value="completed">Completed</button>
-				<button type="button" class="sheet-chip" data-value="terminated">Terminated</button>
-				<button type="button" class="sheet-chip" data-value="withdrawn">Withdrawn</button>
-				<button type="button" class="sheet-chip" data-value="unknown">Unknown</button>
-				<button type="button" class="sheet-chip" data-value="other">Other</button>
+			<div class="sheet-group-label" id="trials-sheet-status-label">Status <span class="sheet-group-hint">pick one or more</span></div>
+			<div class="sheet-chips" id="trials-sheet-status" data-multi="true" role="group" aria-labelledby="trials-sheet-status-label">
+				<button type="button" class="sheet-chip active" data-value="" aria-pressed="true">All statuses</button>
+				{{- range index (partial "data/trial-filter-options.html" .) "status" }}
+				<button type="button" class="sheet-chip" data-value="{{ .value }}" aria-pressed="false">{{ .label }}</button>
+				{{- end }}
+			</div>
+		</div>
+		<div class="sheet-group">
+			<label for="trials-sheet-age-input" class="sheet-group-label">Patient age</label>
+			<div class="age-input">
+				<input type="number" class="form-control form-control-sm" id="trials-sheet-age-input" min="0" max="120" step="1" inputmode="numeric" placeholder="Any age">
+				<span class="age-input__unit" aria-hidden="true">years</span>
 			</div>
 		</div>
 		{{- if $showStudyType }}

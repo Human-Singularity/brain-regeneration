@@ -1,0 +1,45 @@
+{{- /*
+  forms/multi-check.html — pick one or more trial statuses or phases.
+  BR.feedUI.wireMultiCheck() gives the root a .value ("a,b") and fires
+  "change" from it, so scripts treat it like a <select>.
+
+  Params (dict):
+    id          — root id (e.g. "filter-status")
+    kind        — "status" or "phase" (see data/trial-filter-options.html)
+    labelId     — id of the visible label element
+    placeholder — text when nothing is picked (dropdown only)
+    variant     — "chips" (sidebar: always-visible chips) or
+                  "dropdown" (filter bar: a select-like button with checkboxes)
+*/ -}}
+{{- $opts := index (partial "data/trial-filter-options.html" .) .kind -}}
+{{- $id := .id -}}
+{{- if eq .variant "chips" }}
+<div class="multi-check multi-check--chips search-chips" id="{{ $id }}" role="group" aria-labelledby="{{ .labelId }}">
+	{{- range $opts }}
+	<label class="search-chip multi-check__chip" data-label="{{ .label }}">
+		<input type="checkbox" class="multi-check__input" value="{{ .value }}">
+		{{- if .short }}<span aria-hidden="true">{{ .short }}</span><span class="visually-hidden">{{ .label }}</span>{{ else }}{{ .label }}{{ end -}}
+	</label>
+	{{- end }}
+</div>
+{{- else }}
+<div class="multi-check multi-check--dropdown" id="{{ $id }}" data-placeholder="{{ .placeholder }}">
+	<button type="button" class="form-select multi-check__toggle" id="{{ $id }}-toggle"
+		aria-expanded="false" aria-controls="{{ $id }}-panel"
+		aria-labelledby="{{ .labelId }} {{ $id }}-toggle">
+		<span class="multi-check__text">{{ .placeholder }}</span>
+	</button>
+	<div class="multi-check__panel" id="{{ $id }}-panel" role="group" aria-labelledby="{{ .labelId }}" hidden>
+		{{- range $opts }}
+		<label class="multi-check__option" data-label="{{ .label }}">
+			<input type="checkbox" class="multi-check__input" value="{{ .value }}">
+			{{ .label }}
+		</label>
+		{{- end }}
+		<div class="multi-check__foot">
+			<span class="multi-check__hint">Pick one or more</span>
+			<button type="button" class="multi-check__clear" hidden>Clear</button>
+		</div>
+	</div>
+</div>
+{{- end }}
