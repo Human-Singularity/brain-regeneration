@@ -27,33 +27,89 @@
 	<div class="container">
 		<h1>{{ .Title }}</h1>
 		<p class="search-hero__desc">{{ .Params.hero_description | default .Description }}</p>
-		<div class="search-hero__bar">
-			<input
-				type="search"
-				class="search-hero__input"
-				id="search-input"
-				placeholder="e.g. stem cells myelin · remyelination OR neuroprotection · -completed…"
-				autocomplete="off">
-			<button
-				class="search-hero__btn"
-				type="button"
-				id="search-btn"
-				data-search-context="Advanced Search">Search</button>
+		{{/* Search mode switch: one bar, three ways in. trials-feed.js shows the
+		     matching field and help line; all three fields stay in the DOM so their
+		     values (and the filters they set) survive a mode switch. */}}
+		<div class="search-mode" id="search-mode">
+			<span class="search-mode__label" id="search-mode-label">Search by</span>
+			<div class="search-mode__group" role="group" aria-labelledby="search-mode-label">
+				<button type="button" class="search-mode__btn" data-mode="keywords" aria-pressed="true">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+					Keywords
+				</button>
+				<button type="button" class="search-mode__btn" data-mode="sponsor" aria-pressed="false">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
+					Sponsor
+				</button>
+				<button type="button" class="search-mode__btn" data-mode="trialid" aria-pressed="false">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>
+					Trial ID
+				</button>
+			</div>
 		</div>
-		<div class="search-hero__hints">
-			<span class="search-hero__hints-label">Try:</span>
-			<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="ALS">ALS</button>
+
+		<div class="search-hero__bar-wrap">
+			<div class="search-hero__bar">
+				<div class="search-hero__field" data-mode-field="keywords">
+					<label for="search-input" class="visually-hidden">Search by keywords</label>
+					<input
+						type="search"
+						class="search-hero__input"
+						id="search-input"
+						placeholder="Words in the trial record, e.g. remyelination OR neuroprotection"
+						autocomplete="off">
+				</div>
+				<div class="search-hero__field" data-mode-field="sponsor" hidden>
+					<label for="trials-sponsor-input" class="visually-hidden">Search by sponsor</label>
+					<input
+						type="search"
+						class="search-hero__input"
+						id="trials-sponsor-input"
+						placeholder="Company, university or hospital, e.g. Roche"
+						autocomplete="off"
+						role="combobox"
+						aria-autocomplete="list"
+						aria-expanded="false"
+						aria-controls="trials-sponsor-suggestions">
+				</div>
+				<div class="search-hero__field" data-mode-field="trialid" hidden>
+					<label for="filter-identifiers" class="visually-hidden">Search by trial ID</label>
+					<input
+						type="search"
+						class="search-hero__input search-hero__input--mono"
+						id="filter-identifiers"
+						placeholder="Registry number, e.g. NCT02521311"
+						autocomplete="off">
+				</div>
+				<button
+					class="search-hero__btn"
+					type="button"
+					id="search-btn"
+					data-search-context="Advanced Search">
+					<span class="search-hero__btn-spinner" aria-hidden="true"></span>
+					<span class="search-hero__btn-label">Search</span>
+				</button>
+			</div>
+			<div id="trials-sponsor-suggestions" class="author-suggestions author-suggestions--hero" role="listbox" aria-label="Matching sponsors" hidden></div>
 		</div>
-		<div class="search-hero__hints">
-			<span class="search-hero__hints-label">Boolean:</span>
-			<button class="search-hero__hint-tag" type="button" data-hint="remyelination OR neuroprotection">remyelination OR neuroprotection</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="stem cells -completed">stem cells -completed</button>
-			<button class="search-hero__hint-tag" type="button" data-hint="&quot;multiple sclerosis&quot;">"multiple sclerosis"</button>
+
+		<div class="search-hero__help" data-mode-help="keywords">
+			<div class="search-hero__hints">
+				<span class="search-hero__hints-label">Try:</span>
+				<button class="search-hero__hint-tag" type="button" data-hint="stem cells">stem cells</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="remyelination">remyelination</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="neuroinflammation">neuroinflammation</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="Parkinson's">Parkinson's</button>
+				<button class="search-hero__hint-tag" type="button" data-hint="ALS">ALS</button>
+			</div>
+			<ul class="search-hero__syntax" aria-label="Search tips">
+				<li><button class="search-hero__syntax-example" type="button" data-hint="remyelination OR neuroprotection">A OR B</button> either word</li>
+				<li><button class="search-hero__syntax-example" type="button" data-hint="stem cells -completed">-word</button> leave a word out</li>
+				<li><button class="search-hero__syntax-example" type="button" data-hint="&quot;multiple sclerosis&quot;">"exact phrase"</button> words together</li>
+			</ul>
 		</div>
+		<p class="search-hero__help search-hero__help-text" data-mode-help="sponsor" hidden>Type a company, university or hospital and pick it from the list. Some sponsors appear more than once because registries spell names differently.</p>
+		<p class="search-hero__help search-hero__help-text" data-mode-help="trialid" hidden>Paste a registry number, e.g. <code>NCT02521311</code> from ClinicalTrials.gov or an EU trial number. Several? Separate them with commas.</p>
 	</div>
 </section>
 
@@ -74,171 +130,160 @@
 <!-- ── STATS BAR (populated by JS) ── -->
 {{ partial "feeds/stats-bar" (dict "page" . "subjectId" "") }}
 
-<!-- ── CHIP FILTER CARD (desktop only) ── -->
-<div class="search-filter-wrap d-none d-lg-block" id="trials-filters">
-	<div class="container">
-		<div class="search-filter-card">
-			{{- if $conditionPages }}
-			<div class="search-filter-group">
-				<div class="search-filter-label-row">
-					<span class="search-filter-label">Filter by condition</span>
-					<div class="subjects-mode" id="trials-subjects-mode">
-						<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
-						<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
-					</div>
-				</div>
-				<div class="search-chips" id="trials-condition-chips"{{- if $categoriesBySubject }} data-categories-by-subject="{{ $categoriesBySubject | jsonify }}"{{ end }}>
-					{{- range $conditionPages }}
-					<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
-					{{- end }}
-				</div>
-			</div>
-			{{- end }}
-
-			<div class="search-filter-group" id="trials-category-row" hidden>
-				<span class="search-filter-label">Category</span>
-				<div class="search-chips" id="trials-category-chips"></div>
-			</div>
-
-			<button type="button" class="search-more-btn" id="trials-more-filters-btn">
-				<span class="search-more-btn__arrow" id="trials-more-arrow">▼</span>
-				<span class="search-more-btn__label">More filters</span>
-			</button>
-
-			<div class="search-advanced-panel" id="trials-advanced-panel" hidden>
-				<form id="trials-filter-form" action="javascript:void(0)">
-					<div class="row g-3 align-items-end mt-1">
-						<div class="col-12 col-md-2">
-							<label for="sort-order" class="form-label" style="font-size:13px;">Sort by</label>
-							<select class="form-select form-select-sm" id="sort-order">
-								<option value="-discovery_date">Newest first</option>
-								<option value="discovery_date">Oldest first</option>
-								<option value="-last_updated">Last updated</option>
-								<option value="-published_date">Published (newest)</option>
-								<option value="published_date">Published (oldest)</option>
-								<option value="title">Title A–Z</option>
-								<option value="-title">Title Z–A</option>
-							</select>
-						</div>
-						<div class="col-12 col-md-2">
-							<label for="filter-phase" class="form-label" style="font-size:13px;">Phase</label>
-							<select class="form-select form-select-sm" id="filter-phase">
-								<option value="">All phases</option>
-								<option value="early_phase_1">Early Phase 1</option>
-								<option value="phase_1">Phase 1</option>
-								<option value="phase_1_2">Phase 1/2</option>
-								<option value="phase_2">Phase 2</option>
-								<option value="phase_2_3">Phase 2/3</option>
-								<option value="phase_3">Phase 3</option>
-								<option value="phase_3_4">Phase 3/4</option>
-								<option value="phase_4">Phase 4</option>
-								<option value="post_market">Post-market</option>
-								<option value="not_applicable">Not applicable</option>
-								<option value="other">Other</option>
-							</select>
-						</div>
-						<div class="col-12 col-md-2">
-							<label for="filter-status" class="form-label" style="font-size:13px;">Status</label>
-							<select class="form-select form-select-sm" id="filter-status">
-								<option value="">All statuses</option>
-								<option value="not_yet_recruiting">Not yet recruiting</option>
-								<option value="recruiting">Recruiting</option>
-								<option value="enrolling_by_invitation">Enrolling by invitation</option>
-								<option value="active_not_recruiting">Active, not recruiting</option>
-								<option value="not_recruiting">Not recruiting</option>
-								<option value="suspended">Suspended</option>
-								<option value="completed">Completed</option>
-								<option value="terminated">Terminated</option>
-								<option value="withdrawn">Withdrawn</option>
-								<option value="unknown">Unknown</option>
-								<option value="other">Other</option>
-							</select>
-						</div>
-						<div class="col-12 col-md-2">
-							<label for="filter-study-type" class="form-label" style="font-size:13px;">Study type</label>
-							<select class="form-select form-select-sm" id="filter-study-type">
-								<option value="">All types</option>
-								<option value="interventional">Interventional</option>
-								<option value="observational">Observational</option>
-							</select>
-						</div>
-						<div class="col-12 col-md-4">
-							<label class="form-label" style="font-size:13px;">Date registered</label>
-							<div class="d-flex gap-2 align-items-center">
-								<input type="date" class="form-control form-control-sm" id="filter-date-from">
-								<span style="font-size:13px;color:var(--color-muted);">to</span>
-								<input type="date" class="form-control form-control-sm" id="filter-date-to">
-							</div>
-						</div>
-						<div class="col-12 col-md-3">
-							<label for="filter-country" class="form-label" style="font-size:13px;">Country</label>
-							<input type="text" class="form-control form-control-sm" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
-							{{ partial "forms/country-datalist.html" }}
-						</div>
-						<div class="col-12 col-md-3">
-							<label for="filter-identifiers" class="form-label" style="font-size:13px;">Identifiers</label>
-							<input type="text" class="form-control form-control-sm" id="filter-identifiers" placeholder="e.g. NCT02521311" autocomplete="off">
-						</div>
-						<div class="col-12 col-md-2">
-							<label for="filter-acronym" class="form-label" style="font-size:13px;">Acronym</label>
-							<input type="text" class="form-control form-control-sm" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
-						</div>
-						<div class="col-12 col-md-2 d-flex align-items-end gap-3">
-							<div class="search-toggle-row">
-								<input type="checkbox" class="search-toggle-input" id="filter-has-results" role="switch">
-								<label class="search-toggle-label" for="filter-has-results">Results posted</label>
-							</div>
-						</div>
-						<div class="col-12 col-md-1 d-flex align-items-end">
-							<button type="button" class="btn-outline-teal w-100" id="reset-filters" style="padding:6px 12px;font-size:13px;">Reset</button>
-						</div>
-					</div>
-					{{/* Hidden filter-subjects for JS compatibility */}}
-					<select id="filter-subjects" hidden multiple aria-hidden="true">
-						{{- range $conditionPages }}
-						<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
-						{{- end }}
-					</select>
-				</form>
-			</div>
-		</div>
-
-		<div class="search-tokens" id="trials-desktop-tokens" hidden></div>
-
-		<div class="mt-2 d-flex align-items-center justify-content-between">
-			<span class="results-count" id="results-count"></span>
-			<div class="feed-actions">
-				{{ partial "feeds/search-rss" (dict "site" .Site "id" "search-rss-toggle") }}
-				{{ partial "feeds/download-dropdown" (dict "toggleId" "download-toggle") }}
-			</div>
-		</div>
-	</div>
-</div>
-
 {{ partial "feeds/trials-mobile-filters" (dict "showStudyType" true "conditionPages" $conditionPages "categoriesBySubject" $categoriesBySubject) }}
 
 <!-- ── TRIAL LISTING ── -->
-<section class="section bg-sand">
+<section class="section bg-sand search-results" style="padding-top: 24px;">
 	<div class="container">
-		<div class="mobile-feed-bar d-lg-none">
-		<p class="mobile-result-count d-lg-none" id="trials-mobile-result-count" aria-live="polite"></p>
-		{{ partial "feeds/search-rss" (dict "site" .Site "id" "search-rss-toggle-mobile") }}
-		</div>
+		<div class="search-layout">
 
-		<div id="trials-list"
-			data-endpoint="{{ partial "api-endpoint" (dict "api" .Params.api "apiBase" .Site.Params.apiBase) }}"
-			data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
-			data-subject-id=""
-			data-default-status=""
-			data-default-phase="">
-		</div>
+		<!-- ── Filter sidebar (desktop; mobile uses the bottom sheet) ── -->
+		<aside class="search-sidebar d-none d-lg-block" id="trials-filters" aria-labelledby="trials-refine-heading">
+			<form id="trials-filter-form" action="javascript:void(0)">
+				<div class="search-sidebar__head">
+					<h2 class="search-sidebar__title" id="trials-refine-heading">Refine results</h2>
+					<button type="button" class="search-sidebar__reset" id="reset-filters">Reset</button>
+				</div>
 
-		<div class="no-results" id="no-results" style="display: none;">
-			<p>No trials match your current filters.</p>
-			<button class="btn-outline-teal" id="clear-filters">Clear filters</button>
-		</div>
+				{{- if $conditionPages }}
+				<div class="search-filter-group">
+					<div class="search-filter-label-row">
+						<span class="search-filter-label" id="trials-condition-label">Condition</span>
+						<div class="subjects-mode" id="trials-subjects-mode" role="group" aria-label="Match any or all conditions">
+							<button type="button" class="subjects-mode-btn" data-mode="any" aria-pressed="false">Any</button>
+							<button type="button" class="subjects-mode-btn active" data-mode="all" aria-pressed="true">All</button>
+						</div>
+					</div>
+					<div class="search-chips" id="trials-condition-chips" role="group" aria-labelledby="trials-condition-label"{{- if $categoriesBySubject }} data-categories-by-subject="{{ $categoriesBySubject | jsonify }}"{{ end }}>
+						{{- range $conditionPages }}
+						<button type="button" class="search-chip" aria-pressed="false" data-value="{{ .Params.api.subject_id }}">{{ .Title }}</button>
+						{{- end }}
+					</div>
+				</div>
+				{{- end }}
 
-		{{ partial "feeds/trials-pagination.html" }}
+				<div class="search-filter-group" id="trials-category-row" hidden>
+					<span class="search-filter-label" id="trials-category-label">Category</span>
+					<div class="search-chips" id="trials-category-chips" role="group" aria-labelledby="trials-category-label"></div>
+				</div>
+
+				<div class="search-filter-group">
+					<span class="search-filter-label">Trial</span>
+					<label for="filter-status" class="search-sidebar__field-label search-sidebar__field-label--first">Recruitment status</label>
+					<select class="form-select" id="filter-status">
+						<option value="">All statuses</option>
+						<option value="not_yet_recruiting">Not yet recruiting</option>
+						<option value="recruiting">Recruiting</option>
+						<option value="enrolling_by_invitation">Enrolling by invitation</option>
+						<option value="active_not_recruiting">Active, not recruiting</option>
+						<option value="not_recruiting">Not recruiting</option>
+						<option value="suspended">Suspended</option>
+						<option value="completed">Completed</option>
+						<option value="terminated">Terminated</option>
+						<option value="withdrawn">Withdrawn</option>
+						<option value="unknown">Unknown</option>
+						<option value="other">Other</option>
+					</select>
+					<label for="filter-phase" class="search-sidebar__field-label">Phase</label>
+					<select class="form-select" id="filter-phase">
+						<option value="">All phases</option>
+						<option value="early_phase_1">Early Phase 1</option>
+						<option value="phase_1">Phase 1</option>
+						<option value="phase_1_2">Phase 1/2</option>
+						<option value="phase_2">Phase 2</option>
+						<option value="phase_2_3">Phase 2/3</option>
+						<option value="phase_3">Phase 3</option>
+						<option value="phase_3_4">Phase 3/4</option>
+						<option value="phase_4">Phase 4</option>
+						<option value="post_market">Post-market</option>
+						<option value="not_applicable">Not applicable</option>
+						<option value="other">Other</option>
+					</select>
+					<label for="filter-study-type" class="search-sidebar__field-label">Study type</label>
+					<select class="form-select" id="filter-study-type">
+						<option value="">All types</option>
+						<option value="interventional">Interventional</option>
+						<option value="observational">Observational</option>
+					</select>
+					<label for="filter-acronym" class="search-sidebar__field-label">Acronym</label>
+					<input type="text" class="form-control" id="filter-acronym" placeholder="e.g. MODIF-MS" autocomplete="off">
+				</div>
+
+				<div class="search-filter-group">
+					<span class="search-filter-label">Registered</span>
+					<div class="search-date-range">
+						<label for="filter-date-from">From</label>
+						<input type="date" class="form-control" id="filter-date-from">
+						<label for="filter-date-to">To</label>
+						<input type="date" class="form-control" id="filter-date-to">
+					</div>
+				</div>
+
+				<div class="search-filter-group search-filter-group--last">
+					<span class="search-filter-label">Location and results</span>
+					<label for="filter-country" class="search-sidebar__field-label search-sidebar__field-label--first">Country</label>
+					<input type="text" class="form-control" id="filter-country" list="country-list" placeholder="All countries" autocomplete="off">
+					{{ partial "forms/country-datalist.html" }}
+					<div class="search-toggle-row search-sidebar__toggle">
+						<input type="checkbox" class="search-toggle-input" id="filter-has-results" role="switch">
+						<label class="search-toggle-label" for="filter-has-results">Results posted</label>
+					</div>
+				</div>
+
+				{{/* Hidden filter-subjects for JS compatibility */}}
+				<select id="filter-subjects" hidden multiple aria-hidden="true">
+					{{- range $conditionPages }}
+					<option value="{{ .Params.api.subject_id }}">{{ .Title }}</option>
+					{{- end }}
+				</select>
+			</form>
+		</aside>
+
+		<div class="search-main">
+			<!-- Results summary: filled by trials-feed.js after every search -->
+			<div class="search-summary" id="trials-search-summary" hidden>
+				<div class="search-summary__body">
+					<h2 class="search-summary__title" id="trials-summary-title" tabindex="-1"></h2>
+					<p class="search-summary__sub" id="trials-summary-sub"></p>
+					<div class="search-tokens" id="trials-desktop-tokens" hidden></div>
+				</div>
+			</div>
+			<p class="visually-hidden" id="trials-search-status" role="status" aria-live="polite"></p>
+
+			<div class="papers-results-bar search-main__bar">
+				<span class="results-count" id="results-count"></span>
+				<div class="results-actions">
+					<label for="sort-order" class="visually-hidden">Sort by</label>
+					<select class="results-sort-select" id="sort-order">
+						<option value="-discovery_date">Newest added</option>
+						<option value="discovery_date">Oldest added</option>
+						<option value="-last_updated">Recently updated</option>
+						<option value="-published_date">Newest published</option>
+						<option value="published_date">Oldest published</option>
+						<option value="title">Title A–Z</option>
+						<option value="-title">Title Z–A</option>
+					</select>
+					{{ partial "feeds/search-rss" (dict "site" .Site "id" "search-rss-toggle") }}
+					{{ partial "feeds/download-dropdown" (dict "toggleId" "download-toggle") }}
+				</div>
+			</div>
+
+			<div class="mobile-feed-bar d-lg-none">
+			<p class="mobile-result-count d-lg-none" id="trials-mobile-result-count" aria-live="polite"></p>
+			{{ partial "feeds/search-rss" (dict "site" .Site "id" "search-rss-toggle-mobile") }}
+			</div>
+
+			<div id="trials-list"
+				data-endpoint="{{ partial "api-endpoint" (dict "api" .Params.api "apiBase" .Site.Params.apiBase) }}"
+				data-team-id="{{ with .Params.api }}{{ .team_id }}{{ end }}"
+				data-subject-id=""
+				data-default-status=""
+				data-default-phase="">
+			</div>
+
+			{{ partial "feeds/trials-pagination.html" }}
+		</div>{{/* end .search-main */}}
+		</div>{{/* end .search-layout */}}
 	</div>
 </section>
 

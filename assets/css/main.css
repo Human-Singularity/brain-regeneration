@@ -3658,8 +3658,11 @@ a:hover {
 	color: #555;
 }
 .search-sidebar__field-label { display: block; margin: 16px 0 6px; }
+.search-sidebar__field-label--first { margin-top: 8px; }
 .search-date-range .form-control,
+.search-sidebar .form-control,
 .search-sidebar .form-select { font-size: 14px; }
+.search-sidebar__toggle { margin-top: 16px; }
 
 /* ── Advanced search: results summary ── */
 .search-summary {
