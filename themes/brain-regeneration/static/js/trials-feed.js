@@ -67,6 +67,8 @@
 	var announceNext  = false; // set by an explicit search: move focus to the outcome
 	var totalTrials   = null;  // all trials we track, for "We looked through all N trials"
 	var summaryCount  = null;  // count shown in the summary; null while loading or after a failure
+	var lastCount     = null;  // last count the summary showed; null after a failure
+	var trialsPending = false; // a trials request is in flight
 	var fetchSeq      = 0;     // bumps per trials request; older responses are dropped
 	var sponsorPicked = false; // the sponsor field holds a picked sponsor, not just typed text
 
@@ -723,6 +725,7 @@
 			writeURL(push === true);
 			renderTrialsTokens();
 			renderDesktopTokens();
+			trialsPending = false;
 			setLoading(false);
 			renderSummary(cached.count || 0);
 			syncSearchFeed();
@@ -730,6 +733,7 @@
 		}
 
 		renderLoading();
+		trialsPending = true;
 		setLoading(true);
 		function getJSON(u) {
 			return fetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
@@ -759,15 +763,18 @@
 				writeURL(push === true);
 				renderTrialsTokens();
 				renderDesktopTokens();
+				trialsPending = false;
 				setLoading(false);
 				renderSummary(data.count || 0);
 				syncSearchFeed();
 			})
 			.catch(function () {
 				if (seq !== fetchSeq) return;
+				trialsPending = false;
 				setLoading(false);
 				if (summaryEl) {
 					summaryCount = null;
+					lastCount = null;
 					summaryEl.hidden = false;
 					summaryEl.classList.remove('is-empty');
 					summaryTitle.textContent = 'We could not run this search';
@@ -834,6 +841,7 @@
 	function renderSummary(count) {
 		if (!summaryEl) return;
 		summaryCount = count;
+		lastCount = count;
 		var kw = state.keyword;
 		var filters = countActiveFilters();
 		var n = count.toLocaleString('en');
@@ -1026,7 +1034,7 @@
 		document.querySelectorAll('[data-mode-help]').forEach(function (el) {
 			el.hidden = el.dataset.modeHelp !== mode;
 		});
-		if (mode !== 'sponsor') hideSponsorList();
+		if (mode !== 'sponsor') { cancelSponsorLookup(); hideSponsorList(); }
 		if (focus) {
 			var field = document.querySelector('[data-mode-field="' + mode + '"] input');
 			if (field) {
@@ -1078,6 +1086,20 @@
 
 	var pickFirstSponsor = false; // set when Search/Enter is pressed before suggestions arrive
 	var sponsorTimer;
+	var sponsorSeq = 0;           // bumps per lookup; older responses are dropped
+
+	// Drop any lookup in flight. If Search/Enter was waiting on it, undo the
+	// "Searching…" it showed, unless a trials request is running on its own.
+	function cancelSponsorLookup() {
+		sponsorSeq++;
+		clearTimeout(sponsorTimer);
+		if (!pickFirstSponsor) return;
+		pickFirstSponsor = false;
+		if (trialsPending || !summaryEl) return;
+		setLoading(false);
+		if (lastCount !== null) renderSummary(lastCount);
+		else summaryEl.hidden = true;
+	}
 	var SPONSOR_TYPES = {
 		industry: 'Industry',
 		academic_medical: 'University or hospital',
@@ -1146,6 +1168,7 @@
 	}
 
 	function fetchSponsorSuggestions(q) {
+		var token = ++sponsorSeq;
 		var url = new URL(apiBase + '/sponsors/');
 		url.searchParams.set('search', q);
 		url.searchParams.set('format', 'json');
@@ -1153,8 +1176,8 @@
 		fetch(url.toString())
 			.then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
 			.then(function (data) {
-				// Stale response: the field changed while this was in flight.
-				if (!sponsorInput || sponsorInput.value.trim() !== q) return;
+				// Stale response: a newer lookup, a mode switch or an edit came since.
+				if (token !== sponsorSeq || !sponsorInput || sponsorInput.value.trim() !== q) return;
 				var list = (data.results || [])
 					.filter(function (sp) { return sp.trials_count == null || sp.trials_count > 0; })
 					.sort(function (a, b) { return (b.trials_count || 0) - (a.trials_count || 0); })
@@ -1168,6 +1191,7 @@
 				}
 			})
 			.catch(function () {
+				if (token !== sponsorSeq) return;
 				hideSponsorList();
 				if (!pickFirstSponsor) return;
 				pickFirstSponsor = false;
@@ -1179,8 +1203,7 @@
 		sponsorInput.addEventListener('input', function () {
 			var q = sponsorInput.value.trim();
 			sponsorPicked = false;
-			pickFirstSponsor = false;
-			clearTimeout(sponsorTimer);
+			cancelSponsorLookup();
 			hideSponsorList();
 			if (q.length < 2) return;
 			sponsorTimer = setTimeout(function () { fetchSponsorSuggestions(q); }, 300);
@@ -1217,13 +1240,17 @@
 	function restoreSponsorName() {
 		if (!state.sponsorId || !sponsorInput || sponsorPicked) return;
 		var id = state.sponsorId;
+		var typed = sponsorInput.value; // the user may start typing a new name meanwhile
 		fetch(apiBase + '/sponsors/' + encodeURIComponent(id) + '/?format=json')
 			.then(function (r) { return r.ok ? r.json() : null; })
 			.then(function (sp) {
 				if (!sp || String(sp.id) !== String(state.sponsorId) || sponsorPicked) return;
+				// The applied filter always gets its name; the field only if untouched.
 				state.sponsorName = sp.name || '';
-				sponsorInput.value = state.sponsorName;
-				sponsorPicked = true;
+				if (sponsorInput.value === typed) {
+					sponsorInput.value = state.sponsorName;
+					sponsorPicked = true;
+				}
 				renderDesktopTokens();
 				renderTrialsTokens();
 				if (summaryCount !== null && !summaryEl.classList.contains('is-loading')) renderSummary(summaryCount);
