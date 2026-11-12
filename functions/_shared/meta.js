@@ -197,6 +197,28 @@ class AppendJsonLd {
 	}
 }
 
+function escapeAttr(str) {
+	return String(str)
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
+
+// Appends <meta name="…" content="…"> tags just before </head>, in order.
+// Takes [name, content] pairs (repeated names allowed, e.g. citation_author).
+class AppendMeta {
+	constructor(pairs) {
+		this.pairs = pairs;
+	}
+	element(element) {
+		const html = this.pairs
+			.map(([name, content]) => `<meta name="${escapeAttr(name)}" content="${escapeAttr(content)}">`)
+			.join('');
+		if (html) element.append(html, { html: true });
+	}
+}
+
 export {
 	API_BASE,
 	SITE_ORIGIN,
@@ -218,4 +240,6 @@ export {
 	SetAttr,
 	RemoveElement,
 	AppendJsonLd,
+	AppendMeta,
+	escapeAttr,
 };

@@ -275,6 +275,21 @@
 		'</div>';
 	}
 
+	// Hidden COinS span: lets Zotero/Mendeley save patents straight from the
+	// list (js/citation-meta.js), with the title and applicants as shown.
+	function buildCoins(p, title) {
+		var citation = window.BR && window.BR.citation;
+		if (!citation) return '';
+		try {
+			var assignees = (p.applicants || []).map(function (a) {
+				return displayApplicant(a.raw_name || a.sponsor_name);
+			});
+			return '<span class="Z3988" title="' + escHtml(citation.patentCoins(p, { title: title, assignees: assignees })) + '" hidden></span>';
+		} catch (e) {
+			return '';
+		}
+	}
+
 	function buildCard(p) {
 		var link     = safeLink(p.link);
 		var title    = sentenceCase(decodeEntities(p.title || 'Untitled patent'));
@@ -302,6 +317,7 @@
 		}
 
 		return '<article class="paper-card patent-card">' +
+			buildCoins(p, title) +
 			'<div class="paper-card-title">' +
 				'<a href="' + escHtml(link) + '" target="_blank" rel="noopener noreferrer">' + escHtml(title) +
 				'<span class="visually-hidden"> (opens Espacenet in a new tab)</span></a>' +
@@ -326,6 +342,7 @@
 	function renderCards(patents) {
 		if (!patents.length) { renderEmpty(); return; }
 		mount.innerHTML = patents.map(buildCard).join('');
+		if (window.BR && window.BR.citation) window.BR.citation.notifyReferenceManagers();
 	}
 
 	// ── Result counter ─────────────────────────────────────────────────────

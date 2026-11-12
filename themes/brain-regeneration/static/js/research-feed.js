@@ -442,6 +442,19 @@
 		return '<span class="expert-badge" title="Marked relevant by a curator">Curator-selected</span>';
 	}
 
+	// Hidden COinS span: lets Zotero/Mendeley save papers straight from the list
+	// (js/citation-meta.js). Saved items link to our article page.
+	function buildCoins(a, href) {
+		var citation = window.BR && window.BR.citation;
+		if (!citation || href === '#') return '';
+		try {
+			var pageUrl = new URL(href, window.location.origin).href;
+			return '<span class="Z3988" title="' + escHtml(citation.articleCoins(a, pageUrl)) + '" hidden></span>';
+		} catch (e) {
+			return '';
+		}
+	}
+
 	function buildCard(a) {
 		var authors  = decodeEntities(formatAuthors(a.authors));
 		var date     = formatDate(a.published_date);
@@ -483,6 +496,7 @@
 
 		var rawUrl = a.article_id ? '/articles/' + encodeURIComponent(a.article_id) + '/' : safeLink(a.link);
 		return '<article class="paper-card">' +
+			buildCoins(a, rawUrl) +
 			'<div class="paper-card-title">' +
 				'<a href="' + escHtml(rawUrl) + '">' + escHtmlSafeTags(decodeEntities(a.title)) + '</a>' +
 				(expertBadge ? ' ' + expertBadge : '') +
@@ -508,6 +522,7 @@
 		var sorted = applySort(articles);
 		if (!sorted.length) { renderEmpty(); return; }
 		mount.innerHTML = sorted.map(buildCard).join('');
+		if (window.BR && window.BR.citation) window.BR.citation.notifyReferenceManagers();
 	}
 
 	// ── Sparklines ───────────────────────────────────────────────────────
