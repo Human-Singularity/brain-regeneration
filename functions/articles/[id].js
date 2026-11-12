@@ -15,7 +15,11 @@ import {
 	SetText,
 	SetAttr,
 	AppendJsonLd,
+	AppendMeta,
 } from '../_shared/meta.js';
+// Shared with the feeds (window.BR.citation in the browser): Highwire
+// citation_* tags that Zotero and Mendeley read when saving the paper.
+import citation from '../../themes/brain-regeneration/static/js/citation-meta.js';
 
 const META_DESCRIPTION_LEN = 160;
 const JSONLD_DESCRIPTION_LEN = 300;
@@ -226,8 +230,19 @@ export async function onRequest(context) {
 	const breadcrumb = buildBreadcrumb(data, links, canonicalUrl, title);
 	if (breadcrumb) jsonLd.push(breadcrumb);
 
+	// The saved item is the paper itself; its URL is this page.
+	let citationTags = [];
+	try {
+		citationTags = citation.highwireTags(data, canonicalUrl);
+	} catch {
+		// Fail open: a bad record must not cost the page its other metadata.
+	}
+
 	return new HTMLRewriter()
 		.on('title', new SetText(pageTitle))
+		// The shell is a section page ("website"). An article is an article, and
+		// Zotero would otherwise file preprints as web pages.
+		.on('meta[property="og:type"]', new SetAttr('content', 'article'))
 		.on('meta[name="description"]', new SetAttr('content', description))
 		.on('meta[property="og:title"]', new SetAttr('content', title))
 		.on('meta[property="og:description"]', new SetAttr('content', description))
@@ -235,6 +250,7 @@ export async function onRequest(context) {
 		.on('meta[name="twitter:title"]', new SetAttr('content', title))
 		.on('meta[name="twitter:description"]', new SetAttr('content', description))
 		.on('link[rel="canonical"]', new SetAttr('href', canonicalUrl))
+		.on('head', new AppendMeta(citationTags))
 		.on('head', new AppendJsonLd(jsonLd))
 		.transform(shell);
 }
