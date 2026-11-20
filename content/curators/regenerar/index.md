@@ -25,7 +25,6 @@ research_areas:
 
 commitment:
   - "searches"
-  - "categories"
   - "legitimacy"
 ---
 
