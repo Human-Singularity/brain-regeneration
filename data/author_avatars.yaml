@@ -46,3 +46,33 @@
 #   Sandy Yuxi Cheng       images/authors/lpj-lab/sandy.jpg
 #   Rafael Kollyfas        images/authors/lpj-lab/rafael.jpg   (author 467765, no ORCID)
 #   Zhezhuyun Phoebe Chen  images/authors/lpj-lab/chen.jpg
+
+# ── REGENERAR (curator) ──────────────────────────────────────────────────────
+# The curator page has no lab_id (no team section), so these show on the author
+# profiles and wherever the person appears as a collaborator or lab member.
+"0000-0001-8985-9302": # Lino Ferreira
+  image: images/authors/regenerar/lino-ferreira.jpg
+"0000-0001-8417-8313": # Luís Estronca (not in GregoryAi yet; shows once he is)
+  image: images/authors/regenerar/luis-estronca.jpg
+# From the team page at regenerar.eu/about-us. Simões, Francisco and Ferrão have
+# author pages today; Talhada, Brito and Anjo-Stefanidis show once GregoryAi has them.
+"0000-0003-3924-0936": # Susana Simões
+  image: images/authors/regenerar/susana-simoes.jpg
+  credit: "Photo: REGENERAR"
+"0000-0002-2704-9950": # Vitor Francisco
+  image: images/authors/regenerar/vitor-francisco.jpg
+  credit: "Photo: REGENERAR"
+"0000-0001-9460-5665": # Rafaela Ferrão
+  image: images/authors/regenerar/rafaela-ferrao.jpg
+  credit: "Photo: REGENERAR"
+"0000-0002-5424-1438": # Daniela Talhada
+  image: images/authors/regenerar/daniela-talhada.jpg
+  credit: "Photo: REGENERAR"
+"0009-0000-1607-7027": # Joana Brito
+  image: images/authors/regenerar/joana-brito.jpg
+  credit: "Photo: REGENERAR"
+"0009-0004-4835-1181": # Anna Anjo-Stefanidis
+  image: images/authors/regenerar/anna-anjo-stefanidis.jpg
+  credit: "Photo: REGENERAR"
+# No photo found yet (not on regenerar.eu):
+#   Paulo Felix            0009-0007-7032-9599   has an author page
