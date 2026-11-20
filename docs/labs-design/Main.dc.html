@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Research groups directory</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/styles.css">
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/colors_and_type.css">
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/ui_kits/observatory/observatory.css">
+<script src="ds/brainregenerationobservatorydesignsystem_019de5/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F0E8}
+a{color:#1A6B6A}a:hover{color:#E8913A}
+.nav__links{flex-wrap:wrap}
+select.input{appearance:auto}
+</style>
+</helmet>
+<div style="font-family: var(--font-body); color: var(--color-text); background: var(--color-secondary); min-height: 100%;">
+
+  <header class="nav" style="position: relative;">
+    <div class="nav__inner" style="height: auto; min-height: 64px; flex-wrap: wrap;">
+      <a href="#" class="nav__brand"><span>Brain Regeneration<small>Observatory</small></span></a>
+      <nav class="nav__links" aria-label="Main">
+        <a href="#" class="nav__link">Observatory</a>
+        <a href="#" class="nav__link">Research areas</a>
+        <a href="#" class="nav__link">Clinical trials</a>
+        <a href="Main.dc.html" class="nav__link nav__link--active" aria-current="page">Research groups</a>
+        <a href="#" class="nav__link">About</a>
+        <a href="#" class="nav__link">Subscribe</a>
+        <a href="#" class="nav__link nav__link--donate">Support the project</a>
+      </nav>
+    </div>
+  </header>
+  <div class="breadcrumb"><span>Observatory</span><span class="breadcrumb__sep">›</span><strong>Research groups</strong></div>
+
+  <section class="section section--tint" style="padding: 64px 0 48px;">
+    <div class="container">
+      <p class="eyebrow">Research groups</p>
+      <h1 style="margin: 0 0 16px; max-width: 760px;">Who is working on brain regeneration</h1>
+      <p style="margin: 0 0 20px; max-width: 720px; font-size: 19px; line-height: 1.55;">A research group is a senior author and the people who publish with them again and again. We build these groups from the papers we track, so you can see who leads the work on each condition and where they are.</p>
+      <p style="margin: 0; display: flex; gap: 8px; align-items: flex-start; max-width: 720px; font-family: var(--font-heading); font-size: 14px; line-height: 1.5; color: #57534D;">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A6B6A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        <span>Most groups are put together automatically from authorship data and have not been checked by an editor yet. <a href="#" style="text-decoration: underline; text-underline-offset: 3px;">How we build them →</a></span>
+      </p>
+    </div>
+  </section>
+
+  <form class="filter-bar" style="position: relative; top: auto; padding: 20px 0;" role="search" aria-label="Filter research groups">
+    <div class="container" style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; align-items: end;">
+        <div style="grid-column: span 2; min-width: 0;">
+          <label for="q" style="display: block; font-family: var(--font-heading); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Search</label>
+          <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-primary); display: flex;"><x-import component-from-global-scope="BrainRegenerationObservatoryDesignSystem_019de5.Icon" name="search" size="{{s18}}"></x-import></span>
+            <input id="q" class="input" type="search" placeholder="Group, person or institution" style="padding-left: 40px; background: #fff;">
+          </div>
+        </div>
+        <div>
+          <label for="cond" style="display: block; font-family: var(--font-heading); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Condition</label>
+          <select id="cond" class="input" style="background: #fff;">
+            <option>Any condition</option>
+            <option selected>Multiple Sclerosis</option>
+            <option>Alzheimer's Disease</option>
+            <option>Neuroinflammation</option>
+            <option>Oligodendroglia &amp; Myelin Repair</option>
+          </select>
+        </div>
+        <div>
+          <label for="topic" style="display: block; font-family: var(--font-heading); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Research topic</label>
+          <select id="topic" class="input" style="background: #fff;">
+            <option selected>Any topic</option>
+            <option>Myelin</option>
+            <option>Ocrelizumab</option>
+            <option>Natalizumab</option>
+          </select>
+        </div>
+        <div>
+          <label for="country" style="display: block; font-family: var(--font-heading); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Country</label>
+          <select id="country" class="input" style="background: #fff;">
+            <option selected>Any country</option>
+            <option>Germany</option>
+            <option>Italy</option>
+            <option>United Kingdom</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="font-family: var(--font-heading); font-size: 13px; color: #57534D;">Filtering by</span>
+          <button type="button" class="chip chip--active" aria-label="Remove filter: Multiple Sclerosis">Multiple Sclerosis <span aria-hidden="true">×</span></button>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <label for="sort" style="font-family: var(--font-heading); font-size: 13px; font-weight: 600;">Sort by</label>
+          <select id="sort" class="input" style="width: auto; padding: 8px 12px; font-size: 14px; background: #fff;">
+            <option>Name, A to Z</option>
+            <option>Most members</option>
+            <option selected>Most papers on this condition</option>
+            <option>Most active since 2022</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <section class="section" style="padding: 40px 0 64px;">
+    <div class="container" style="display: flex; flex-direction: column; gap: 20px;">
+      <p style="margin: 0; font-family: var(--font-heading); font-size: 15px;"><strong style="color: var(--color-primary);">2,617 research groups</strong> working on Multiple Sclerosis, most papers first</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 20px;">
+        <sc-for list="{{labs}}" as="lab" hint-placeholder-count="10">
+          <article class="paper-card" style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 19px; line-height: 1.3;"><a href="Lab.dc.html" style="color: var(--color-primary);">{{lab.name}}</a></h3>
+              <p style="margin: 0; font-family: var(--font-heading); font-size: 14px; color: #57534D;">Led by <a href="#" style="text-decoration: underline; text-underline-offset: 3px;">{{lab.head}}</a></p>
+            </div>
+            <p style="margin: 0; display: flex; gap: 6px; align-items: center; font-family: var(--font-heading); font-size: 14px; color: var(--color-text);">
+              <span style="color: var(--color-primary); display: flex; flex: none;"><x-import component-from-global-scope="BrainRegenerationObservatoryDesignSystem_019de5.Icon" name="pin" size="{{s16}}"></x-import></span>
+              <span>{{lab.inst}} · {{lab.country}}</span>
+            </p>
+            <dl style="margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 12px 0;">
+              <div><dt style="font-family: var(--font-heading); font-size: 12px; color: #57534D;">Members</dt><dd style="margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 20px; color: var(--color-primary);">{{lab.members}}</dd></div>
+              <div><dt style="font-family: var(--font-heading); font-size: 12px; color: #57534D;">Papers on MS</dt><dd style="margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 20px; color: var(--color-primary);">{{lab.papers}}</dd></div>
+              <div><dt style="font-family: var(--font-heading); font-size: 12px; color: #57534D;">Since 2022</dt><dd style="margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 20px; color: var(--color-primary);">{{lab.recent}}</dd></div>
+            </dl>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+              <span style="font-family: var(--font-heading); font-size: 12px; color: #57534D; margin-right: 2px;">Works on</span>
+              <sc-for list="{{lab.cats}}" as="cat" hint-placeholder-count="3">
+                <span class="badge badge--phase">{{cat}}</span>
+              </sc-for>
+            </div>
+            <p style="margin: 0; display: flex; gap: 6px; align-items: center; font-family: var(--font-heading); font-size: 12px; color: #57534D;" title="Grouped automatically from publication data">
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+              Grouped from publication data
+            </p>
+          </article>
+        </sc-for>
+      </div>
+
+      <nav aria-label="Pages" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding-top: 12px;">
+        <span style="font-family: var(--font-heading); font-size: 14px; color: #57534D;">Showing 1 to 10 of 2,617 · page 1 of 262</span>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn--download" disabled="disabled" style="opacity: 1; color: #8C8C8C; cursor: default;">← Previous</button>
+          <a href="#" class="btn btn--outline-teal">Next 10 →</a>
+        </div>
+      </nav>
+    </div>
+  </section>
+
+  <x-import component-from-global-scope="BrainRegenerationObservatoryDesignSystem_019de5.Footer"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2140}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      s16: 16,
+      s18: 18,
+      labs: [
+        { name: 'Massimo Filippi lab', head: 'Massimo Filippi', inst: 'Vita-Salute San Raffaele University', country: 'Italy', members: 39, papers: 506, recent: 320, cats: ['Myelin', 'ALL Stem Cell Research', 'remyelination-general'] },
+        { name: 'Xavier Montalban lab', head: 'Xavier Montalban', inst: "Vall d'Hebron Hospital Universitari", country: 'Spain', members: 20, papers: 354, recent: 225, cats: ['Myelin', 'Interferon beta', 'Natalizumab'] },
+        { name: 'Maria A Rocca lab', head: 'Maria A Rocca', inst: 'Vita-Salute San Raffaele University', country: 'Italy', members: 12, papers: 324, recent: 224, cats: ['Myelin', 'remyelination-general', 'Ocrelizumab'] },
+        { name: 'Ludwig Kappos lab', head: 'Ludwig Kappos', inst: 'University Hospital of Basel', country: 'Switzerland', members: 16, papers: 306, recent: 173, cats: ['Teriflunomide', 'ALL Bruton Tyrosine Kinase Inhibitors', 'Myelin'] },
+        { name: 'Jens Kuhle lab', head: 'Jens Kuhle', inst: 'University Hospital of Basel', country: 'Switzerland', members: 11, papers: 299, recent: 238, cats: ['Myelin', 'Ocrelizumab', 'Dimethyl Fumarate'] },
+        { name: 'Frederik Barkhof lab', head: 'Frederik Barkhof', inst: 'University College London', country: 'United Kingdom', members: 8, papers: 291, recent: 170, cats: ['Myelin', 'remyelination-general', 'Interferon beta'] },
+        { name: 'Friedemann Paul lab', head: 'Friedemann Paul', inst: 'Charité – Universitätsmedizin Berlin', country: 'Germany', members: 7, papers: 270, recent: 188, cats: ['Myelin', 'MS Reviews', 'Natalizumab'] },
+        { name: 'Maria Pia Amato lab', head: 'Maria Pia Amato', inst: 'University of Florence', country: 'Italy', members: 29, papers: 257, recent: 168, cats: ['Myelin', 'Natalizumab', 'Fingolimod'] },
+        { name: 'Tanuja Chitnis lab', head: 'Tanuja Chitnis', inst: "Brigham and Women's Hospital", country: 'United States', members: 31, papers: 246, recent: 162, cats: ['Myelin', 'Ocrelizumab', 'Fingolimod'] },
+        { name: 'Robert W. Motl lab', head: 'Robert W. Motl', inst: 'University of Illinois Chicago', country: 'United States', members: 39, papers: 236, recent: 174, cats: ['MS Reviews', 'Myelin', 'Physical therapy and Telerehabilitation'] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

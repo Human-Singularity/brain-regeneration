@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Research groups on existing pages</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/styles.css">
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/colors_and_type.css">
+<link rel="stylesheet" href="ds/brainregenerationobservatorydesignsystem_019de5/ui_kits/observatory/observatory.css">
+<script src="ds/brainregenerationobservatorydesignsystem_019de5/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F0E8}
+a{color:#1A6B6A}a:hover{color:#E8913A}
+</style>
+</helmet>
+<div style="font-family: var(--font-body); color: var(--color-text); background: var(--color-secondary); min-height: 100%;">
+
+  <div style="background: #2D2D2D; color: #fff; font-family: var(--font-heading); font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 10px 24px;">On a condition page · /research-areas/alzheimers-disease/</div>
+
+  <section class="section section--tint" style="padding: 56px 0;">
+    <div class="container" style="display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: flex-end; justify-content: space-between;">
+        <div>
+          <h2 style="margin: 0 0 6px;">Research groups working on Alzheimer's disease</h2>
+          <p style="margin: 0; font-size: 16px; max-width: 640px;">68 groups have published on Alzheimer's disease. These five have the most papers.</p>
+        </div>
+        <a href="Main.dc.html" class="btn btn--outline-teal">See all 68 groups →</a>
+      </div>
+      <ol style="list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow);">
+        <sc-for list="{{ad}}" as="g" hint-placeholder-count="5">
+          <li style="display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--color-border);">
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 360px;">
+              <a href="Lab.dc.html" style="font-family: var(--font-heading); font-weight: 600; font-size: 17px;">{{g.name}}</a>
+              <span style="font-family: var(--font-heading); font-size: 14px; color: #57534D;">{{g.inst}} · {{g.country}}</span>
+            </div>
+            <div style="display: flex; gap: 24px; font-family: var(--font-heading); font-size: 14px; font-variant-numeric: tabular-nums;">
+              <span><strong style="color: var(--color-primary); font-size: 17px;">{{g.papers}}</strong> papers</span>
+              <span><strong style="color: var(--color-primary); font-size: 17px;">{{g.recent}}</strong> since 2022</span>
+            </div>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+  </section>
+
+  <div style="background: #2D2D2D; color: #fff; font-family: var(--font-heading); font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 10px 24px;">On author pages · /authors/{orcid}/ with include=lab</div>
+
+  <section class="section section--sand" style="padding: 56px 0;">
+    <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px;">
+
+      <div class="paper-card" style="display: flex; flex-direction: column; gap: 10px; padding: 28px;">
+        <p class="eyebrow" style="margin: 0;">Author · member</p>
+        <h1 style="margin: 0; font-size: 32px;">Hernan Inojosa</h1>
+        <p style="margin: 0; font-family: var(--font-mono); font-size: 14px; color: #57534D;">ORCID 0000-0002-1377-836X</p>
+        <p style="margin: 6px 0 0; display: inline-flex; gap: 8px; align-items: center; align-self: flex-start; background: var(--color-tint); border-radius: var(--radius); padding: 8px 14px; font-family: var(--font-heading); font-size: 15px;">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A6B6A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Member of <a href="Lab.dc.html" style="font-weight: 600; text-decoration: underline; text-underline-offset: 3px;">Tjalf Ziemssen lab</a></span>
+        </p>
+      </div>
+
+      <div class="paper-card" style="display: flex; flex-direction: column; gap: 10px; padding: 28px;">
+        <p class="eyebrow" style="margin: 0;">Author · head</p>
+        <h1 style="margin: 0; font-size: 32px;">Tjalf Ziemssen</h1>
+        <p style="margin: 0; font-family: var(--font-mono); font-size: 14px; color: #57534D;">ORCID 0000-0001-8799-8202</p>
+        <p style="margin: 6px 0 0; display: inline-flex; gap: 8px; align-items: center; align-self: flex-start; background: var(--color-tint); border-radius: var(--radius); padding: 8px 14px; font-family: var(--font-heading); font-size: 15px;">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A6B6A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Leads the <a href="Lab.dc.html" style="font-weight: 600; text-decoration: underline; text-underline-offset: 3px;">Tjalf Ziemssen lab</a></span>
+        </p>
+      </div>
+
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      ad: [
+        { name: 'Julie A. Schneider lab', inst: 'Rush University Medical Center', country: 'United States', papers: 26, recent: 26 },
+        { name: 'Henrik Zetterberg lab', inst: 'University of Gothenburg', country: 'Sweden', papers: 23, recent: 23 },
+        { name: 'Mercedes Prudencio lab', inst: 'Mayo Clinic in Florida', country: 'United States', papers: 23, recent: 23 },
+        { name: 'Carlos Cruchaga lab', inst: 'Washington University in St. Louis', country: 'United States', papers: 20, recent: 20 },
+        { name: 'Pedro Rosa-Neto lab', inst: 'Montreal Neurological Institute and Hospital', country: 'Canada', papers: 18, recent: 18 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
