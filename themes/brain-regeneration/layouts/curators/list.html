@@ -8,7 +8,7 @@
 <!-- ── HERO ── -->
 <section class="cu-hero cu-network">
 	<div class="container">
-		<h1 class="cu-ix-title">The labs that decide <em>what science we track</em></h1>
+		<h1 class="cu-ix-title">The labs that guide what science we track</h1>
 		<div class="cu-ix-lede">{{ .Content }}</div>
 	</div>
 </section>
@@ -17,12 +17,12 @@
 <section class="cu-section cu-section--tight-bottom">
 	<div class="container">
 		<div class="cu-head">
-			<div><span class="cu-eyebrow">How curation works</span><h2>A lab shapes each research area</h2></div>
+			<div><h2>How curation works</h2></div>
 		</div>
 		<ol class="cu-steps">
-			<li class="cu-step"><span class="cu-step__num">1</span><h3>They write the searches</h3><p>Each lab writes the PubMed queries that decide which new papers enter its research area.</p></li>
-			<li class="cu-step"><span class="cu-step__num">2</span><h3>They organise the findings</h3><p>They define the categories papers are sorted into, from mechanisms to candidate therapies.</p></li>
-			<li class="cu-step"><span class="cu-step__num">3</span><h3>They stand behind it</h3><p>A working research group vouches for the scope, so patients and researchers can trust what they read.</p></li>
+			<li class="cu-step"><span class="cu-step__num">1</span><h3>Find</h3><p>Each lab writes the PubMed queries to find new papers in their research area. Optionally, curators can select relevant papers manually so that we can train AI models that score their relevance.</p></li>
+			<li class="cu-step"><span class="cu-step__num">2</span><h3>Organise</h3><p>Curators can define the categories papers are sorted into. These can be mechanisms, candidate therapies, or other topics.</p></li>
+			<li class="cu-step"><span class="cu-step__num">3</span><h3>Disseminate</h3><p>For each area there is a free weekly digest to keep researchers and patients informed.</p></li>
 		</ol>
 	</div>
 </section>
@@ -31,7 +31,7 @@
 <section class="cu-section cu-section--tight-top">
 	<div class="container">
 		<div class="cu-head">
-			<div><span class="cu-eyebrow">Our curators</span><h2>Meet the labs</h2></div>
+			<div><h2>Curators</h2></div>
 			<a class="cu-more" href="{{ "/labs/" | relURL }}">Browse all research groups &rarr;</a>
 		</div>
 		<div class="cu-grid">
@@ -67,9 +67,8 @@
 	<div class="container">
 		<div class="cu-join cu-network">
 			<div>
-				<span class="cu-eyebrow cu-eyebrow--light">Become a scientific curator</span>
-				<h2>Bring your lab’s expertise to patients</h2>
-				<p>If your research group works on brain regeneration, repair, or neuroprotection, we’d like to hear from you. With your help, we can make a difference.</p>
+				<h2>Join as a curator</h2>
+				<p>If your research group works on brain regeneration, repair, or neuroprotection, we’d like to hear from you.</p>
 				<div class="cu-actions">
 					<a class="cu-btn cu-btn--accent" href="{{ "/contact/" | relURL }}" data-umami-event="Curators: Become a Curator CTA">Get in touch {{ partial "curators/icon.html" "arrow" }}</a>
 				</div>
@@ -77,7 +76,7 @@
 			<ul class="cu-join__list">
 				<li>{{ partial "curators/icon.html" "check" }}A research area of your own, with a public page and weekly digest</li>
 				<li>{{ partial "curators/icon.html" "check" }}Your lab’s papers and team featured on your curator page</li>
-				<li>{{ partial "curators/icon.html" "check" }}You set the scope; we run the search pipeline</li>
+				<li>{{ partial "curators/icon.html" "check" }}You set the relevance criteria to find the best papers</li>
 			</ul>
 		</div>
 	</div>

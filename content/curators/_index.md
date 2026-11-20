@@ -10,4 +10,4 @@ options:
 outputs: ["HTML", "RSS", "CuratorLabs"]
 ---
 
-Real institutions and researchers define the scope of each research area. They decide what to track, how to categorise findings, and which search queries to use. The science is curated by people, not just algorithms.
+Real researchers define the scope of each research area. They help us decide what to track, how to categorise findings, and which search queries to use.
