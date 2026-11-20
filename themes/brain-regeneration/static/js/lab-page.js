@@ -89,7 +89,12 @@
 	function memberItem(m, hidden) {
 		var nm = L.personHtml(cfg, m, ' class="lab-member__link"');
 		return '<li class="lab-member"' + (hidden ? ' data-extra hidden' : '') + '>' +
-			'<span class="lab-member__mark" aria-hidden="true">' + escHtml(initials(decodeEntitiesSafe(m.full_name))) + '</span>' + nm + '</li>';
+			'<span class="lab-member__mark" aria-hidden="true">' + avatarInner(m, initials(decodeEntitiesSafe(m.full_name))) + '</span>' + nm + '</li>';
+	}
+	// A member's photo (data/author_avatars.yaml, by ORCID iD) or their initials.
+	var avatars = BR.readAvatars ? BR.readAvatars(shell) : {};
+	function avatarInner(m, inits) {
+		return BR.avatarHtml && L.hasOrcid(m) ? BR.avatarHtml(avatars, m.orcid, inits) : escHtml(inits);
 	}
 	function decodeEntitiesSafe(s) { return BR.decodeEntities(s == null ? '' : s); }
 

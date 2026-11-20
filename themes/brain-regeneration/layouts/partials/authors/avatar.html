@@ -1,0 +1,12 @@
+{{- /*
+  authors/avatar.html — the inside of an avatar disc: the author's photo when
+  data/author_avatars.yaml has one for their ORCID iD, otherwise their initials.
+  The caller draws the disc around it. Params (dict): "orcid", "name".
+  Mirrors BR.avatarHtml in br-utils.js.
+*/ -}}
+{{- $av := index (partialCached "authors/avatar-map.html" "map") (upper (.orcid | default "")) -}}
+{{- with $av -}}
+<img class="br-avatar-img" src="{{ .src }}" srcset="{{ .src }} 1x, {{ .src2x }} 2x" width="112" height="112" alt="" loading="lazy" decoding="async"{{ with .credit }} title="{{ . }}"{{ end }}>
+{{- else -}}
+{{ partial "curators/initials.html" .name }}
+{{- end -}}

@@ -1,0 +1,24 @@
+{{- /*
+  authors/avatar-map.html — RETURNS {"<ORCID iD>": {"src", "src2x", "credit"}} for every
+  author in data/author_avatars.yaml whose image exists under assets/. Each photo is
+  cropped square to 112 px and 224 px WebP (fingerprinted, so a replaced photo gets a new
+  URL). Keys are upper-cased ORCID iDs.
+
+  Templates call it through partialCached (the context is ignored). The author and lab
+  scripts get it as data-avatars and call BR.avatarHtml; Hugo-built pages use
+  authors/avatar.html.
+*/ -}}
+{{- $map := dict -}}
+{{- range $orcid, $e := hugo.Data.author_avatars -}}
+	{{- $img := "" -}}
+	{{- with $e.image }}{{ $img = resources.Get . }}{{ end -}}
+	{{- if $img -}}
+		{{- $anchor := $e.anchor | default "Center" -}}
+		{{- $sm := $img.Fill (printf "112x112 webp q82 %s" $anchor) | fingerprint -}}
+		{{- $lg := $img.Fill (printf "224x224 webp q82 %s" $anchor) | fingerprint -}}
+		{{- $map = merge $map (dict (upper $orcid) (dict "src" $sm.RelPermalink "src2x" $lg.RelPermalink "credit" ($e.credit | default ""))) -}}
+	{{- else -}}
+		{{- warnf "author_avatars: no image found for %s (%v)" $orcid $e.image -}}
+	{{- end -}}
+{{- end -}}
+{{- return $map -}}

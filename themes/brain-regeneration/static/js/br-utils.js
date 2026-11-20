@@ -102,6 +102,27 @@
 		} catch (e) { return '#'; }
 	}
 
+	// Author photos: the {"<ORCID iD>": {src, src2x, credit}} map a template puts in a
+	// mount's data-avatars attribute (partials/authors/avatar-map.html). Missing or
+	// malformed → {} (everyone gets initials).
+	function readAvatars(el) {
+		try {
+			var map = JSON.parse((el && el.getAttribute('data-avatars')) || '{}');
+			return map && typeof map === 'object' ? map : {};
+		} catch (e) { return {}; }
+	}
+
+	// The inside of an avatar disc: the author's photo when the map has one for their
+	// ORCID iD, otherwise the escaped initials. Mirrors partials/authors/avatar.html.
+	function avatarHtml(avatars, orcid, initials) {
+		var av = avatars && orcid ? avatars[String(orcid).trim().toUpperCase()] : null;
+		if (!av || !av.src) return escHtml(initials || '');
+		return '<img class="br-avatar-img" src="' + escHtml(av.src) + '"' +
+			(av.src2x ? ' srcset="' + escHtml(av.src) + ' 1x, ' + escHtml(av.src2x) + ' 2x"' : '') +
+			' width="112" height="112" alt="" loading="lazy" decoding="async"' +
+			(av.credit ? ' title="' + escHtml(av.credit) + '"' : '') + '>';
+	}
+
 	// Fire a Umami custom event for an executed search, carrying the actual
 	// query words/expressions the visitor typed. No-ops when the query is
 	// empty (nothing to report) or Umami isn't loaded, and skips re-firing
@@ -229,6 +250,8 @@
 		formatDate: formatDate,
 		slugify: slugify,
 		safeLink: safeLink,
+		readAvatars: readAvatars,
+		avatarHtml: avatarHtml,
 		makeCache: makeCache,
 		trackSearch: trackSearch,
 		subjectUrl: subjectUrl,

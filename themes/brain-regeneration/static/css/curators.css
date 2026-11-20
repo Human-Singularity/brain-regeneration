@@ -41,6 +41,7 @@
 	border: 1px solid color-mix(in srgb, var(--brand) 25%, #fff);
 }
 .cu-avatar--lg { width: 56px; height: 56px; font-size: 19px; background: var(--brand); color: #fff; border: 0; }
+.cu-avatar { overflow: hidden; }
 
 /* ── hero (index and lab page) ── */
 .cu-hero { position: relative; overflow: hidden; color: #fff; padding: 80px 0 88px; }

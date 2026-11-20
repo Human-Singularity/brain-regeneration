@@ -50,9 +50,8 @@
 	<div class="container">
 		<div class="cu-head">
 			<div>
-				<span class="cu-eyebrow">Their role in the Observatory</span>
 				<h2>How {{ $name }} curates {{ .Title }}</h2>
-				<p>Curating since {{ $d.since }}. What you read in {{ .Title }} reflects these choices.</p>
+				<p>Curating since {{ $d.since }}.</p>
 			</div>
 		</div>
 		<div class="cu-roles" style="--n: {{ len $roles }}">
@@ -162,7 +161,7 @@
 				<p class="cu-sub">The lead researcher and the people who publish with them most.</p>
 				{{- with .head }}
 				<div class="cu-headcard">
-					<span class="cu-avatar cu-avatar--lg" aria-hidden="true">{{ partial "curators/initials.html" .full_name }}</span>
+					<span class="cu-avatar cu-avatar--lg" aria-hidden="true">{{ partial "authors/avatar.html" (dict "orcid" .orcid "name" .full_name) }}</span>
 					<div>
 						{{- if .orcid }}<a href="{{ printf "/authors/%s/" .orcid | relURL }}"><strong>{{ .full_name }}</strong></a>{{ else }}<strong>{{ .full_name }}</strong>{{ end }}
 						<span>Lab head{{ with $d.headCount }} · {{ lang.FormatNumber 0 . }} papers on the site{{ end }}</span>

@@ -4363,3 +4363,14 @@ a:hover {
 }
 .medicines-source-note a { color: var(--color-primary); text-decoration: underline; }
 .sheet-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Author photos (data/author_avatars.yaml): fill whatever initials disc they replace —
+   author profile mark and collaborators, lab team lists, curator pages. */
+.br-avatar-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	object-fit: cover;
+	background: var(--color-tint);
+}

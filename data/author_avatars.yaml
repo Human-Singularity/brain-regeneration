@@ -1,0 +1,48 @@
+# Portrait photos for a hand-picked set of authors, keyed by ORCID iD.
+#
+# Everyone else keeps their initials. A photo shows wherever the theme draws an
+# author's initials disc: the author profile (/authors/{orcid}/), its frequent
+# collaborators, research group team lists (/labs/{id}/) and the curator pages.
+#
+# Add a photo:
+#   1. Put a portrait (JPG/PNG/WebP, at least 224×224, roughly square, face centred)
+#      in assets/images/authors/ (a folder per lab is fine). Not static/: everything
+#      there is published as is, full size.
+#   2. Add an entry below. Only add photos we have permission to use.
+#
+# Fields:
+#   image   (required) path under assets/
+#   credit  (optional) shown as the photo's tooltip, e.g. "Photo: Lisbon University"
+#   anchor  (optional) where to crop when the photo isn't square: Center (default),
+#           Top, TopLeft, TopRight, Left, Right, Bottom, BottomLeft, BottomRight, Smart
+#
+# Example:
+# "0000-0002-1825-0097":
+#   image: images/authors/0000-0002-1825-0097.jpg
+#   credit: "Photo: Example Institute"
+#   anchor: Top
+
+# ── LPJ Lab (curator) ────────────────────────────────────────────────────────
+# Squared from the lab's instant-photo portraits (frame and handwritten name cut off).
+"0000-0002-9396-5607": # Luca Peruzzotti-Jametti
+  image: images/authors/lpj-lab/luca.jpg
+  credit: "Photo: LPJ Lab"
+  anchor: Smart
+"0009-0000-7085-1263": # Alessia Atella
+  image: images/authors/lpj-lab/alessia.jpg
+  credit: "Photo: LPJ Lab"
+"0000-0003-0902-1054": # Evridiki Asimakidou
+  image: images/authors/lpj-lab/evri.jpg
+  credit: "Photo: LPJ Lab"
+"0009-0006-4573-7710": # Nathan Whitty
+  image: images/authors/lpj-lab/nathan.jpg
+  credit: "Photo: LPJ Lab"
+"0009-0004-8004-3285": # Xisha Huang
+  image: images/authors/lpj-lab/xisha.jpg
+  credit: "Photo: LPJ Lab"
+# No ORCID iD in GregoryAi yet, so no page can show their photo. When one appears,
+# add an entry for it like the ones above (the photos are already in assets/).
+#   Alyson Speed           images/authors/lpj-lab/alyson.jpg
+#   Sandy Yuxi Cheng       images/authors/lpj-lab/sandy.jpg
+#   Rafael Kollyfas        images/authors/lpj-lab/rafael.jpg   (author 467765, no ORCID)
+#   Zhezhuyun Phoebe Chen  images/authors/lpj-lab/chen.jpg

@@ -7,7 +7,8 @@
 
 <div id="author-shell"
 	data-api-base="{{ $apiBase }}"
-	data-site-title="{{ .Site.Title }}">
+	data-site-title="{{ .Site.Title }}"
+	data-avatars="{{ partialCached "authors/avatar-map.html" "map" | jsonify }}">
 
 	<div id="author-main" class="section section--sand" style="padding-top: 40px; padding-bottom: 64px;">
 		<div class="container">

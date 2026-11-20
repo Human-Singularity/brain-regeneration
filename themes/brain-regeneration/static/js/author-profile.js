@@ -69,6 +69,12 @@
 	var categoryUrl = BR.categoryUrl || function () { return null; };
 	var escHtml         = BR.escHtml              || fallbackEscHtml;
 	var escHtmlSafeTags = BR.escHtmlAllowSafeTags || fallbackEscHtmlAllowSafeTags;
+
+	// Author photos ({"<ORCID>": {src, src2x, credit}}, from data/author_avatars.yaml).
+	var avatars = BR.readAvatars ? BR.readAvatars(shell) : {};
+	function avatarInner(orcid, initials) {
+		return BR.avatarHtml ? BR.avatarHtml(avatars, orcid, initials) : escHtml(initials);
+	}
 	var decodeEntities  = BR.decodeEntities       || fallbackDecodeEntities;
 	var safeLink        = BR.safeLink             || fallbackSafeLink;
 	var truncate        = BR.truncate             || fallbackTruncate;
@@ -370,7 +376,7 @@
 		var ring = 'conic-gradient(from -90deg,#E8913A 0 ' + relevantPct + '%,rgba(255,255,255,.5) ' + relevantPct + '% 100%)';
 		var title = relevantPct + '% of tracked papers flagged relevant by GregoryAi';
 		return '<div class="author-mark" title="' + escHtml(title) + '" aria-label="' + escHtml(title) + '" style="background:' + ring + '">' +
-			'<div class="author-mark__disc">' + escHtml(initialsOf(state.author)) + '</div>' +
+			'<div class="author-mark__disc">' + avatarInner(state.author.ORCID, initialsOf(state.author)) + '</div>' +
 		'</div>';
 	}
 
@@ -456,7 +462,7 @@
 			var cls = 'author-collaborator' + (hasOrcid ? '' : ' author-collaborator--no-orcid');
 			var title = hasOrcid ? '' : ' title="No ORCID on file — no profile page yet"';
 			return '<' + tag + ' class="' + cls + '"' + linkAttrs + title + '>' +
-				'<div class="author-collaborator__avatar" style="background:' + PALETTE[i % PALETTE.length] + '">' + escHtml(collabInitials(c.name)) + '</div>' +
+				'<div class="author-collaborator__avatar" style="background:' + PALETTE[i % PALETTE.length] + '">' + avatarInner(c.orcid, collabInitials(c.name)) + '</div>' +
 				'<div><div class="author-collaborator__name">' + escHtml(decodeEntities(c.name)) + '</div>' +
 				'<div class="author-collaborator__meta">' + c.count + ' shared paper' + (c.count === 1 ? '' : 's') + '</div></div>' +
 			'</' + tag + '>';

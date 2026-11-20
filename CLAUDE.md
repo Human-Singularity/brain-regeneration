@@ -156,6 +156,10 @@ A curator's lab is pointed at its curator page across the research-groups sectio
 
 **Local builds can't fetch from a localhost API:** Hugo's default `security.http.urls` policy blocks it, so with `make pages-dev` these pages (and the homepage stats) build without API data. Add a config with `[security.http] urls = [".*"]` via `--config hugo.toml,that.toml` to test with data.
 
+## Author photos
+
+The API has no author images, so a hand-picked few authors get a portrait from this repo: `data/author_avatars.yaml` maps an ORCID iD to an image under `assets/images/authors/` (plus optional `credit` and crop `anchor`). `partials/authors/avatar-map.html` turns it into `{ORCID: {src, src2x, credit}}` (square 112/224 px WebP, fingerprinted). The author profile and lab pages get that map as `data-avatars` and draw discs with `BR.avatarHtml` (`br-utils.js`); the curator pages use `partials/authors/avatar.html`. Everyone else keeps their initials. The papers/trials feeds don't show avatars.
+
 ## Configuration (`hugo.toml`)
 
 Single root file. Highlights:

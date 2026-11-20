@@ -2,6 +2,6 @@
 <li>
 {{- if .orcid }}<a class="cu-member" href="{{ printf "/authors/%s/" .orcid | relURL }}">
 {{- else }}<span class="cu-member">{{ end -}}
-<span class="cu-avatar" aria-hidden="true">{{ partial "curators/initials.html" .full_name }}</span><span>{{ .full_name }}</span>
+<span class="cu-avatar" aria-hidden="true">{{ partial "authors/avatar.html" (dict "orcid" .orcid "name" .full_name) }}</span><span>{{ .full_name }}</span>
 {{- if .orcid }}</a>{{ else }}</span>{{ end -}}
 </li>

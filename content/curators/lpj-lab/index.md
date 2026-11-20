@@ -1,6 +1,6 @@
 ---
 title: "LPJ Lab"
-date: 2025-01-06
+date: 2026-04-06
 draft: false
 
 description: "LPJ Lab, led by Luca Peruzzotti-Jametti at the University of Cambridge, studies how cell metabolism shapes brain-immune interactions in MS and other CNS disorders."
