@@ -11,6 +11,10 @@ lead_researcher: "Luca Peruzzotti-Jametti"
 institution: "University of Cambridge"
 website: "https://www.lpjlab.org/"
 logo: "LPJLAB_ICON_LOGO.svg"
+# Curator-page design: the lab's colour, its GregoryAi lab id and its country
+brand_color: "#E05A00"
+lab_id: 2677
+country: "GB"
 bio: "LPJ Lab is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for MS and other Central Nervous System disorders."
 
 research_areas:

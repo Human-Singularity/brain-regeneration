@@ -1,139 +1,297 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/curators.css" | relURL }}">
+{{ end }}
+
 {{ define "main" }}
+{{- $d := partialCached "curators/data.html" . .RelPermalink -}}
+{{- $name := .Params.short_name | default .Title -}}
+{{- $brand := .Params.brand_color | default "#1A6B6A" -}}
+{{- $lab := $d.lab -}}
+{{- $area := $d.area -}}
+{{- $subjectId := 0 -}}
+{{- with $area -}}{{- with .Params.api -}}{{- $subjectId = .subject_id -}}{{- end -}}{{- end -}}
+{{- $head := false -}}
+{{- with $lab -}}{{- $head = .head -}}{{- end -}}
+{{- $leadOrcid := "" -}}
+{{- with $head -}}{{- $leadOrcid = .orcid | default "" -}}{{- end -}}
+{{- $country := "" -}}
+{{- with $d.country -}}{{- $country = partial "curators/country.html" . -}}{{- end -}}
 
-<!-- ── BREADCRUMB ── -->
-<div class="bg-sand">
-	<div class="container">
-		<div class="narrow-col">
-			<nav class="breadcrumb-nav">
-				<a href="{{ "/curators/" | relURL }}">Scientific Curators</a>
-				<span class="separator">/</span>
-				<span class="current">{{ .Title }}</span>
-			</nav>
-		</div>
-	</div>
-</div>
+<div class="cu-page" style="--brand: {{ $brand | safeCSS }}">
 
-<!-- ── PROFILE HEADER ── -->
-<section class="profile-header bg-sand">
+<!-- ── HERO ── -->
+<section class="cu-hero cu-hero--lab cu-network">
 	<div class="container">
-		<div class="narrow-col">
-			<div class="profile-header-inner">
-				<div class="profile-logo">
-					{{ $logo := .Resources.GetMatch .Params.logo }}
-					{{ if $logo }}
-					<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}">
-					{{ else }}
-					<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-						<circle cx="22" cy="16" r="9"/>
-						<path d="M6 40c0-9 7-16 16-16s16 7 16 16"/>
-					</svg>
-					{{ end }}
-				</div>
-				<div class="profile-header-text">
-					<h1>{{ .Title }}</h1>
-					{{ with .Params.institution }}<div class="profile-institution">{{ . }}</div>{{ end }}
-					{{ with .Params.lead_researcher }}<div class="profile-lead">Lead researcher: {{ . }}</div>{{ end }}
+		<nav class="cu-crumbs" aria-label="Breadcrumb"><a href="{{ "/curators/" | relURL }}">Scientific Curators</a> <span aria-hidden="true">/</span> <span aria-current="page">{{ $name }}</span></nav>
+		<div class="cu-hero__grid">
+			<div>
+				<h1{{ if gt (len .Title) 30 }} class="cu-long"{{ end }}>{{ .Title }}</h1>
+				{{- with .Params.bio }}<p class="cu-lede">{{ . }}</p>{{ end }}
+				<p class="cu-meta">
+					{{- with .Params.lead_researcher }}<span>{{ partial "curators/icon.html" "person" }}Led by {{ if $leadOrcid }}<a href="{{ printf "/authors/%s/" $leadOrcid | relURL }}">{{ . }}</a>{{ else }}{{ . }}{{ end }}</span>{{ end }}
+					{{- with .Params.institution }}<span>{{ partial "curators/icon.html" "inst" }}{{ . }}</span>{{ end }}
+					{{- with $country }}<span>{{ partial "curators/icon.html" "pin" }}{{ . }}</span>{{ end }}
+				</p>
+				<div class="cu-actions">
+					{{- with .Params.website }}<a class="cu-btn cu-btn--light" href="{{ . }}" target="_blank" rel="noopener">{{ $.Params.website_label | default "Lab website" }} {{ partial "curators/icon.html" "ext" }}</a>{{ end }}
+					{{- with $area }}{{ if .Params.list_id }}<a class="cu-btn cu-btn--ghost" href="#follow">Follow {{ .Title }}</a>{{ end }}{{ end }}
 				</div>
 			</div>
+			<div class="cu-logo{{ if .Params.logo_wide }} cu-logo--wide{{ end }}">{{ partial "curators/logo.html" . }}</div>
 		</div>
 	</div>
 </section>
+
+<!-- ── ROLE ── -->
+{{- with $area }}
+{{- $roles := $.Params.commitment | default slice -}}
+{{- if $roles }}
+<section class="cu-section">
+	<div class="container">
+		<div class="cu-head">
+			<div>
+				<span class="cu-eyebrow">Their role in the Observatory</span>
+				<h2>How {{ $name }} curates {{ .Title }}</h2>
+				<p>Curating since {{ $d.since }}. What you read in {{ .Title }} reflects these choices.</p>
+			</div>
+		</div>
+		<div class="cu-roles" style="--n: {{ len $roles }}">
+			{{- range $roles }}
+			<div class="cu-role">
+				<div class="cu-role__icon">{{ partial "curators/icon.html" . }}</div>
+				{{- if eq . "searches" }}
+				<h3>Defines what we track</h3>
+				<p>{{ with $d.queries }}Wrote the {{ len . }} PubMed {{ cond (eq (len .) 1) "search" "searches" }}{{ else }}Writes the searches{{ end }} that feed {{ $area.Title }}. Every paper in this area reaches the Observatory through them.</p>
+				{{- with $d.queries }}
+				<details class="cu-role__queries">
+					<summary>{{ partial "curators/icon.html" "chev" }} See the {{ len . }} {{ cond (eq (len .) 1) "search" "searches" }}</summary>
+					<ol>{{ range $i, $q := . }}<li><b>{{ $q.source | default "PubMed" }} · search {{ add $i 1 }}</b>{{ $q.string }}</li>{{ end }}</ol>
+				</details>
+				{{- end }}
+				{{- else if eq . "categories" }}
+				<h3>Organises the findings</h3>
+				<p>Decides how {{ $area.Title }} papers are grouped into categories, so readers can follow a single mechanism or therapy.</p>
+				{{- else if eq . "legitimacy" }}
+				<h3>Vouches for the scope</h3>
+				<p>A working research group stands behind what this area covers, and reviews it as the field moves.</p>
+				{{- end }}
+			</div>
+			{{- end }}
+		</div>
+	</div>
+</section>
+{{- end }}
+{{- end }}
 
 <!-- ── ABOUT ── -->
-{{ if .Content }}
-<section class="bg-sand" style="padding-bottom: 48px;">
+<section class="cu-section cu-section--alt">
 	<div class="container">
-		<div class="narrow-col body-text">
-			{{ .Content }}
-		</div>
-	</div>
-</section>
-{{ end }}
-
-<!-- ── RESEARCH AREA(S) CURATED ── -->
-{{ with .Params.research_areas }}
-<section class="bg-sand" style="padding-bottom: 48px;">
-	<div class="container">
-		<div class="narrow-col">
-			<h2 style="font-size: 20px; margin-bottom: 16px;">{{ if gt (len .) 1 }}Research areas curated{{ else }}Research area curated{{ end }}</h2>
-			<div class="d-flex flex-column gap-3">
-				{{ range . }}
-				{{ $areaSlug := . }}
-				{{ with $.Site.GetPage (printf "/research-areas/%s" $areaSlug) }}
-				<div class="research-area-card">
-					<h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-					<p>{{ .Description }}</p>
-					<a href="{{ .RelPermalink }}" class="research-area-link">Explore this research area &rarr;</a>
+		<div class="cu-about">
+			<div>
+				<span class="cu-eyebrow">About the lab</span>
+				<h2 class="cu-about__title">{{ $name }}</h2>
+				<div class="cu-prose">{{ .Content }}</div>
+			</div>
+			<aside class="cu-glance" aria-label="At a glance">
+				<h3>At a glance</h3>
+				<dl>
+					{{- with .Params.lead_researcher }}<div><dt>Lead researcher</dt><dd>{{ . }}</dd></div>{{ end }}
+					{{- with .Params.institution }}<div><dt>Institution</dt><dd>{{ . }}</dd></div>{{ end }}
+					{{- with $country }}<div><dt>Country</dt><dd>{{ . }}</dd></div>{{ end }}
+					{{- with $area }}<div><dt>Curates</dt><dd><a href="{{ .RelPermalink }}">{{ .Title }}</a></dd></div>{{ end }}
+					<div><dt>Curator since</dt><dd>{{ $d.since }}</dd></div>
+				</dl>
+				<div class="cu-glance__links">
+					{{- with .Params.website }}<a href="{{ . }}" target="_blank" rel="noopener">{{ $.Params.website_label | default "Lab website" }} {{ partial "curators/icon.html" "ext" }}</a>{{ end }}
+					{{- with .Params.lab_website }}<a href="{{ . }}" target="_blank" rel="noopener">Lab website {{ partial "curators/icon.html" "ext" }}</a>{{ end }}
+					{{- if $leadOrcid }}<a href="{{ printf "/authors/%s/" $leadOrcid | relURL }}">{{ .Params.lead_researcher | default $head.full_name }}’s papers {{ partial "curators/icon.html" "arrow" }}</a>{{ end }}
+					{{- with $lab }}{{ with .institution }}{{ with .ror }}<a href="https://ror.org/{{ . }}" target="_blank" rel="noopener">Institution on ROR {{ partial "curators/icon.html" "ext" }}</a>{{ end }}{{ end }}{{ end }}
 				</div>
-				{{ end }}
-				{{ end }}
-			</div>
+			</aside>
 		</div>
 	</div>
 </section>
-{{ end }}
 
-<!-- ── EXTERNAL LINKS ── -->
-{{ if or .Params.website .Params.institution_url }}
-<section class="bg-sand" style="padding-bottom: 48px;">
+<!-- ── RESEARCH ── -->
+{{- $tabs := slice -}}
+{{- with $d.headPapers }}{{ $tabs = $tabs | append (dict "id" "lab" "label" "From the lab" "papers" .) }}{{ end -}}
+{{- with $d.areaFeed }}{{ $tabs = $tabs | append (dict "id" "area" "label" (printf "Latest in %s" $area.Title) "papers" .) }}{{ end -}}
+{{- if $tabs }}
+<section class="cu-section" data-cu-tabs>
 	<div class="container">
-		<div class="narrow-col">
-			<h2 style="font-size: 20px; margin-bottom: 16px;">Links</h2>
-			<div class="external-links">
-				{{ with .Params.website }}
-				<a href="{{ . }}" class="external-link" target="_blank" rel="noopener">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-						<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-					</svg>
-					{{ $.Params.website_label | default "Lab website" }}
-				</a>
-				{{ end }}
-				{{ with .Params.lab_website }}
-				<a href="{{ . }}" class="external-link" target="_blank" rel="noopener">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-						<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-					</svg>
-					Lab website
-				</a>
-				{{ end }}
-				{{ with .Params.institution_url }}
-				<a href="{{ . }}" class="external-link" target="_blank" rel="noopener">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-						<polyline points="9 22 9 12 15 12 15 22"/>
-					</svg>
-					{{ $.Params.institution | default "Institution" }}
-				</a>
-				{{ end }}
+		<div class="cu-head">
+			<div><span class="cu-eyebrow">Research</span><h2>{{ if gt (len $tabs) 1 }}Their work, and the field they curate{{ else if eq (index $tabs 0).id "lab" }}Their latest work{{ else }}What’s new in the area they curate{{ end }}</h2></div>
+		</div>
+		{{- if gt (len $tabs) 1 }}
+		<div class="cu-tabs" role="tablist" aria-label="Papers">
+			{{- range $i, $t := $tabs }}
+			<button type="button" role="tab" id="cu-tab-{{ $t.id }}" aria-controls="cu-panel-{{ $t.id }}" aria-selected="{{ eq $i 0 }}" tabindex="{{ cond (eq $i 0) 0 -1 }}">{{ $t.label }}</button>
+			{{- end }}
+		</div>
+		{{- end }}
+		{{- range $i, $t := $tabs }}
+		<div class="cu-panel" id="cu-panel-{{ $t.id }}"{{ if gt (len $tabs) 1 }} role="tabpanel" aria-labelledby="cu-tab-{{ $t.id }}"{{ end }}{{ if $i }} hidden{{ end }}>
+			<div class="cu-papers">
+				{{- range $t.papers }}{{ partial "curators/paper-card.html" (dict "article" . "subjectId" $subjectId) }}{{ end }}
 			</div>
+			<div class="cu-papers__foot">
+				{{- if eq $t.id "lab" }}
+				<a class="cu-more" href="{{ printf "/authors/%s/" $leadOrcid | relURL }}">All {{ lang.FormatNumber 0 $d.headCount }} papers by {{ $head.full_name }} &rarr;</a>
+				{{- else }}
+				<a class="cu-more" href="{{ $area.RelPermalink }}">Open the {{ $area.Title }} feed{{ if $d.areaCount }} ({{ lang.FormatNumber 0 $d.areaCount }} papers){{ end }} &rarr;</a>
+				{{- end }}
+			</div>
+		</div>
+		{{- end }}
+	</div>
+</section>
+{{- end }}
+
+<!-- ── PEOPLE AND RESEARCH FOCUS (GregoryAi lab) ── -->
+{{- with $lab }}
+{{- $members := .members | default slice -}}
+<section class="cu-section cu-section--tint">
+	<div class="container">
+		<div class="cu-head">
+			<div><span class="cu-eyebrow">The lab</span><h2>People and research focus</h2></div>
+			<a class="cu-more" href="{{ "/labs/" | relURL }}">Browse all research groups &rarr;</a>
+		</div>
+		<div class="cu-lab">
+			<div>
+				<h3>Team</h3>
+				<p class="cu-sub">The lead researcher and the people who publish with them most.</p>
+				{{- with .head }}
+				<div class="cu-headcard">
+					<span class="cu-avatar cu-avatar--lg" aria-hidden="true">{{ partial "curators/initials.html" .full_name }}</span>
+					<div>
+						{{- if .orcid }}<a href="{{ printf "/authors/%s/" .orcid | relURL }}"><strong>{{ .full_name }}</strong></a>{{ else }}<strong>{{ .full_name }}</strong>{{ end }}
+						<span>Lab head{{ with $d.headCount }} · {{ lang.FormatNumber 0 . }} papers on the site{{ end }}</span>
+					</div>
+				</div>
+				{{- end }}
+				{{- with $members }}
+				<ul class="cu-members">
+					{{- range first 12 . }}{{ partial "curators/member.html" . }}{{ end }}
+				</ul>
+				{{- if gt (len .) 12 }}
+				<details class="cu-members__more">
+					<summary>Show all {{ len . }} members</summary>
+					<ul class="cu-members">{{ range after 12 . }}{{ partial "curators/member.html" . }}{{ end }}</ul>
+				</details>
+				{{- end }}
+				{{- end }}
+				{{- if not .curated }}
+				<p class="cu-note">{{ partial "curators/icon.html" "info" }}<span>Team grouped automatically from co-authorship in the papers we track.</span></p>
+				{{- end }}
+			</div>
+			{{- $subjects := .subjects | default slice -}}
+			{{- if or $subjects $d.categories }}
+			{{- $max := 1 -}}
+			{{- range $subjects }}{{ if gt .articles $max }}{{ $max = .articles }}{{ end }}{{ end -}}
+			{{- range $d.categories }}{{ if gt .articles $max }}{{ $max = .articles }}{{ end }}{{ end -}}
+			<div>
+				<h3>Research focus</h3>
+				<p class="cu-sub">Where the lab’s papers on this site fall.</p>
+				<div class="cu-legend" aria-hidden="true"><span><i class="cu-legend__recent"></i>Since 2022</span><span><i class="cu-legend__all"></i>All years</span></div>
+				{{- with $subjects }}
+				<p class="cu-focus__kind">Conditions &amp; subjects</p>
+				<ul class="cu-focus">{{ range . }}{{ partial "curators/focus-bar.html" (dict "row" . "max" $max) }}{{ end }}</ul>
+				{{- end }}
+				{{- with $d.categories }}
+				<p class="cu-focus__kind">Categories</p>
+				<ul class="cu-focus">{{ range . }}{{ partial "curators/focus-bar.html" (dict "row" . "max" $max) }}{{ end }}</ul>
+				{{- end }}
+			</div>
+			{{- end }}
 		</div>
 	</div>
 </section>
-{{ end }}
+{{- end }}
+
+<!-- ── FOLLOW THE AREA ── -->
+{{- with $area }}
+{{- with .Params.list_id }}
+{{- $listId := . -}}
+<section class="cu-section" id="follow">
+	<div class="container">
+		<div class="cu-follow">
+			<div>
+				<h2>Follow {{ $area.Title }}</h2>
+				<p>{{ $area.Description }} New papers, picked by the searches {{ $name }} wrote, every week.</p>
+				<a class="cu-more" href="{{ $area.RelPermalink }}">Explore the research area &rarr;</a>
+			</div>
+			<form class="cu-form"
+				data-inline-subscribe
+				data-api="{{ site.Params.apiBase }}/subscriptions/new/"
+				data-thank-you="{{ site.Params.subscriptions.thank_you_url }}"
+				data-error="{{ site.Params.subscriptions.error_url }}"
+				novalidate>
+				<input type="hidden" name="list" value="{{ $listId }}">
+				<div class="cu-field">
+					<label for="cu-first-name">First name <i aria-hidden="true">*</i></label>
+					<input type="text" id="cu-first-name" name="first_name" placeholder="Jane" required maxlength="150" autocomplete="given-name">
+				</div>
+				<div class="cu-field">
+					<label for="cu-email">Email address <i aria-hidden="true">*</i></label>
+					<input type="email" id="cu-email" name="email" placeholder="you@example.com" required maxlength="254" autocomplete="email">
+				</div>
+				<div class="cu-field">
+					<label for="cu-profile">I am a&hellip; <i aria-hidden="true">*</i></label>
+					<select id="cu-profile" name="profile" required>
+						<option value="" disabled selected>Select…</option>
+						<option value="patient">Patient</option>
+						<option value="caregiver">Caregiver</option>
+						<option value="doctor">Doctor</option>
+						<option value="clinical centre">Clinical Centre</option>
+						<option value="researcher">Researcher</option>
+						<option value="other">Other</option>
+					</select>
+				</div>
+				<button type="submit" class="cu-btn cu-btn--accent" data-umami-event="Curator: Subscribe" data-umami-event-curator="{{ $name }}">Subscribe</button>
+				{{- range site.Params.subscriptions.global_lists }}
+				<label class="cu-check" for="cu-global-{{ .list_id }}">
+					<input type="checkbox" name="list" value="{{ .list_id }}" id="cu-global-{{ .list_id }}">
+					<span>Also subscribe to {{ .title }}{{ with .description }} <span class="cu-check__desc">— {{ . }}</span>{{ end }}</span>
+				</label>
+				{{- end }}
+			</form>
+		</div>
+	</div>
+</section>
+{{- end }}
+{{- end }}
 
 <!-- ── OTHER CURATORS ── -->
-{{ $others := where (where .Site.RegularPages "Section" "curators") "RelPermalink" "ne" .RelPermalink }}
-{{ if $others }}
-<section class="section bg-tint">
+{{- $others := where (where site.RegularPages "Section" "curators") "RelPermalink" "ne" .RelPermalink -}}
+{{- with $others }}
+<section class="cu-section cu-section--alt">
 	<div class="container">
-		<div class="narrow-col">
-			<h2 style="font-size: 20px; margin-bottom: 16px;">Other scientific curators</h2>
-			<div class="d-flex flex-wrap gap-3">
-				{{ range $others }}
-				<a href="{{ .RelPermalink }}" class="other-curator-chip">
-					<strong>{{ .Title }}</strong>
-					{{ with .Params.institution }}<span class="chip-institution">{{ . }}</span>{{ end }}
-				</a>
-				{{ end }}
-			</div>
-			<div class="mt-3">
-				<a href="{{ "/curators/" | relURL }}" style="font-family: var(--font-heading); font-size: 14px; font-weight: 500;">View all curators &rarr;</a>
-			</div>
+		<div class="cu-head">
+			<div><span class="cu-eyebrow">Scientific curators</span><h2>The other labs behind the Observatory</h2></div>
+			<a class="cu-more" href="{{ "/curators/" | relURL }}">All curators &rarr;</a>
+		</div>
+		<div class="cu-others">
+			{{- range sort (apply . "partial" "curators/sort-key.html" ".") "key" }}
+			{{- $o := .page -}}
+			{{- $od := partialCached "curators/data.html" $o $o.RelPermalink -}}
+			<a class="cu-other" href="{{ $o.RelPermalink }}" style="--brand: {{ $o.Params.brand_color | default "#1A6B6A" | safeCSS }}">
+				<span class="cu-other__logo{{ if $o.Params.logo_wide }} cu-other__logo--wide{{ end }}">{{ partial "curators/logo.html" $o }}</span>
+				<span>
+					<strong>{{ $o.Params.short_name | default $o.Title }}</strong>
+					<span class="cu-other__inst">{{ $o.Params.institution }}{{ with $od.country }} · {{ partial "curators/country.html" . }}{{ end }}</span>
+					{{- with $od.area }}<em>Curates {{ .Title }}</em>{{ end }}
+				</span>
+			</a>
+			{{- end }}
 		</div>
 	</div>
 </section>
+{{- end }}
+
+</div>
 {{ end }}
 
+{{ define "page-scripts" }}
+<script src="{{ "js/curator-page.js" | relURL }}" defer></script>
+<script src="{{ "js/subscribe.js" | relURL }}" defer></script>
 {{ end }}

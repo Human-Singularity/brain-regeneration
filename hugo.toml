@@ -80,6 +80,14 @@ mediaType = "application/json"
 isPlainText = true
 notAlternative = true
 
+# /curators/labs.json: GregoryAi lab id → scientific curator page. functions/labs/[id].js
+# redirects a curator's /labs/{id}/ page to its curator page (see content/curators/_index.md).
+[outputFormats.CuratorLabs]
+baseName = "labs"
+mediaType = "application/json"
+isPlainText = true
+notAlternative = true
+
 [outputFormats.Search]
 baseName = "index"
 mediaType = "application/json"

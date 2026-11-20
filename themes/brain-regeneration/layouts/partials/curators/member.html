@@ -1,0 +1,7 @@
+{{- /* curators/member.html — one lab member (GregoryAi {full_name, orcid}); linked when they have an ORCID iD. */ -}}
+<li>
+{{- if .orcid }}<a class="cu-member" href="{{ printf "/authors/%s/" .orcid | relURL }}">
+{{- else }}<span class="cu-member">{{ end -}}
+<span class="cu-avatar" aria-hidden="true">{{ partial "curators/initials.html" .full_name }}</span><span>{{ .full_name }}</span>
+{{- if .orcid }}</a>{{ else }}</span>{{ end -}}
+</li>

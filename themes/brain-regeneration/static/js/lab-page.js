@@ -191,6 +191,10 @@
 	function load() {
 		var id = labId();
 		if (!id) { showState('notfound'); return; }
+		// A scientific curator's lab has its own page. functions/labs/[id].js redirects there
+		// on Cloudflare; this covers `hugo server` and any request that skipped the function.
+		var curator = cfg.curators[id];
+		if (curator && curator.url) { window.location.replace(curator.url); return; }
 		showState('loading');
 		L.getJson(cfg.apiBase + '/labs/' + id + '/?format=json').then(function (lab) {
 			var name = decodeEntitiesSafe(lab.name);

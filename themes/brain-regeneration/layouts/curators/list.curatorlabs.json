@@ -1,0 +1,2 @@
+{{- /* /curators/labs.json — see partials/curators/lab-map.html */ -}}
+{{- partialCached "curators/lab-map.html" . | jsonify -}}

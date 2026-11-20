@@ -233,7 +233,8 @@
 			: '<p class="lab-card__note" title="Grouped automatically from publication data">' + L.infoIcon(14) + 'Grouped from publication data</p>';
 		return '<article class="lab-card">' +
 			'<div class="lab-card__head">' +
-				'<h3><a href="' + escHtml(cfg.labBase + lab.id + '/') + '">' + t(lab.name) + '</a></h3>' + ledBy +
+				L.curatorBadge(cfg, lab) +
+				'<h3><a href="' + escHtml(L.labHref(cfg, lab)) + '">' + t(lab.name) + '</a></h3>' + ledBy +
 			'</div>' +
 			(place ? '<p class="lab-card__place">' + L.pinIcon(16) + '<span>' + t(place) + '</span></p>' : '') +
 			'<dl class="lab-card__stats">' +

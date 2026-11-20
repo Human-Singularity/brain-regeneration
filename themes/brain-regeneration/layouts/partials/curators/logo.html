@@ -1,0 +1,14 @@
+{{- /*
+  curators/logo.html — a curator's logo (from its page bundle) or, without one, its
+  initials (front matter `initials`, else the first letters of the title).
+  Param: the curator page
+*/ -}}
+{{- with .Resources.GetMatch (.Params.logo | default "__none__") -}}
+<img src="{{ .RelPermalink }}" alt="{{ $.Title }} logo" loading="lazy" decoding="async">
+{{- else -}}
+{{- $initials := .Params.initials -}}
+{{- if not $initials -}}
+	{{- range first 3 (split (.Params.short_name | default .Title) " ") -}}{{- $initials = printf "%s%s" $initials (substr . 0 1) -}}{{- end -}}
+{{- end -}}
+<span class="cu-initials" aria-hidden="true">{{ $initials }}</span>
+{{- end -}}

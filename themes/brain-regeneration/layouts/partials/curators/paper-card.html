@@ -1,0 +1,33 @@
+{{- /*
+  curators/paper-card.html — one paper in the curator page's Research tabs.
+  Params (dict): article (a GregoryAi article), subjectId (the curated area's subject,
+  for the "Expert pick" badge; 0 for none)
+*/ -}}
+{{- $a := .article -}}
+{{- $sid := .subjectId | default 0 -}}
+{{- $names := slice -}}
+{{- range $a.authors -}}{{- $names = $names | append (.family_name | default .full_name) -}}{{- end -}}
+{{- $by := "" -}}
+{{- if eq (len $names) 1 -}}{{- $by = index $names 0 -}}
+{{- else if eq (len $names) 2 -}}{{- $by = printf "%s & %s" (index $names 0) (index $names 1) -}}
+{{- else if gt (len $names) 2 -}}{{- $by = printf "%s et al." (index $names 0) -}}
+{{- end -}}
+{{- $expert := false -}}
+{{- range $a.article_subject_relevances -}}
+	{{- if and .is_relevant (eq (int .subject.id) (int $sid)) -}}{{- $expert = true -}}{{- end -}}
+{{- end -}}
+{{- $ml := float ($a.ml_score | default 0) -}}
+{{- $date := "" -}}
+{{- with $a.published_date -}}{{- $date = (time.AsTime .).Format "Jan 2006" -}}{{- end -}}
+<article class="cu-paper">
+	{{- with $a.container_title }}<div class="cu-paper__journal">{{ . | htmlUnescape | plainify }}</div>{{ end }}
+	<h3><a href="{{ printf "/articles/%v/" $a.article_id | relURL }}">{{ $a.title | htmlUnescape | plainify }}</a></h3>
+	<div class="cu-paper__by">{{ $by }}{{ if and $by $date }} · {{ end }}{{ $date }}</div>
+	{{- if or $expert (ge $ml 0.8) (eq $a.access "open") }}
+	<div class="cu-paper__tags">
+		{{- if $expert }}<span class="cu-tag cu-tag--expert"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.9L22 9.6l-5.4 4.8 1.6 7.3L12 17.8 5.8 21.7l1.6-7.3L2 9.6l7.1-.7z"/></svg>Expert pick</span>{{ end }}
+		{{- if ge $ml 0.8 }}<span class="cu-tag cu-tag--ai">AI relevance {{ math.Round (mul $ml 100) }}%</span>{{ end }}
+		{{- if eq $a.access "open" }}<span class="cu-tag cu-tag--open">Open access</span>{{ end }}
+	</div>
+	{{- end }}
+</article>
