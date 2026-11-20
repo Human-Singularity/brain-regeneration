@@ -13,6 +13,11 @@ website: "https://REGENERAR.eu"
 website_label: "REGENERAR project website"
 lab_website: "https://cibb.uc.pt/en/research-group/terapias-avan%C3%A7adas"
 logo: "regenerar.svg"
+# Curator-page design: the logo is wide, so it gets a wide tile. No lab in GregoryAi yet,
+# so no lab_id: the team, research-focus and "From the lab" sections stay hidden.
+logo_wide: true
+brand_color: "#0C6C98"
+country: "PT"
 bio: "The REGENERAR research project aims to use epigenetic tools that allow certain brain cells to be reprogrammed into neurons, manipulating cells that have increased in number after the disease process into neuronal cells important for brain function."
 
 research_areas:
@@ -20,7 +25,6 @@ research_areas:
 
 commitment:
   - "searches"
-  - "categories"
   - "legitimacy"
 ---
 

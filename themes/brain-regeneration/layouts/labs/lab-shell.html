@@ -21,6 +21,7 @@
 	data-api-base="{{ $apiBase }}"
 	data-site-title="{{ .Site.Title }}"
 	data-lab-base="{{ "/labs/" | relURL }}"
+	data-curators="{{ partialCached "curators/lab-map.html" . | jsonify }}"
 	data-author-base="{{ "/authors/" | relURL }}"
 	data-categories="{{ $data.categories | jsonify }}"
 	data-subjects="{{ $data.subjects | jsonify }}">

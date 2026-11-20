@@ -1,0 +1,106 @@
+{{- /*
+  curators/data.html — RETURNS everything a curator page or card shows besides its own
+  front matter. Fetched at build time (the nightly rebuild keeps it fresh); every API
+  part fails soft, and the templates hide what is missing.
+
+    area        — the first research area page in `research_areas`, or false
+    queries     — that area's active search queries (front matter `queries`)
+    areaCount   — papers the area tracks (GregoryAi article count for its team/subject)
+    areaFeed    — up to 4 of the area's papers: relevant ones (best ML score) first,
+                  then the latest
+    lab         — the GregoryAi lab (/labs/{lab_id}/), or false
+    researchers — the lab's head plus members, or 0 without a lab. member_count can be
+                  lower than the members list (duplicate author records), and a curated
+                  lab can report 0, so the larger of the two counts.
+    headCount, headPapers — the lab head's papers on the site, latest first (4)
+    categories  — the lab's categories that the site shows (the labs-data allow-list),
+                  with the configured names
+    country     — front matter `country`, else the lab's institution country code
+    since       — "January 2025", from the page date
+
+  Param: the curator page. Call it with partialCached … .RelPermalink.
+*/ -}}
+{{- $p := . -}}
+{{- $api := strings.TrimSuffix "/" (site.Params.apiBase | default "https://api.brain-regeneration.com") -}}
+
+{{- $area := false -}}
+{{- with index ($p.Params.research_areas | default slice) 0 -}}
+	{{- with site.GetPage (printf "/research-areas/%s" .) -}}{{- $area = . -}}{{- end -}}
+{{- end -}}
+
+{{- $queries := slice -}}
+{{- $areaCount := 0 -}}
+{{- $feed := slice -}}
+{{- with $area -}}
+	{{- range .Params.queries -}}
+		{{- if ne .status "inactive" -}}{{- $queries = $queries | append . -}}{{- end -}}
+	{{- end -}}
+	{{- with .Params.api -}}
+		{{- $q := printf "format=json&team_id=%v&subject_id=%v" .team_id .subject_id -}}
+		{{- $seen := dict -}}
+		{{- with partial "curators/fetch-json.html" (printf "%s/articles/?%s&relevant=true&ordering=-ml_score&page_size=4" $api $q) -}}
+			{{- range .results -}}
+				{{- $feed = $feed | append . -}}
+				{{- $seen = merge $seen (dict (string .article_id) true) -}}
+			{{- end -}}
+		{{- end -}}
+		{{- with partial "curators/fetch-json.html" (printf "%s/articles/?%s" $api $q) -}}
+			{{- $areaCount = .count | default 0 -}}
+			{{- range .results -}}
+				{{- if and (lt (len $feed) 4) (not (index $seen (string .article_id))) -}}
+					{{- $feed = $feed | append . -}}
+				{{- end -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+
+{{- $lab := false -}}
+{{- $researchers := 0 -}}
+{{- $headCount := 0 -}}
+{{- $headPapers := slice -}}
+{{- $cats := slice -}}
+{{- with $p.Params.lab_id -}}
+	{{- $lab = partial "curators/fetch-json.html" (printf "%s/labs/%v/?format=json" $api .) -}}
+{{- end -}}
+{{- with $lab -}}
+	{{- $members := len (.members | default slice) -}}
+	{{- $researchers = cond (gt (int (.member_count | default 0)) $members) (int .member_count) $members -}}
+	{{- with .head -}}{{- $researchers = add $researchers 1 -}}{{- end -}}
+	{{- with .head -}}
+		{{- with .author_id -}}
+			{{- with partial "curators/fetch-json.html" (printf "%s/articles/?format=json&author_id=%v&ordering=-published_date" $api .) -}}
+				{{- $headCount = .count | default 0 -}}
+				{{- $headPapers = first 4 (.results | default slice) -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+	{{- $allowed := dict -}}
+	{{- range (partialCached "labs-data.html" $p).categories -}}
+		{{- $allowed = merge $allowed (dict (string .id) .name) -}}
+	{{- end -}}
+	{{- range $c := .categories -}}
+		{{- with index $allowed (string $c.id) -}}
+			{{- $cats = $cats | append (dict "name" . "articles" $c.articles "recent_articles" $c.recent_articles) -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+
+{{- $country := $p.Params.country | default "" -}}
+{{- if and (not $country) $lab -}}
+	{{- with $lab.institution -}}{{- $country = .country_code | default "" -}}{{- end -}}
+{{- end -}}
+
+{{- return (dict
+	"area" $area
+	"queries" $queries
+	"areaCount" $areaCount
+	"areaFeed" $feed
+	"lab" $lab
+	"researchers" $researchers
+	"headCount" $headCount
+	"headPapers" $headPapers
+	"categories" $cats
+	"country" $country
+	"since" ($p.Date.Format "January 2006")
+) -}}

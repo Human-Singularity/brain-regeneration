@@ -1,0 +1,13 @@
+{{- /*
+  curators/lab-map.html — RETURNS {"<GregoryAi lab id>": {"url", "name"}} for every
+  curator with a `lab_id`. The research-groups scripts use it to send a curator's lab to
+  its curator page and to badge it; /curators/labs.json carries the same map for
+  functions/labs/[id].js.
+*/ -}}
+{{- $map := dict -}}
+{{- range $p := where site.RegularPages "Section" "curators" -}}
+	{{- with $p.Params.lab_id -}}
+		{{- $map = merge $map (dict (string .) (dict "url" $p.RelPermalink "name" ($p.Params.short_name | default $p.Title))) -}}
+	{{- end -}}
+{{- end -}}
+{{- return $map -}}

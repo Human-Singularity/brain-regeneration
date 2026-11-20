@@ -1,0 +1,22 @@
+{{- /*
+  curators/fetch-json.html — RETURNS the decoded JSON at a URL, or false on any error
+  (network, HTTP status, bad JSON). Errors are warnings, not build failures, so a GregoryAi
+  outage only hides the API-driven parts of the curator pages.
+
+  Param: the URL (string)
+*/ -}}
+{{- $out := false -}}
+{{- with try (resources.GetRemote .) -}}
+	{{- with .Err -}}
+		{{- warnf "curators: %s" . -}}
+	{{- else with .Value -}}
+		{{- with try (. | transform.Unmarshal) -}}
+			{{- with .Err -}}
+				{{- warnf "curators: %s" . -}}
+			{{- else -}}
+				{{- $out = .Value -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- return $out -}}

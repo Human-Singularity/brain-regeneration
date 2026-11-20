@@ -1,0 +1,2 @@
+{{- /* curators/sort-key.html — RETURNS {key, page}: curators sort by short name, else title. */ -}}
+{{- return (dict "key" (lower (.Params.short_name | default .Title)) "page" .) -}}

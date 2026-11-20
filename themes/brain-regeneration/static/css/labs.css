@@ -266,3 +266,12 @@
 .labs-embed__who span { font: 400 14px/1.4 var(--font-heading); color: #57534D; }
 .labs-embed__nums { display: flex; gap: 24px; font: 400 14px/1.4 var(--font-heading); font-variant-numeric: tabular-nums; }
 .labs-embed__nums strong { color: var(--color-primary); font-size: 17px; }
+
+/* ── "Scientific curator" badge on a lab that curates a research area (labs-common.js
+ *    curatorBadge); its card and row link to the curator page instead of /labs/{id}/ ── */
+.cu-labbadge {
+	display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+	font: 600 11px/1 var(--font-heading); letter-spacing: .06em; text-transform: uppercase;
+	color: #8A4B0F; background: #FDF0E2; border-radius: 100px; padding: 6px 10px;
+}
+.labs-embed__who .cu-labbadge { margin-top: 4px; }

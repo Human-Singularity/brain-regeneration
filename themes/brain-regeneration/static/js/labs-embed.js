@@ -32,7 +32,7 @@
 			var s = (lab.subjects || []).filter(function (x) { return String(x.id) === subjectId; })[0] || {};
 			var place = L.placeText(lab);
 			return '<li class="labs-embed__row">' +
-				'<div class="labs-embed__who"><a href="' + escHtml(cfg.labBase + lab.id + '/') + '">' + t(lab.name) + '</a>' +
+				'<div class="labs-embed__who"><a href="' + escHtml(L.labHref(cfg, lab)) + '">' + t(lab.name) + '</a>' + L.curatorBadge(cfg, lab) +
 				(place ? '<span>' + t(place) + '</span>' : '') + '</div>' +
 				'<div class="labs-embed__nums"><span><strong>' + L.num(s.articles) + '</strong> papers</span>' +
 				'<span><strong>' + L.num(s.recent_articles) + '</strong> since 2022</span></div></li>';

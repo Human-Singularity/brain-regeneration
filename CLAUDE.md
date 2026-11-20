@@ -96,7 +96,8 @@ layouts/
   conditions/ list, single, research-papers, patents   (tabs come from partials/condition-tabs; a missing sibling page shows "Coming soon")
   research-areas/ list, single
   search/ research-papers, single   (advanced search: papers landing + clinical-trials view)
-  news/ list, single      supporters/ list, single      curators/ list, single
+  news/ list, single      supporters/ list, single
+  curators/ list, single, list.curatorlabs.json   (scientific curators; data from partials/curators/*, see below)
   observatory/ list       index.html      404.html
 static/
   css/  article-single.css   (per-page; loaded via extra-head — main.css, feeds-mobile.css and
@@ -115,6 +116,7 @@ static/
          lives in the repo-root assets/js/ and is fingerprinted, like news-single.css)
         subscribe.js            (all subscribe forms — full page #subscribe-form, inline [data-inline-subscribe] widgets, homepage digest — one POST→redirect flow + profile persistence)
         donor-transparency.js   (donate page → Stripe transparency Cloudflare Worker)
+        curator-page.js         (the Research tabs on /curators/{slug}/; the rest of that page is built by Hugo)
 ```
 
 Each script is self-invoking and **no-ops unless its mount element exists** (e.g. `#paper-list`, `#papers-list`, `#trials-list`, `#patents-list`, `#article-shell`, `#spotlight-papers`), so they're safe to load site-wide. Config comes from `data-*` attributes on those mounts.
@@ -132,6 +134,8 @@ functions/
                           canonical/OG/Twitter/ScholarlyArticle JSON-LD, plus citation_* tags
                           for reference managers (from the theme's js/citation-meta.js)
   authors/[orcid].js     GET /authors/{orcid}/ → same pattern for author Person JSON-LD
+  labs/[id].js           GET /labs/{id}/ → same pattern for a research group; a lab that is a
+                          scientific curator (in /curators/labs.json) 301s to its /curators/ page
 ```
 
 This is **Cloudflare Pages Functions**, not a standalone Cloudflare Worker — it ships as part of this repo and deploys automatically whenever Pages builds (same push-to-deploy flow as everything else here). No `wrangler.toml`, no separate `wrangler deploy`, and nothing to configure in the Cloudflare dashboard. It is unrelated to the donation Stripe Worker described above, which *is* a separately deployed Worker.
@@ -143,6 +147,14 @@ Test locally with `wrangler pages dev public` after `hugo --minify` (not via `ma
 **Reference managers (Zotero, Mendeley).** Article pages carry Highwire `citation_*` tags, so a saved item is the paper itself (authors, journal, DOI, PMID, cleaned abstract) with *our* page as its URL (`citation_public_url`). Open-access papers with a PMCID also get `citation_pdf_url` (PubMed Central). The item type comes from the record: preprints (PubMed type "Preprint", preprint DOI prefixes or servers) omit the journal tag and add `DC.type=preprint`, which only works because the Function also sets `og:type=article` (the shell says "website", and Zotero ranks that above `DC.type`); "Congress"/"Conference Proceedings" records end with `citation_conference_title`, since the last container tag decides the type. The papers and patents feeds put a hidden `<span class="Z3988">` (COinS) in each card and fire `ZoteroItemUpdated` after each render, so Zotero re-scans the client-rendered list. Patents link to Espacenet (we have no patent page). The rules come from Zotero's "Embedded Metadata" and "COinS" translators. Read those before changing tag names or their order.
 
 **RSS feed links.** GregoryAi links each RSS feed's title to the homepage with the feed's scope in the query string (`/?kind=articles&subject_id=1&category_id=111&…&utm_medium=rss&utm_source=…`). The middleware 302s those to the page that shows the same thing, translating feed parameters into the page's own (`category_id` → `category`, `search` → `q`, `recruitment_status_normalized` → `status`, …) and keeping the `utm_*` parameters. Which page shows which subject comes from `/feed-routes.json`, built by `layouts/index.feedroutes.json` from every page's `api.subject_id` and `api.endpoint`, so a new condition or research-area page is picked up without touching the function. A subject with no page goes to `/search/` or `/search/clinical-trials/`; a link nothing matches serves the homepage as before.
+
+## Scientific curators (`/curators/`)
+
+Curators are research labs that curate a research area. Unlike the client-rendered labs pages, their pages are **built by Hugo at build time**: `partials/curators/data.html` fetches the curated area's paper count and latest papers, the GregoryAi lab (`lab_id` in front matter: team and research focus) and the lab head's papers through `resources.GetRemote`, and the nightly rebuild keeps them fresh. Every fetch fails soft (a warning), and the page hides what's missing, so a curator with no `lab_id` (REGENERAR today) shows no team or "From the lab" tab. Front matter also takes `brand_color` (tints the page), `short_name`, `initials` (shown when there's no `logo`), `logo_wide` and `country`. Styles are in the theme's `static/css/curators.css` (all `cu-` prefixed); the approved design is `docs/curators-design/curators-mockup.html`.
+
+A curator's lab is pointed at its curator page across the research-groups section: `partials/curators/lab-map.html` goes into each labs mount as `data-curators` (labs directory and condition blocks link to the curator page and show a "Scientific curator" badge; `lab-page.js` redirects) and into `/curators/labs.json`, which `functions/labs/[id].js` reads to 301.
+
+**Local builds can't fetch from a localhost API:** Hugo's default `security.http.urls` policy blocks it, so with `make pages-dev` these pages (and the homepage stats) build without API data. Add a config with `[security.http] urls = [".*"]` via `--config hugo.toml,that.toml` to test with data.
 
 ## Configuration (`hugo.toml`)
 

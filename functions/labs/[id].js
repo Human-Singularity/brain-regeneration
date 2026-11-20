@@ -35,6 +35,20 @@ async function fetchLab(id) {
 	}
 }
 
+// /curators/labs.json (built by Hugo from the curators' front matter `lab_id`): labs that
+// are scientific curators, which have their own page under /curators/.
+async function curatorUrl(env, request, id) {
+	try {
+		const res = await env.ASSETS.fetch(new Request(new URL('/curators/labs.json', request.url)));
+		if (!res.ok) return null;
+		const map = await res.json();
+		const entry = map && map[id];
+		return entry && typeof entry.url === 'string' && entry.url.startsWith('/') ? entry.url : null;
+	} catch {
+		return null;
+	}
+}
+
 function countryName(code) {
 	if (!code) return '';
 	try {
@@ -77,6 +91,10 @@ export async function onRequest(context) {
 
 	// Not a numeric id (including the shell's own /labs/lab/ path), or the shell is broken.
 	if (!/^\d+$/.test(id) || !shell.ok) return shell;
+
+	// A scientific curator's lab: its curator page replaces the generic lab page.
+	const curator = await curatorUrl(env, request, id);
+	if (curator) return Response.redirect(new URL(curator, request.url).toString(), 301);
 
 	const found = await fetchLab(id);
 	if (!found) return shell; // API down / timeout / malformed: fail open

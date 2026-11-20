@@ -11,6 +11,12 @@ lead_researcher: "Adelaide Fernandes"
 institution: "Faculty of Pharmacy, Universidade de Lisboa"
 website: "https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/"
 logo: ""
+# Curator-page design: shorter name for cards and headings, initials shown in place
+# of a logo, the GregoryAi lab id and the country
+short_name: "CNS Inflammation Lab"
+initials: "iMed"
+lab_id: 1737
+country: "PT"
 bio: "Research institute focusing on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders."
 
 research_areas:

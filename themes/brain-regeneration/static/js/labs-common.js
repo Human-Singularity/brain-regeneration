@@ -41,7 +41,9 @@
 			categories: cats,
 			categoryNames: catMap,
 			subjects: subjects,
-			subjectNames: subjMap
+			subjectNames: subjMap,
+			// {"<lab id>": {url, name}}: labs that are scientific curators (partials/curators/lab-map.html)
+			curators: parseJsonAttr(el, 'data-curators', {})
 		};
 	}
 
@@ -116,6 +118,18 @@
 	var COUNTRY_CODES = ('AR AT AU BE BG BR CA CH CL CN CO CZ DE DK EG ES FI FR GB GR HK HR HU ID IE IL IN IR IT JO JP KR ' +
 		'LB LT LU MX MY NL NO NZ PE PK PL PT QA RO RS RU SA SE SG SI SK TH TN TR TW UA US UY ZA').split(' ');
 
+	// A lab that is a scientific curator links to its curator page instead of /labs/{id}/.
+	function curatorOf(cfg, lab) { return (lab && cfg.curators && cfg.curators[String(lab.id)]) || null; }
+	function labHref(cfg, lab) {
+		var c = curatorOf(cfg, lab);
+		return c ? c.url : cfg.labBase + lab.id + '/';
+	}
+	function curatorBadge(cfg, lab) {
+		return curatorOf(cfg, lab)
+			? '<span class="cu-labbadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.9L22 9.6l-5.4 4.8 1.6 7.3L12 17.8 5.8 21.7l1.6-7.3L2 9.6l7.1-.7z"/></svg>Scientific curator</span>'
+			: '';
+	}
+
 	function countryOptions() {
 		return COUNTRY_CODES.map(function (c) { return { code: c, name: countryName(c) }; })
 			.sort(function (a, b) { return a.name.localeCompare(b.name, 'en'); });
@@ -126,6 +140,6 @@
 		allowedCategories: allowedCategories, countryName: countryName, placeText: placeText,
 		hasOrcid: hasOrcid, authorHref: authorHref, personHtml: personHtml, topSubject: topSubject,
 		infoIcon: infoIcon, pinIcon: pinIcon, userIcon: userIcon, getJson: getJson,
-		countryOptions: countryOptions
+		countryOptions: countryOptions, curatorOf: curatorOf, labHref: labHref, curatorBadge: curatorBadge
 	};
 })(window);

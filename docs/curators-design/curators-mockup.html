@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scientific Curators mockup</title>
+<!--
+  Static mockup of the redesigned /curators/ index and /curators/{slug}/ pages.
+  Real content from content/curators/*, content/research-areas/* and the live
+  API (labs 1737 and 2677, article counts and papers) as of 2026-11-20.
+  Serve from the repo root so the fonts and logos resolve:
+    python3 -m http.server 8123   →   http://localhost:8123/docs/curators-design/curators-mockup.html
+  Views: #index, #lpj-lab, #institute-cns-inflammation, #regenerar
+-->
+<style>
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('../../static/fonts/inter-400-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-display: swap; src: url('../../static/fonts/inter-500-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: swap; src: url('../../static/fonts/inter-600-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-display: swap; src: url('../../static/fonts/inter-700-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 400; font-display: swap; src: url('../../static/fonts/jetbrains-mono-400-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Source Serif 4'; font-weight: 400; font-display: swap; src: url('../../static/fonts/source-serif-4-400-normal-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Source Serif 4'; font-weight: 400; font-style: italic; font-display: swap; src: url('../../static/fonts/source-serif-4-400-italic-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Source Serif 4'; font-weight: 600; font-display: swap; src: url('../../static/fonts/source-serif-4-600-normal-latin.woff2') format('woff2'); }
+
+/* ── site tokens (from assets/css/main.css) ── */
+:root {
+	--color-primary: #1A6B6A;
+	--color-primary-deep: #0F4746;
+	--color-secondary: #F5F0E8;
+	--color-accent: #E8913A;
+	--color-accent-hover: #D17E2F;
+	--color-text: #2D2D2D;
+	--color-muted: #57534D;
+	--color-tint: #E6F2F2;
+	--color-border: #D9D4CA;
+	--font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--font-body: 'Source Serif 4', Georgia, serif;
+	--font-mono: 'JetBrains Mono', 'Consolas', monospace;
+	--radius: 8px;
+	--radius-lg: 16px;
+	--shadow: 0 2px 8px rgba(45, 45, 45, .06);
+	--shadow-hover: 0 10px 30px rgba(15, 71, 70, .14);
+	--ease: cubic-bezier(.2, .6, .2, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--color-secondary); color: var(--color-text); font: 17px/1.6 var(--font-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-heading); color: var(--color-primary); line-height: 1.2; margin: 0; }
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-accent); }
+p { margin: 0 0 1.2em; }
+.container { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 768px) { .container { padding: 0 24px; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ── mockup chrome (not part of the design) ── */
+.mock-bar { background: #222; color: #ddd; font: 500 12px/1 var(--font-heading); padding: 8px 0; }
+.mock-bar .container { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.mock-bar b { color: #E8913A; letter-spacing: .08em; }
+.mock-bar a { color: #ddd; padding: 4px 8px; border-radius: 4px; }
+.mock-bar a.on { background: #444; color: #fff; }
+
+/* ── site nav + footer (approximation) ── */
+.site-nav { background: var(--color-primary); position: sticky; top: 0; z-index: 10; }
+.site-nav .container { display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 16px; }
+.site-nav .brand { color: #fff; font: 700 17px/1 var(--font-heading); white-space: nowrap; }
+.site-nav li { white-space: nowrap; }
+.site-nav ul { display: none; list-style: none; margin: 0; padding: 0; gap: 20px; align-items: center; font: 400 14px/1 var(--font-heading); }
+.site-nav li a { color: rgba(255,255,255,.88); }
+.site-nav li a.active { color: #fff; font-weight: 500; box-shadow: 0 2px 0 #fff; padding-bottom: 6px; }
+.site-nav .donate { background: var(--color-accent); color: #fff; padding: 9px 14px; border-radius: 6px; font-weight: 600; }
+@media (min-width: 1100px) { .site-nav ul { display: flex; } }
+.site-footer { background: var(--color-primary); color: rgba(255,255,255,.8); font: 400 14px/1.6 var(--font-heading); padding: 48px 0 32px; }
+.site-footer p { margin: 0; text-align: center; }
+
+/* ── shared pieces ── */
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 600 12px/1.3 var(--font-heading); letter-spacing: .09em; text-transform: uppercase; color: var(--color-primary); }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px/1 var(--font-heading); padding: 13px 20px; border-radius: var(--radius); border: 1.5px solid transparent; transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease); }
+.btn:active { transform: translateY(1px); }
+.btn--light { background: #fff; color: var(--color-primary-deep); }
+.btn--light:hover { background: var(--color-secondary); color: var(--color-primary-deep); }
+.btn--ghost { border-color: rgba(255,255,255,.5); color: #fff; }
+.btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
+.btn--accent { background: var(--color-accent); color: #fff; }
+.btn--accent:hover { background: var(--color-accent-hover); color: #fff; }
+.btn--teal { background: var(--color-primary); color: #fff; }
+.btn--teal:hover { background: var(--color-primary-deep); color: #fff; }
+.section { padding: 72px 0; }
+.section-head { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+.section-head h2 { font-size: clamp(24px, 3vw, 30px); margin-top: 8px; letter-spacing: -.01em; }
+.section-head p { margin: 8px 0 0; max-width: 620px; color: var(--color-muted); }
+.more-link { font: 600 14px/1.4 var(--font-heading); white-space: nowrap; }
+.avatar {
+	flex: none; width: 40px; height: 40px; border-radius: 50%;
+	display: grid; place-items: center;
+	font: 600 14px/1 var(--font-heading); letter-spacing: .02em;
+	background: color-mix(in srgb, var(--brand) 14%, #fff); color: color-mix(in srgb, var(--brand) 80%, #000);
+	border: 1px solid color-mix(in srgb, var(--brand) 25%, #fff);
+}
+.bg-network {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23fff' stroke-opacity='.07' stroke-width='1'%3E%3Cpath d='M20 40L90 70L160 30L220 80M90 70L70 150L140 130L160 30M140 130L210 170L190 230M70 150L30 210L110 220L140 130'/%3E%3C/g%3E%3Cg fill='%23fff' fill-opacity='.12'%3E%3Ccircle cx='20' cy='40' r='3'/%3E%3Ccircle cx='90' cy='70' r='4'/%3E%3Ccircle cx='160' cy='30' r='3'/%3E%3Ccircle cx='220' cy='80' r='3'/%3E%3Ccircle cx='70' cy='150' r='4'/%3E%3Ccircle cx='140' cy='130' r='5'/%3E%3Ccircle cx='210' cy='170' r='3'/%3E%3Ccircle cx='30' cy='210' r='3'/%3E%3Ccircle cx='110' cy='220' r='3'/%3E%3Ccircle cx='190' cy='230' r='3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ══════════════ INDEX ══════════════ */
+.ix-hero { position: relative; overflow: hidden; background: var(--color-primary-deep); color: #fff; padding: 80px 0 88px; }
+.ix-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 80% at 85% 0%, rgba(232,145,58,.22), transparent 60%); pointer-events: none; }
+.ix-hero .container { position: relative; z-index: 1; }
+.ix-hero h1 { color: #fff; font-size: clamp(34px, 5.4vw, 58px); letter-spacing: -.025em; line-height: 1.05; max-width: 820px; margin: 0 0 20px; }
+.ix-hero h1 em { font-style: normal; color: #F6C38E; }
+.ix-hero .lede { font-size: 19px; line-height: 1.55; color: rgba(255,255,255,.84); max-width: 640px; margin: 0; }
+
+.ix-steps { display: grid; gap: 16px; grid-template-columns: 1fr; counter-reset: step; }
+@media (min-width: 768px) { .ix-steps { grid-template-columns: repeat(3, 1fr); } }
+.ix-step { position: relative; padding: 24px 24px 22px; background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.ix-step .num { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--color-tint); color: var(--color-primary); font: 700 15px/1 var(--font-heading); margin-bottom: 14px; }
+.ix-step h3 { font-size: 18px; margin-bottom: 6px; }
+.ix-step p { margin: 0; font-size: 16px; color: var(--color-muted); }
+
+.ix-grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .ix-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1080px) { .ix-grid { grid-template-columns: repeat(3, 1fr); } }
+.cur-card {
+	position: relative; display: flex; flex-direction: column;
+	background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;
+	transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+}
+.cur-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: color-mix(in srgb, var(--brand) 40%, var(--color-border)); }
+.cur-card__band {
+	height: 96px; position: relative;
+	background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 55%, #0F4746));
+}
+.cur-card__band.bg-network { background-size: auto, 180px; background-color: var(--brand); background-image: linear-gradient(135deg, transparent, rgba(15,71,70,.45)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23fff' stroke-opacity='.14' stroke-width='1'%3E%3Cpath d='M20 40L90 70L160 30L220 80M90 70L70 150L140 130L160 30M140 130L210 170L190 230M70 150L30 210L110 220L140 130'/%3E%3C/g%3E%3Cg fill='%23fff' fill-opacity='.22'%3E%3Ccircle cx='20' cy='40' r='3'/%3E%3Ccircle cx='90' cy='70' r='4'/%3E%3Ccircle cx='160' cy='30' r='3'/%3E%3Ccircle cx='220' cy='80' r='3'/%3E%3Ccircle cx='70' cy='150' r='4'/%3E%3Ccircle cx='140' cy='130' r='5'/%3E%3Ccircle cx='210' cy='170' r='3'/%3E%3C/g%3E%3C/svg%3E"); }
+.cur-card__area { position: absolute; top: 16px; right: 16px; font: 600 12px/1 var(--font-heading); color: #fff; background: rgba(0,0,0,.18); padding: 7px 11px; border-radius: 100px; backdrop-filter: blur(4px); }
+.cur-card__logo {
+	position: absolute; left: 24px; bottom: -36px;
+	width: 80px; height: 80px; border-radius: 18px; background: #fff;
+	display: grid; place-items: center; padding: 10px;
+	box-shadow: 0 6px 18px rgba(0,0,0,.12); border: 1px solid var(--color-border);
+}
+.cur-card__logo img { max-width: 100%; max-height: 100%; }
+.cur-card__logo.wide { width: 132px; padding: 8px 12px; }
+.other__logo.wide { width: 96px; padding: 6px 8px; }
+.cur-card__logo .initials { font: 700 24px/1 var(--font-heading); color: var(--brand); letter-spacing: -.02em; }
+.cur-card__body { padding: 52px 24px 24px; display: flex; flex-direction: column; flex: 1; }
+.cur-card h3 { font-size: 21px; letter-spacing: -.01em; margin-bottom: 6px; }
+.cur-card h3 a::after { content: ""; position: absolute; inset: 0; }
+.cur-card__inst { font: 400 14px/1.45 var(--font-heading); color: var(--color-muted); margin-bottom: 4px; }
+.cur-card__lead { font: 500 14px/1.45 var(--font-heading); color: var(--color-text); margin-bottom: 14px; }
+.cur-card__bio { font-size: 16px; line-height: 1.55; color: #3d3d3d; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 20px; }
+.cur-card__stats { margin: auto 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 16px; border-top: 1px solid #ECE7DE; }
+.cur-card__stats dt { font: 400 11px/1.3 var(--font-heading); letter-spacing: .04em; text-transform: uppercase; color: var(--color-muted); order: 2; }
+.cur-card__stats div { display: flex; flex-direction: column; gap: 2px; }
+.cur-card__stats dd { margin: 0; font: 700 20px/1.2 var(--font-heading); color: var(--color-primary); }
+.cur-card__cta { margin-top: 18px; font: 600 14px/1 var(--font-heading); color: var(--brand); display: inline-flex; gap: 6px; align-items: center; }
+.cur-card:hover .cur-card__cta svg { transform: translateX(3px); }
+.cur-card__cta svg { transition: transform .2s var(--ease); }
+
+.ix-join { position: relative; overflow: hidden; background: var(--color-primary); color: #fff; border-radius: 24px; padding: clamp(32px, 5vw, 56px); display: grid; gap: 28px; align-items: center; }
+@media (min-width: 860px) { .ix-join { grid-template-columns: 1.4fr 1fr; } }
+.ix-join h2 { color: #fff; font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -.02em; margin: 12px 0 14px; }
+.ix-join p { color: rgba(255,255,255,.84); margin: 0; }
+.ix-join .eyebrow { color: #F6C38E; }
+.ix-join ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font: 400 15px/1.45 var(--font-heading); }
+.ix-join li { display: flex; gap: 10px; align-items: flex-start; }
+.ix-join li svg { flex: none; margin-top: 2px; color: #F6C38E; }
+.ix-join .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+
+/* ══════════════ DETAIL ══════════════ */
+.cx-hero { position: relative; overflow: hidden; color: #fff; background: var(--color-primary-deep); }
+.cx-hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 90% at 92% 10%, color-mix(in srgb, var(--brand) 55%, transparent), transparent 62%); opacity: .75; }
+.cx-hero .container { position: relative; z-index: 1; }
+.cx-crumbs { padding: 22px 0 0; font: 400 13px/1 var(--font-heading); color: rgba(255,255,255,.66); }
+.cx-crumbs a { color: rgba(255,255,255,.86); }
+.cx-crumbs a:hover { color: #fff; text-decoration: underline; }
+.cx-hero__grid { display: grid; gap: 36px; padding: 44px 0 72px; align-items: center; }
+@media (min-width: 900px) { .cx-hero__grid { grid-template-columns: 1fr 280px; gap: 56px; } }
+.cx-hero h1 { color: #fff; font-size: clamp(38px, 6vw, 64px); letter-spacing: -.03em; line-height: 1.02; margin: 0 0 18px; }
+.cx-hero h1.long { font-size: clamp(30px, 4.2vw, 46px); line-height: 1.1; letter-spacing: -.02em; }
+.cx-hero .lede { font-size: clamp(18px, 2vw, 20px); line-height: 1.55; color: rgba(255,255,255,.86); max-width: 640px; margin: 0 0 24px; }
+.cx-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 0 0 30px; font: 400 15px/1.4 var(--font-heading); color: rgba(255,255,255,.9); }
+.cx-meta span { display: inline-flex; align-items: center; gap: 8px; }
+.cx-meta svg { opacity: .7; flex: none; }
+.cx-meta a { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,.4); text-underline-offset: 4px; }
+.cx-meta a:hover { text-decoration-color: #fff; }
+.cx-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.cx-logo {
+	order: -1; justify-self: start;
+	width: 104px; aspect-ratio: 1; background: #fff; border-radius: 20px; padding: 14px;
+	display: grid; place-items: center; position: relative;
+	box-shadow: 0 24px 60px rgba(0,0,0,.28);
+}
+@media (min-width: 900px) { .cx-logo { order: 0; justify-self: end; width: 260px; padding: 34px; border-radius: 32px; } }
+.cx-logo img { max-width: 100%; max-height: 100%; }
+.cx-logo .initials { font: 700 clamp(44px, 6vw, 72px)/1 var(--font-heading); color: var(--brand); letter-spacing: -.04em; }
+
+/* role */
+.role-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .role-grid { grid-template-columns: repeat(var(--n, 3), 1fr); } }
+.role-card { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px 24px 24px; display: flex; flex-direction: column; }
+.role-card__icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--brand) 12%, #fff); color: var(--brand); margin-bottom: 18px; }
+.role-card h3 { font-size: 18px; margin-bottom: 8px; }
+.role-card p { margin: 0; font-size: 16px; color: #45423D; }
+.role-card details { margin-top: 16px; border-top: 1px solid #ECE7DE; padding-top: 12px; }
+.role-card summary { cursor: pointer; font: 600 14px/1.4 var(--font-heading); color: var(--color-primary); list-style: none; display: flex; align-items: center; gap: 6px; }
+.role-card summary::-webkit-details-marker { display: none; }
+.role-card summary svg { transition: transform .2s var(--ease); }
+.role-card details[open] summary svg { transform: rotate(90deg); }
+.role-card ol { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.role-card li { font: 400 12.5px/1.5 var(--font-mono); color: #3d3d3d; background: var(--color-secondary); border-radius: 6px; padding: 8px 10px; overflow-wrap: anywhere; }
+.role-card li b { font-family: var(--font-heading); font-weight: 600; font-size: 11px; color: var(--color-muted); display: block; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px; }
+
+/* about */
+.about-grid { display: grid; gap: 40px; }
+@media (min-width: 900px) { .about-grid { grid-template-columns: 1fr 340px; gap: 64px; } }
+.prose { font-size: 18px; line-height: 1.7; }
+.prose p:first-of-type { font-size: 20px; line-height: 1.6; }
+.prose a { text-decoration: underline; text-underline-offset: 3px; }
+.glance { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; align-self: start; }
+.glance h3 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 14px; }
+.glance dl { margin: 0; display: grid; gap: 14px; }
+.glance dt { font: 400 12px/1.3 var(--font-heading); color: var(--color-muted); }
+.glance dd { margin: 2px 0 0; font: 500 15px/1.4 var(--font-heading); }
+.glance .links { margin-top: 20px; padding-top: 18px; border-top: 1px solid #ECE7DE; display: grid; gap: 10px; }
+.glance .links a { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 500 14px/1.3 var(--font-heading); padding: 10px 12px; border-radius: var(--radius); background: var(--color-secondary); }
+.glance .links a:hover { background: var(--color-tint); color: var(--color-primary); }
+
+/* research */
+.tabs { display: inline-flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid var(--color-border); border-radius: 100px; margin-bottom: 24px; max-width: 100%; overflow-x: auto; }
+.tabs button { font: 500 14px/1 var(--font-heading); border: 0; background: none; color: var(--color-muted); padding: 10px 16px; border-radius: 100px; cursor: pointer; white-space: nowrap; transition: background .2s var(--ease), color .2s var(--ease); }
+.tabs button[aria-selected="true"] { background: var(--color-primary); color: #fff; }
+.tabs button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.papers { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .papers { grid-template-columns: repeat(2, 1fr); } }
+.paper { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow .2s var(--ease), border-color .2s var(--ease); }
+.paper:hover { box-shadow: var(--shadow-hover); border-color: #CFC8BB; }
+.paper__journal { font: 600 12px/1.3 var(--font-heading); letter-spacing: .05em; text-transform: uppercase; color: var(--brand); }
+.paper h3 { font: 600 18px/1.35 var(--font-body); color: var(--color-text); }
+.paper h3 a { color: inherit; }
+.paper h3 a:hover { color: var(--color-primary); }
+.paper__by { font: 400 13px/1.4 var(--font-heading); color: var(--color-muted); }
+.paper__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; }
+.tag { font: 500 12px/1 var(--font-heading); padding: 6px 9px; border-radius: 100px; background: var(--color-secondary); color: #45423D; display: inline-flex; gap: 5px; align-items: center; }
+.tag--open { background: #E7F4EC; color: #1E6B3E; }
+.tag--ai { background: var(--color-tint); color: var(--color-primary); }
+.tag--expert { background: #FDF0E2; color: #8A4B0F; }
+.papers-foot { margin-top: 20px; display: flex; justify-content: flex-end; }
+
+/* team + focus */
+.lab-grid { display: grid; gap: 40px; }
+@media (min-width: 960px) { .lab-grid { grid-template-columns: 1fr 1fr; gap: 56px; } }
+.lab-grid h3 { font-size: 20px; margin-bottom: 6px; }
+.lab-grid .sub { font: 400 14px/1.5 var(--font-heading); color: var(--color-muted); margin: 0 0 20px; }
+.head-card { display: flex; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 14px; }
+.head-card .avatar { width: 56px; height: 56px; font-size: 19px; background: var(--brand); color: #fff; border: 0; }
+.head-card strong { display: block; font: 600 17px/1.3 var(--font-heading); }
+.head-card span { font: 400 13px/1.3 var(--font-heading); color: var(--color-muted); }
+.head-card a.who { color: var(--color-text); }
+.head-card a.who:hover { color: var(--color-primary); }
+.members { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@media (min-width: 480px) { .members { grid-template-columns: 1fr 1fr; } }
+.member { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--radius); font: 500 14px/1.3 var(--font-heading); color: var(--color-text); background: rgba(255,255,255,.6); border: 1px solid transparent; }
+a.member:hover { background: #fff; border-color: var(--color-border); color: var(--color-primary); }
+.member .avatar { width: 32px; height: 32px; font-size: 12px; }
+.member small { display: block; font-weight: 400; font-size: 12px; color: var(--color-muted); }
+.auto-note { margin: 14px 0 0; font: 400 13px/1.5 var(--font-heading); color: var(--color-muted); display: flex; gap: 6px; }
+.focus { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.focus li { display: grid; gap: 6px; }
+.focus .row { display: flex; justify-content: space-between; gap: 12px; font: 500 15px/1.3 var(--font-heading); }
+.focus .row span { font-weight: 400; font-size: 13px; color: var(--color-muted); white-space: nowrap; }
+.focus .bar { height: 10px; border-radius: 10px; background: rgba(26,107,106,.1); position: relative; overflow: hidden; }
+.focus .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 10px; background: color-mix(in srgb, var(--color-primary) 40%, #fff); }
+.focus .bar b { position: absolute; inset: 0 auto 0 0; border-radius: 10px; background: var(--color-primary); }
+.focus-kind { font: 600 11px/1 var(--font-heading); letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); margin: 18px 0 2px; }
+.legend { display: flex; gap: 16px; font: 400 13px/1 var(--font-heading); color: var(--color-muted); margin-bottom: 18px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* follow */
+.follow { display: grid; gap: 28px; align-items: center; background: #fff; border: 1px solid var(--color-border); border-radius: 24px; padding: clamp(28px, 4vw, 44px); position: relative; overflow: hidden; }
+@media (min-width: 900px) { .follow { grid-template-columns: 1fr 1.15fr; gap: 48px; } }
+.follow h2 { font-size: clamp(24px, 3vw, 30px); letter-spacing: -.015em; margin: 0 0 10px; }
+.follow p { margin: 0; color: #45423D; }
+.follow form { display: grid; gap: 14px; grid-template-columns: 1fr; align-items: end; }
+@media (min-width: 560px) { .follow form { grid-template-columns: 1fr 1fr; } }
+.follow .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.follow .field label { font: 500 13px/1.3 var(--font-heading); color: var(--color-muted); }
+.follow .field label i { font-style: normal; color: #B3261E; }
+.follow input[type=text], .follow input[type=email], .follow select { width: 100%; min-width: 0; font: 400 16px/1.2 var(--font-heading); color: var(--color-text); padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-secondary); }
+.follow select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2357534D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.follow input:focus, .follow select:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; background-color: #fff; }
+.follow .btn { justify-content: center; padding-top: 14px; padding-bottom: 14px; }
+.follow .check { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font: 400 14px/1.45 var(--font-heading); color: var(--color-text); }
+.follow .check input { margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--color-primary); flex: none; }
+.follow .check span { color: var(--color-muted); }
+.follow .area-link { display: inline-flex; gap: 6px; margin-top: 14px; font: 600 14px/1 var(--font-heading); }
+
+/* others */
+.others { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .others { grid-template-columns: repeat(2, 1fr); } }
+.other { display: flex; gap: 16px; align-items: center; padding: 16px; background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); transition: box-shadow .2s var(--ease), transform .2s var(--ease); }
+.other:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.other__logo { flex: none; width: 60px; height: 60px; border-radius: 14px; border: 1px solid var(--color-border); display: grid; place-items: center; padding: 8px; background: #fff; }
+.other__logo img { max-width: 100%; max-height: 100%; }
+.other__logo .initials { font: 700 18px/1 var(--font-heading); color: var(--brand); }
+.other strong { display: block; font: 600 16px/1.3 var(--font-heading); color: var(--color-primary); }
+.other span { display: block; font: 400 13px/1.4 var(--font-heading); color: var(--color-muted); }
+.other em { font-style: normal; display: inline-block; margin-top: 6px; font: 500 12px/1 var(--font-heading); color: var(--brand); }
+
+.bg-white { background: #FBF8F3; }
+.bg-tint { background: var(--color-tint); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="mock-bar"><div class="container"><b>MOCKUP</b>
+	<a href="#index" data-view="index">/curators/</a>
+	<a href="#lpj-lab" data-view="lpj-lab">LPJ Lab (full data)</a>
+	<a href="#institute-cns-inflammation" data-view="institute-cns-inflammation">CNS Inflammation Lab (no logo)</a>
+	<a href="#regenerar" data-view="regenerar">REGENERAR (no API lab)</a>
+</div></div>
+
+<nav class="site-nav"><div class="container">
+	<a class="brand" href="#index">Brain Regeneration Observatory</a>
+	<ul>
+		<li><a href="#">Observatory</a></li>
+		<li><a href="#index" class="active">Scientific Curators</a></li>
+		<li><a href="#">Labs</a></li>
+		<li><a href="#">News</a></li>
+		<li><a href="#">About</a></li>
+		<li><a href="#">Search</a></li>
+		<li><a href="#">Subscribe</a></li>
+		<li><a href="#" class="donate">Support the project</a></li>
+	</ul>
+</div></nav>
+
+<main id="app"></main>
+
+<footer class="site-footer"><div class="container">
+	<p>© 2026 Brain Regeneration Observatory. A project by the Human-Singularity Network.</p>
+</div></footer>
+
+<script>
+/* ── Data: front matter (content/curators, content/research-areas) + API, 2026-11-20 ── */
+var LOGO_DIR = '../../content/curators/';
+var COUNTRY = { GB: 'United Kingdom', PT: 'Portugal' };
+var CURATORS = [
+	{
+		slug: 'lpj-lab', title: 'LPJ Lab', brand: '#E05A00',
+		logo: 'lpj-lab/LPJLAB_ICON_LOGO.svg', initials: 'LPJ',
+		institution: 'University of Cambridge', country: 'GB', ror: '013meh722',
+		lead: 'Luca Peruzzotti-Jametti', leadOrcid: '0000-0002-9396-5607',
+		since: 'January 2025', website: 'https://www.lpjlab.org/', websiteLabel: 'Lab website',
+		bio: 'LPJ Lab is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for MS and other Central Nervous System disorders.',
+		body: ['<a href="https://www.lpjlab.org/">LPJ Lab</a>, led by Prof. Luca Peruzzotti-Jametti, is dedicated to investigating how cell metabolism shapes brain-immune interactions to pioneer new therapies for Multiple Sclerosis and other Central Nervous System disorders.'],
+		commitment: ['searches', 'categories', 'legitimacy'],
+		area: { slug: 'neuroimmunometabolism', title: 'Neuroimmunometabolism', papers: 244,
+			description: 'How cell metabolism shapes brain-immune interactions, with a focus on new therapeutic approaches for MS and other CNS disorders.',
+			queries: [
+				'(neuroimmune interaction[Title/Abstract]) AND (multiple sclerosis[Title/Abstract] OR CNS[Title/Abstract])',
+				'(neuroimmune regulation[Title/Abstract]) AND (metabolism[Title/Abstract] OR metabolic[Title/Abstract])',
+				'(brain immune interaction[Title/Abstract]) AND (cell metabolism[Title/Abstract])',
+				'(microglia[Title/Abstract]) AND (metabolism[Title/Abstract]) AND (neurodegeneration[Title/Abstract] OR demyelination[Title/Abstract])'
+			],
+			feed: [
+				{ id: 316493, j: 'Nature Communications', t: 'Neuregulin-1 facilitates myelin regeneration through microglia-mediated mechanisms in a mouse model of chronic demyelination', by: 'Ziaee et al.', d: 'May 2026', open: true, ml: 72, expert: true },
+				{ id: 334142, j: 'Cell Metabolism', t: 'Microglial SUCNR1 senses metabolic state to regulate whole-body homeostasis', by: 'Repollés-de-Dalmau et al.', d: 'Nov 2026', open: false },
+				{ id: 334016, j: 'Nature', t: 'Hypothalamic volume and cell-type changes in ageing and Alzheimer’s disease', by: 'Yu et al.', d: 'Nov 2026', open: true },
+				{ id: 334058, j: 'Molecular and Cellular Neuroscience', t: 'Brain cholesterol homeostasis: Molecular mechanisms of neuron-glia communication and neurotoxicity', by: 'El-Sehrawy et al.', d: 'Nov 2026', open: false }
+			] },
+		lab: { id: 2677, curated: true, headPapers: 50,
+			members: [['Evridiki Asimakidou', '0000-0003-0902-1054'], ['Nathan Whitty', '0009-0006-4573-7710'], ['Alessia Atella', '0009-0000-7085-1263'], ['Xisha Huang', '0009-0004-8004-3285']],
+			subjects: [['Neuroimmune Interactions', 37, 13], ['Multiple Sclerosis', 15, 12]],
+			categories: [['ALL Stem Cell Research', 7, 5], ['Myelin', 4, 3], ['remyelination-general', 3, 3]],
+			papers: [
+				{ id: 334142, j: 'Cell Metabolism', t: 'Microglial SUCNR1 senses metabolic state to regulate whole-body homeostasis', by: 'Repollés-de-Dalmau et al.', d: 'Nov 2026', open: false },
+				{ id: 320897, j: 'Brain Communications', t: 'Investigating the treatment of vascular risk with simvastatin in secondary progressive multiple sclerosis: analysis from the MS-STAT2 randomized controlled trial', by: 'Williams et al.', d: 'Jul 2026', open: true },
+				{ id: 333888, j: 'Nature Neuroscience', t: 'Mitochondrial stress response drives microglial senescence', by: 'Peruzzotti-Jametti & Pluchino', d: 'Jun 2026', open: false },
+				{ id: 315251, j: 'Lab Animal', t: 'From insights to innovations: evaluating preclinical paradigms in demyelinating disease therapeutics', by: 'Karbalaee et al.', d: 'Apr 2026', open: true }
+			] }
+	},
+	{
+		slug: 'institute-cns-inflammation', title: 'CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa', short: 'CNS Inflammation Lab', brand: '#1A6B6A',
+		logo: '', initials: 'iMed',
+		institution: 'Faculty of Pharmacy, Universidade de Lisboa', country: 'PT', ror: '01c27hj86',
+		lead: 'Adelaide Fernandes', leadOrcid: '0000-0002-2782-9519',
+		since: 'January 2025', website: 'https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/', websiteLabel: 'Lab website',
+		bio: 'Research institute focusing on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.',
+		body: ['The <a href="https://imed.ulisboa.pt/labs/central-nervous-system-blood-and-peripheral-inflammation/">CNS, Blood and Peripheral Inflammation Lab</a>, led by Prof. Adelaide Fernandes, focuses on the role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.'],
+		commitment: ['searches', 'legitimacy'],
+		area: { slug: 'neuroinflammation', title: 'Neuroinflammation', papers: 2643,
+			description: 'The role of inflammation in the emergence or progression of neurodevelopmental and neurodegenerative disorders.',
+			queries: [
+				'(neuroinflammation[Title/Abstract]) AND (neurodegeneration[Title/Abstract] OR neurodevelopment[Title/Abstract])',
+				'(peripheral inflammation[Title/Abstract]) AND (CNS[Title/Abstract] OR brain[Title/Abstract])',
+				'(blood brain barrier[Title/Abstract]) AND (inflammation[Title/Abstract]) AND (neurodegeneration[Title/Abstract])',
+				'(systemic inflammation[Title/Abstract]) AND (neurological[Title/Abstract] OR cognitive[Title/Abstract])'
+			],
+			feed: [
+				{ id: 315907, j: 'Neuropharmacology', t: 'Unexpected mechanisms of repurposed drugs in the pathogenic pathways of neurodegenerative diseases. Discovering new neuroprotective therapies in cellular models', by: 'Arasmou-Idrovo et al.', d: 'Apr 2026', open: false, ml: 88, expert: true },
+				{ id: 313910, j: 'Advanced Science', t: 'Bilirubin as a Modulator of WNK1 Protein Signaling: Implications for Neuroinflammatory Diseases', by: 'Jayanti et al.', d: 'Mar 2026', open: true, expert: true },
+				{ id: 313966, j: 'Free Radical Biology and Medicine', t: 'PANoptosis in Alzheimer’s disease: The expanding landscape of programmed cell death mechanisms and therapeutic interventions', by: 'Medhi et al.', d: 'Mar 2026', open: false, expert: true }
+			] },
+		lab: { id: 1737, curated: false, headPapers: 8,
+			members: [['Catarina Barros', null], ['Ana Rita Ribeiro', null], ['Maria V. Pinto', '0000-0003-4972-7369'], ['Andreia Barateiro', null], ['Susan E Howlett', '0000-0001-5351-6308'], ['Fábio M. F. Santos', null], ['Pedro M. P. Gois', '0000-0002-7698-630X']],
+			subjects: [['Multiple Sclerosis', 9, 7]],
+			categories: [['Myelin', 4, 4], ['remyelination-general', 3, 3]],
+			papers: [
+				{ id: 5859, j: 'Preprint', t: 'BASHY Dye Platform Enables the Fluorescence Bioimaging of Myelin Debris Phagocytosis by Microglia during Demyelination', by: 'Pinto et al.', d: 'Apr 2026', open: true },
+				{ id: 307869, j: 'European Journal of Pharmacology', t: 'BDNF and adenosine A2A receptor interaction regulates oligodendrogenesis from postnatal neural stem cells', by: 'Mateus et al.', d: 'Nov 2025', open: false, ml: 87 },
+				{ id: 294194, j: 'Journal of Neuroimmune Pharmacology', t: 'Experimental autoimmune encephalomyelitis pathogenesis alters along animal age: impact of S100B expression', by: 'Graca et al.', d: 'Apr 2025', open: true }
+			] }
+	},
+	{
+		slug: 'regenerar', title: 'REGENERAR', brand: '#0C6C98',
+		logo: 'regenerar/regenerar.svg', initials: 'RG', wide: true,
+		institution: 'Faculty of Medicine, University of Coimbra / CNC-UC / CIBB', country: 'PT', ror: null,
+		lead: 'Lino Ferreira', leadOrcid: null,
+		since: 'January 2025', website: 'https://REGENERAR.eu', websiteLabel: 'Project website',
+		labWebsite: 'https://cibb.uc.pt/en/research-group/terapias-avan%C3%A7adas',
+		bio: 'The REGENERAR research project aims to use epigenetic tools that allow certain brain cells to be reprogrammed into neurons, manipulating cells that have increased in number after the disease process into neuronal cells important for brain function.',
+		body: [
+			'The <a href="https://REGENERAR.eu">REGENERAR</a> research project “Improving the Effectiveness and Safety of Epigenetic Editing in Brain Regeneration” is led by researcher Lino Ferreira from the Faculty of Medicine of the University of Coimbra, the Center for Neuroscience and Cell Biology of the University of Coimbra (CNC-UC), and the associated laboratory Center for Innovative Biomedicine and Biotechnology (CIBB).',
+			'The project aims to use epigenetic tools that allow certain brain cells to be reprogrammed into neurons. Essentially, it involves using what the human body already has, manipulating cells that have increased in number after the disease process into neuronal cells that are very important for brain function.'
+		],
+		commitment: ['searches', 'categories', 'legitimacy'],
+		area: { slug: 'cell-reprogramming', title: 'Cell Reprogramming', papers: 404,
+			description: 'Transforming the body’s own cells into functioning neurons through epigenetic editing techniques that unlock the brain’s capacity for self-repair.',
+			queries: [
+				'(cell reprogramming[Title/Abstract]) AND (brain[Title/Abstract] OR neural[Title/Abstract] OR neuron[Title/Abstract])',
+				'(epigenetic editing[Title/Abstract]) AND (brain regeneration[Title/Abstract] OR neuroregeneration[Title/Abstract])',
+				'(non-viral delivery[Title/Abstract]) AND (brain[Title/Abstract] OR CNS[Title/Abstract]) AND (reprogramming[Title/Abstract])',
+				'(direct neuronal reprogramming[Title/Abstract]) AND (ischemic[Title/Abstract] OR stroke[Title/Abstract])',
+				'(in vivo reprogramming[Title/Abstract]) AND (astrocyte[Title/Abstract] OR glia[Title/Abstract]) AND (neuron[Title/Abstract])'
+			],
+			feed: [
+				{ id: 331823, j: 'Clinical Science', t: 'Mechanistic understanding of the role of the lung–brain axis in the pathogenesis of PM2.5-induced Alzheimer’s disease', by: 'Defrancesco et al.', d: 'Nov 2026', open: false },
+				{ id: 331496, j: 'The Neuroscientist', t: 'Microglia: Metabolic Adaptation in Neurodegeneration', by: 'Aljayousi et al.', d: 'Nov 2026', open: false },
+				{ id: 331160, j: 'Frontiers in Aging Neuroscience', t: 'Reprogramming the gut–brain axis in neurodegeneration: comparative microbiome, metabolite, immunometabolic, polyphenol, probiotic, and epigenetic mechanisms in Alzheimer’s and Parkinson’s diseases', by: 'Cheng et al.', d: 'Oct 2026', open: true }
+			] },
+		lab: null
+	}
+];
+
+/* ── helpers ── */
+var I = {
+	arrow: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+	ext: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>',
+	inst: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10M19 21V10M9 21v-6h6v6M2 10l10-6 10 6"/></svg>',
+	pin: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+	person: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',
+	star: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.9L22 9.6l-5.4 4.8 1.6 7.3L12 17.8 5.8 21.7l1.6-7.3L2 9.6l7.1-.7z"/></svg>',
+	chev: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+	check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
+	info: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+	search: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+	tags: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V3h4l10 10-4 4z"/><path d="M14 4h3l4 4v3"/><circle cx="6.5" cy="6.5" r="1"/></svg>',
+	shield: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+	badge: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5 14.6 4l3.5-.4.8 3.4 3.1 1.7-1.4 3.3 1.4 3.3-3.1 1.7-.8 3.4-3.5-.4L12 22.5 9.4 20l-3.5.4-.8-3.4L2 15.3 3.4 12 2 8.7 5.1 7l.8-3.4 3.5.4z"/></svg>'
+};
+function initials(name) { var p = name.replace(/\./g, '').split(/\s+/); return (p[0][0] + p[p.length - 1][0]).toUpperCase(); }
+function fmt(n) { return n.toLocaleString('en-GB'); }
+function logoHtml(c) { return c.logo ? '<img src="' + LOGO_DIR + c.logo + '" alt="' + c.title + ' logo">' : '<span class="initials">' + c.initials + '</span>'; }
+function place(c) { return c.institution + (c.country ? ' · ' + COUNTRY[c.country] : ''); }
+function researchers(c) { return c.lab ? c.lab.members.length + 1 : null; }
+
+var ROLE = {
+	searches: function (c) { return { icon: I.search, title: 'Defines what we track', text: 'Wrote the ' + c.area.queries.length + ' PubMed searches that feed ' + c.area.title + '. Every paper in this area reaches the Observatory through them.', queries: c.area.queries }; },
+	categories: function (c) { return { icon: I.tags, title: 'Organises the findings', text: 'Decides how ' + c.area.title + ' papers are grouped into categories, so readers can follow a single mechanism or therapy.' }; },
+	legitimacy: function (c) { return { icon: I.shield, title: 'Vouches for the scope', text: 'A working research group stands behind what this area covers, and reviews it as the field moves.' }; }
+};
+
+function paperCard(p) {
+	var tags = '';
+	if (p.expert) tags += '<span class="tag tag--expert">' + I.star + ' Expert pick</span>';
+	if (p.ml) tags += '<span class="tag tag--ai">AI relevance ' + p.ml + '%</span>';
+	if (p.open) tags += '<span class="tag tag--open">Open access</span>';
+	return '<article class="paper"><div class="paper__journal">' + p.j + '</div>' +
+		'<h3><a href="/articles/' + p.id + '/">' + p.t + '</a></h3>' +
+		'<div class="paper__by">' + p.by + ' · ' + p.d + '</div>' +
+		(tags ? '<div class="paper__tags">' + tags + '</div>' : '') + '</article>';
+}
+
+/* ══════════ INDEX ══════════ */
+function renderIndex() {
+
+	var cards = CURATORS.slice().sort(function (a, b) { return (a.short || a.title).localeCompare(b.short || b.title); }).map(function (c) {
+		var r = researchers(c);
+		return '<article class="cur-card" style="--brand:' + c.brand + '">' +
+			'<div class="cur-card__band bg-network"><span class="cur-card__area">' + c.area.title + '</span><div class="cur-card__logo' + (c.wide ? ' wide' : '') + '">' + logoHtml(c) + '</div></div>' +
+			'<div class="cur-card__body">' +
+				'<h3><a href="#' + c.slug + '">' + c.title + '</a></h3>' +
+				'<div class="cur-card__inst">' + place(c) + '</div>' +
+				'<div class="cur-card__lead">Led by ' + c.lead + '</div>' +
+				'<p class="cur-card__bio">' + c.bio + '</p>' +
+				'<dl class="cur-card__stats">' +
+					'<div><dt>Papers tracked</dt><dd>' + fmt(c.area.papers) + '</dd></div>' +
+					'<div><dt>Searches</dt><dd>' + c.area.queries.length + '</dd></div>' +
+					(r ? '<div><dt>Researchers</dt><dd>' + r + '</dd></div>' : '<div><dt>Curating since</dt><dd>' + c.since.slice(-4) + '</dd></div>') +
+				'</dl>' +
+				'<span class="cur-card__cta">Meet the lab ' + I.arrow + '</span>' +
+			'</div></article>';
+	}).join('');
+
+	return '' +
+	'<section class="ix-hero bg-network"><div class="container">' +
+		'<h1>The labs that decide <em>what science we track</em></h1>' +
+		'<p class="lede">Real institutions and researchers define the scope of each research area. They decide what to track, how to categorise findings, and which search queries to use. The science is curated by people, not just algorithms.</p>' +
+	'</div></section>' +
+
+	'<section class="section" style="padding-bottom:40px"><div class="container">' +
+		'<div class="section-head"><div><span class="eyebrow">How curation works</span><h2>A lab shapes each research area</h2></div></div>' +
+		'<div class="ix-steps">' +
+			'<div class="ix-step"><div class="num">1</div><h3>They write the searches</h3><p>Each lab writes the PubMed queries that decide which new papers enter its research area.</p></div>' +
+			'<div class="ix-step"><div class="num">2</div><h3>They organise the findings</h3><p>They define the categories papers are sorted into, from mechanisms to candidate therapies.</p></div>' +
+			'<div class="ix-step"><div class="num">3</div><h3>They stand behind it</h3><p>A working research group vouches for the scope, so patients and researchers can trust what they read.</p></div>' +
+		'</div>' +
+	'</div></section>' +
+
+	'<section class="section" style="padding-top:32px"><div class="container">' +
+		'<div class="section-head"><div><span class="eyebrow">Our curators</span><h2>Meet the labs</h2></div>' +
+		'<a class="more-link" href="#">Browse all ' + fmt(2639) + ' research groups ' + '→</a></div>' +
+		'<div class="ix-grid">' + cards + '</div>' +
+	'</div></section>' +
+
+	'<section class="section" style="padding-top:16px"><div class="container">' +
+		'<div class="ix-join bg-network">' +
+			'<div><span class="eyebrow">Become a scientific curator</span>' +
+			'<h2>Bring your lab’s expertise to patients</h2>' +
+			'<p>If your research group works on brain regeneration, repair, or neuroprotection, we’d like to hear from you. With your help, we can make a difference.</p>' +
+			'<div class="actions"><a class="btn btn--accent" href="#">Get in touch ' + I.arrow + '</a><a class="btn btn--ghost" href="#">How curation works</a></div></div>' +
+			'<ul>' +
+				'<li>' + I.check + 'A research area of your own, with a public page and weekly digest</li>' +
+				'<li>' + I.check + 'Your lab’s papers and team featured on your curator page</li>' +
+				'<li>' + I.check + 'You set the scope; we run the search pipeline</li>' +
+			'</ul>' +
+		'</div>' +
+	'</div></section>';
+}
+
+/* ══════════ DETAIL ══════════ */
+function renderDetail(c) {
+	var lab = c.lab;
+
+	var leadHtml = c.leadOrcid ? '<a href="/authors/' + c.leadOrcid + '/">' + c.lead + '</a>' : c.lead;
+	var hero = '' +
+	'<section class="cx-hero bg-network" style="--brand:' + c.brand + '">' +
+		'<div class="container"><nav class="cx-crumbs" aria-label="Breadcrumb"><a href="#index">Scientific Curators</a> &nbsp;/&nbsp; ' + (c.short || c.title) + '</nav>' +
+		'<div class="cx-hero__grid"><div>' +
+			'<h1' + (c.title.length > 30 ? ' class="long"' : '') + '>' + c.title + '</h1>' +
+			'<p class="lede">' + c.bio + '</p>' +
+			'<p class="cx-meta"><span>' + I.person + 'Led by ' + leadHtml + '</span><span>' + I.inst + c.institution + '</span>' + (c.country ? '<span>' + I.pin + COUNTRY[c.country] + '</span>' : '') + '</p>' +
+			'<div class="cx-actions"><a class="btn btn--light" href="' + c.website + '">' + c.websiteLabel + ' ' + I.ext + '</a>' +
+			'<a class="btn btn--ghost" href="#follow">Follow ' + c.area.title + '</a></div>' +
+		'</div><div class="cx-logo">' + logoHtml(c) + '</div></div></div>' +
+	'</section>';
+
+	var roles = c.commitment.map(function (k) { return ROLE[k](c); });
+	var role = '' +
+	'<section class="section" style="--brand:' + c.brand + '"><div class="container">' +
+		'<div class="section-head"><div><span class="eyebrow">Their role in the Observatory</span><h2>How ' + (c.short || c.title) + ' curates ' + c.area.title + '</h2>' +
+		'<p>Curating since ' + c.since + '. What you read in ' + c.area.title + ' reflects these choices.</p></div></div>' +
+		'<div class="role-grid" style="--n:' + roles.length + '">' + roles.map(function (r) {
+			return '<div class="role-card"><div class="role-card__icon">' + r.icon + '</div><h3>' + r.title + '</h3><p>' + r.text + '</p>' +
+				(r.queries ? '<details><summary>' + I.chev + ' See the ' + r.queries.length + ' searches</summary><ol>' + r.queries.map(function (q, i) { return '<li><b>PubMed · search ' + (i + 1) + '</b>' + q + '</li>'; }).join('') + '</ol></details>' : '') +
+				'</div>';
+		}).join('') + '</div>' +
+	'</div></section>';
+
+	var glanceLinks = '<a href="' + c.website + '">' + c.websiteLabel + ' ' + I.ext + '</a>';
+	if (c.labWebsite) glanceLinks += '<a href="' + c.labWebsite + '">Lab website ' + I.ext + '</a>';
+	if (c.leadOrcid) glanceLinks += '<a href="/authors/' + c.leadOrcid + '/">' + c.lead + '’s papers ' + I.arrow + '</a>';
+	if (c.ror) glanceLinks += '<a href="https://ror.org/' + c.ror + '">Institution on ROR ' + I.ext + '</a>';
+	var about = '' +
+	'<section class="section bg-white" style="--brand:' + c.brand + '"><div class="container"><div class="about-grid">' +
+		'<div><span class="eyebrow">About the lab</span><h2 style="font-size:clamp(24px,3vw,30px);margin:8px 0 20px">' + (c.short || c.title) + '</h2><div class="prose">' + c.body.map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>' +
+		'<aside class="glance"><h3>At a glance</h3><dl>' +
+			'<div><dt>Lead researcher</dt><dd>' + c.lead + '</dd></div>' +
+			'<div><dt>Institution</dt><dd>' + c.institution + '</dd></div>' +
+			(c.country ? '<div><dt>Country</dt><dd>' + COUNTRY[c.country] + '</dd></div>' : '') +
+			'<div><dt>Curates</dt><dd><a href="#">' + c.area.title + '</a></dd></div>' +
+			'<div><dt>Curator since</dt><dd>' + c.since + '</dd></div>' +
+		'</dl><div class="links">' + glanceLinks + '</div></aside>' +
+	'</div></div></section>';
+
+	var tabs = [];
+	if (lab) tabs.push({ id: 'lab', label: 'From the lab', papers: lab.papers, foot: '<a class="more-link" href="/authors/' + c.leadOrcid + '/">All ' + lab.headPapers + ' papers by ' + c.lead + ' →</a>' });
+	tabs.push({ id: 'area', label: 'Latest in ' + c.area.title, papers: c.area.feed, foot: '<a class="more-link" href="#">Open the ' + c.area.title + ' feed (' + fmt(c.area.papers) + ' papers) →</a>' });
+	var research = '' +
+	'<section class="section" style="--brand:' + c.brand + '"><div class="container">' +
+		'<div class="section-head"><div><span class="eyebrow">Research</span><h2>' + (lab ? 'Their work, and the field they curate' : 'What’s new in the area they curate') + '</h2></div></div>' +
+		(tabs.length > 1 ? '<div class="tabs" role="tablist">' + tabs.map(function (t, i) { return '<button role="tab" aria-selected="' + (i === 0) + '" data-tab="' + t.id + '">' + t.label + '</button>'; }).join('') + '</div>' : '') +
+		tabs.map(function (t, i) { return '<div role="tabpanel" data-panel="' + t.id + '"' + (i ? ' hidden' : '') + '><div class="papers">' + t.papers.map(paperCard).join('') + '</div><div class="papers-foot">' + t.foot + '</div></div>'; }).join('') +
+	'</div></section>';
+
+	var team = '';
+	if (lab) {
+		var max = Math.max.apply(null, lab.subjects.concat(lab.categories).map(function (s) { return s[1]; }));
+		var bar = function (s) { return '<li><div class="row">' + s[0] + '<span>' + s[1] + ' papers · ' + s[2] + ' since 2022</span></div><div class="bar"><i style="width:' + (s[1] / max * 100) + '%"></i><b style="width:' + (s[2] / max * 100) + '%"></b></div></li>'; };
+		team = '' +
+		'<section class="section bg-tint" style="--brand:' + c.brand + '"><div class="container">' +
+			'<div class="section-head"><div><span class="eyebrow">The lab</span><h2>People and research focus</h2></div><a class="more-link" href="/labs/' + lab.id + '/">Lab profile in the research groups directory →</a></div>' +
+			'<div class="lab-grid"><div><h3>Team</h3><p class="sub">The lead researcher and the people who publish with them most.</p>' +
+				'<div class="head-card"><span class="avatar">' + initials(c.lead) + '</span><div><a class="who" href="/authors/' + c.leadOrcid + '/"><strong>' + c.lead + '</strong></a><span>Lab head · ' + lab.headPapers + ' papers on the site</span></div></div>' +
+				'<div class="members">' + lab.members.map(function (m) {
+					var inner = '<span class="avatar">' + initials(m[0]) + '</span><span>' + m[0] + '</span>';
+					return m[1] ? '<a class="member" href="/authors/' + m[1] + '/">' + inner + '</a>' : '<div class="member">' + inner + '</div>';
+				}).join('') + '</div>' +
+				(lab.curated ? '' : '<p class="auto-note">' + I.info + '<span>Team grouped automatically from co-authorship in the papers we track.</span></p>') +
+			'</div><div><h3>Research focus</h3><p class="sub">Where the lab’s papers on this site fall.</p>' +
+				'<div class="legend"><span><i style="background:var(--color-primary)"></i>Since 2022</span><span><i style="background:color-mix(in srgb,var(--color-primary) 40%,#fff)"></i>All years</span></div>' +
+				'<p class="focus-kind">Conditions & subjects</p><ul class="focus">' + lab.subjects.map(bar).join('') + '</ul>' +
+				'<p class="focus-kind" style="margin-top:22px">Categories</p><ul class="focus">' + lab.categories.map(bar).join('') + '</ul>' +
+			'</div></div>' +
+		'</div></section>';
+	}
+
+	var follow = '' +
+	'<section class="section" id="follow" style="--brand:' + c.brand + '"><div class="container"><div class="follow">' +
+		'<div><h2>Follow ' + c.area.title + '</h2><p>' + c.area.description + ' New papers, picked by the searches ' + (c.short || c.title) + ' wrote, every week.</p>' +
+		'<a class="area-link" href="#">Explore the research area →</a></div>' +
+		'<form onsubmit="return false" novalidate>' +
+			'<div class="field"><label for="fn">First name <i aria-hidden="true">*</i></label><input id="fn" type="text" name="first_name" placeholder="Jane" required maxlength="150" autocomplete="given-name"></div>' +
+			'<div class="field"><label for="em">Email address <i aria-hidden="true">*</i></label><input id="em" type="email" name="email" placeholder="you@example.com" required maxlength="254" autocomplete="email"></div>' +
+			'<div class="field"><label for="pr">I am a… <i aria-hidden="true">*</i></label><select id="pr" name="profile" required><option value="" disabled selected>Select…</option><option>Patient</option><option>Caregiver</option><option>Doctor</option><option>Clinical Centre</option><option>Researcher</option><option>Other</option></select></div>' +
+			'<button class="btn btn--accent" type="submit">Subscribe</button>' +
+			'<label class="check"><input type="checkbox" name="list" value="10"><span style="color:var(--color-text)">Also subscribe to Project News <span>— Updates on new developments from the Brain-Regeneration.com project.</span></span></label>' +
+		'</form>' +
+	'</div></div></section>';
+
+	var others = CURATORS.filter(function (o) { return o.slug !== c.slug; }).map(function (o) {
+		return '<a class="other" href="#' + o.slug + '" style="--brand:' + o.brand + '"><span class="other__logo' + (o.wide ? ' wide' : '') + '">' + logoHtml(o) + '</span><span><strong>' + (o.short || o.title) + '</strong><span>' + place(o) + '</span><em>Curates ' + o.area.title + '</em></span></a>';
+	}).join('');
+	var more = '' +
+	'<section class="section bg-white" style="padding-top:56px"><div class="container">' +
+		'<div class="section-head"><div><span class="eyebrow">Scientific curators</span><h2>The other labs behind the Observatory</h2></div><a class="more-link" href="#index">All curators →</a></div>' +
+		'<div class="others">' + others + '</div>' +
+	'</div></section>';
+
+	return hero + role + about + research + team + follow + more;
+}
+
+/* ── router + tabs ── */
+function route() {
+	var id = (location.hash || '#index').slice(1);
+	var c = CURATORS.filter(function (x) { return x.slug === id; })[0];
+	document.getElementById('app').innerHTML = c ? renderDetail(c) : renderIndex();
+	document.title = (c ? (c.short || c.title) : 'Scientific Curators') + ' — mockup';
+	document.querySelectorAll('.mock-bar a').forEach(function (a) { a.classList.toggle('on', a.dataset.view === (c ? c.slug : 'index')); });
+	window.scrollTo(0, 0);
+}
+document.addEventListener('click', function (e) {
+	var b = e.target.closest('[data-tab]');
+	if (!b) return;
+	var wrap = b.closest('section');
+	wrap.querySelectorAll('[data-tab]').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
+	wrap.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== b.dataset.tab; });
+});
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

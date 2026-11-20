@@ -12,6 +12,7 @@
 <section class="bg-tint labs-embed" id="labs-embed" hidden
 	data-api-base="{{ .site.Params.apiBase | default "https://api.brain-regeneration.com" }}"
 	data-lab-base="{{ "/labs/" | relURL }}"
+	data-curators="{{ partialCached "curators/lab-map.html" . | jsonify }}"
 	data-subject-id="{{ .subjectId }}"
 	data-condition="{{ .title }}"
 	aria-labelledby="labs-embed-heading">

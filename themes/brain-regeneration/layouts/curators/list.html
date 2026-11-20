@@ -1,63 +1,84 @@
-{{ define "main" }}
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/curators.css" | relURL }}">
+{{ end }}
 
-<!-- ── PAGE HEADER ── -->
-<section class="page-header bg-sand">
+{{ define "main" }}
+{{- $curators := sort (apply .Pages "partial" "curators/sort-key.html" ".") "key" -}}
+
+<!-- ── HERO ── -->
+<section class="cu-hero cu-network">
 	<div class="container">
-		<div class="narrow-col">
-			<h1>{{ .Title }}</h1>
-			{{ with .Content }}<div style="max-width: 600px;">{{ . }}</div>{{ end }}
-		</div>
+		<h1 class="cu-ix-title">The labs that guide what science we track</h1>
+		<div class="cu-ix-lede">{{ .Content }}</div>
 	</div>
 </section>
 
-<!-- ── CURATOR LISTING ── -->
-<section class="bg-sand" style="padding-bottom: 80px;">
+<!-- ── HOW CURATION WORKS ── -->
+<section class="cu-section cu-section--tight-bottom">
 	<div class="container">
-		<div class="narrow-col d-flex flex-column gap-4">
-			{{ range .Pages.ByTitle }}
-			<div class="curator-listing-card">
-				<div class="curator-listing-logo">
-					{{ $logo := .Resources.GetMatch .Params.logo }}
-					{{ if $logo }}
-					<img src="{{ $logo.RelPermalink }}" alt="{{ .Title }}">
-					{{ else }}
-					<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-						<circle cx="16" cy="12" r="7"/>
-						<path d="M5 30c0-7 5-12 11-12s11 5 11 12"/>
-					</svg>
-					{{ end }}
+		<div class="cu-head">
+			<div><h2>How curation works</h2></div>
+		</div>
+		<ol class="cu-steps">
+			<li class="cu-step"><span class="cu-step__num">1</span><h3>Find</h3><p>Each lab writes the PubMed queries to find new papers in their research area. Optionally, curators can select relevant papers manually so that we can train AI models that score their relevance.</p></li>
+			<li class="cu-step"><span class="cu-step__num">2</span><h3>Organise</h3><p>Curators can define the categories papers are sorted into. These can be mechanisms, candidate therapies, or other topics.</p></li>
+			<li class="cu-step"><span class="cu-step__num">3</span><h3>Disseminate</h3><p>For each area there is a free weekly digest to keep researchers and patients informed.</p></li>
+		</ol>
+	</div>
+</section>
+
+<!-- ── CURATORS ── -->
+<section class="cu-section cu-section--tight-top">
+	<div class="container">
+		<div class="cu-head">
+			<div><h2>Curators</h2></div>
+			<a class="cu-more" href="{{ "/labs/" | relURL }}">Browse all research groups &rarr;</a>
+		</div>
+		<div class="cu-grid">
+			{{- range $curators }}
+			{{- $p := .page -}}
+			{{- $d := partialCached "curators/data.html" $p $p.RelPermalink -}}
+			<article class="cu-card" style="--brand: {{ $p.Params.brand_color | default "#1A6B6A" | safeCSS }}">
+				<div class="cu-card__band">
+					{{- with $d.area }}<span class="cu-card__area">{{ .Title }}</span>{{ end }}
+					<div class="cu-card__logo{{ if $p.Params.logo_wide }} cu-card__logo--wide{{ end }}">{{ partial "curators/logo.html" $p }}</div>
 				</div>
-				<div class="curator-listing-body">
-					<h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-					{{ with .Params.institution }}<div class="curator-listing-institution">{{ . }}</div>{{ end }}
-					{{ with .Params.lead_researcher }}<div class="curator-listing-lead">Lead researcher: {{ . }}</div>{{ end }}
-					{{ with .Params.bio }}<p class="curator-listing-bio">{{ . }}</p>{{ end }}
-					<div class="d-flex flex-wrap align-items-center gap-3">
-						{{ range .Params.research_areas }}
-						{{ $areaSlug := . }}
-						{{ with $.Site.GetPage (printf "/research-areas/%s" $areaSlug) }}
-						<a href="{{ .RelPermalink }}" class="curator-listing-area">{{ .Title }}</a>
-						{{ end }}
-						{{ end }}
-						<a href="{{ .RelPermalink }}" class="curator-listing-link">View profile &rarr;</a>
-					</div>
+				<div class="cu-card__body">
+					<h3><a href="{{ $p.RelPermalink }}">{{ $p.Title }}</a></h3>
+					<div class="cu-card__inst">{{ $p.Params.institution }}{{ with $d.country }} · {{ partial "curators/country.html" . }}{{ end }}</div>
+					{{- with $p.Params.lead_researcher }}<div class="cu-card__lead">Led by {{ . }}</div>{{ end }}
+					{{- with $p.Params.bio }}<p class="cu-card__bio">{{ . }}</p>{{ end }}
+					<dl class="cu-card__stats">
+						{{- if $d.areaCount }}<div><dt>Papers tracked</dt><dd>{{ lang.FormatNumber 0 $d.areaCount }}</dd></div>{{ end }}
+						{{- with $d.queries }}<div><dt>Searches</dt><dd>{{ len . }}</dd></div>{{ end }}
+						{{- if $d.researchers }}<div><dt>Researchers</dt><dd>{{ $d.researchers }}</dd></div>
+						{{- else }}<div><dt>Curating since</dt><dd>{{ $p.Date.Format "2006" }}</dd></div>{{ end }}
+					</dl>
+					<span class="cu-card__cta" aria-hidden="true">Meet the lab {{ partial "curators/icon.html" "arrow" }}</span>
 				</div>
-			</div>
-			{{ end }}
+			</article>
+			{{- end }}
 		</div>
 	</div>
 </section>
 
 <!-- ── BECOME A CURATOR ── -->
-<section class="section bg-tint">
+<section class="cu-section cu-section--tight-top">
 	<div class="container">
-		<div class="narrow-col text-center">
-			<h2 style="margin-bottom: 12px;">Become a scientific curator</h2>
-			<p style="max-width: 540px; margin: 0 auto 28px;">Help us create hope for patients. If your research group works on brain regeneration, repair, or neuroprotection, we'd like to hear from you.</p>
-			<p>With your help, we can make a difference.</p>
-			<a href="{{ "/contact/" | relURL }}" class="btn-outline-teal" data-umami-event="Curators: Become a Curator CTA">Get in touch</a>
+		<div class="cu-join cu-network">
+			<div>
+				<h2>Join as a curator</h2>
+				<p>If your research group works on brain regeneration, repair, or neuroprotection, we’d like to hear from you.</p>
+				<div class="cu-actions">
+					<a class="cu-btn cu-btn--accent" href="{{ "/contact/" | relURL }}" data-umami-event="Curators: Become a Curator CTA">Get in touch {{ partial "curators/icon.html" "arrow" }}</a>
+				</div>
+			</div>
+			<ul class="cu-join__list">
+				<li>{{ partial "curators/icon.html" "check" }}A research area of your own, with a public page and weekly digest</li>
+				<li>{{ partial "curators/icon.html" "check" }}Your lab’s papers and team featured on your curator page</li>
+				<li>{{ partial "curators/icon.html" "check" }}You set the relevance criteria to find the best papers</li>
+			</ul>
 		</div>
 	</div>
 </section>
-
 {{ end }}
