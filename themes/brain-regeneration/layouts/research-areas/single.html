@@ -75,6 +75,10 @@
 <!-- ── RESEARCH FEED ── -->
 {{ partial "research-papers-feed" (dict "page" . "contextTitle" .Title "requireRelevant" false) }}
 
+<!-- ── RESEARCH GROUPS ── -->
+{{- $labsSubject := "" }}{{ with .Params.api }}{{ $labsSubject = .subject_id | string }}{{ end -}}
+{{ partial "labs-embed.html" (dict "subjectId" $labsSubject "title" .Title "site" .Site) }}
+
 <!-- ── KEY CONCEPTS ── -->
 {{ with .Params.concepts }}
 {{ $hasDefs := false }}

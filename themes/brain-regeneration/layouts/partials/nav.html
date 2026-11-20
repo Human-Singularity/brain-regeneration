@@ -7,6 +7,7 @@
 		<div class="collapse navbar-collapse" id="mainNav">
 			<ul class="navbar-nav ms-auto align-items-lg-center">
 				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/observatory" }} active{{ end }}" href="{{ "/observatory/" | relURL }}">Observatory</a></li>
+				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/labs" }} active{{ end }}" href="{{ "/labs/" | relURL }}"{{ if hasPrefix .RelPermalink "/labs" }} aria-current="page"{{ end }}>Research groups</a></li>
 				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/curators" }} active{{ end }}" href="{{ "/curators/" | relURL }}">Scientific Curators</a></li>
 				<li class="nav-item"><a class="nav-link{{ if hasPrefix .RelPermalink "/news" }} active{{ end }}" href="{{ "/news/" | relURL }}">News</a></li>
 				<li class="nav-item"><a class="nav-link{{ if eq .RelPermalink "/about/" }} active{{ end }}" href="{{ "/about/" | relURL }}">About</a></li>

@@ -1,0 +1,32 @@
+{{- /*
+  labs-embed.html — "Research groups working on {condition}" block for condition and
+  research-area pages. Hidden until labs-embed.js has loaded the top 5 groups
+  (/labs/?subject_id=…&ordering=-articles) and stays hidden when the API returns none.
+
+  Params (dict):
+    subjectId — GregoryAi subject id of the page
+    title     — the page's condition / area name
+    site      — .Site
+*/ -}}
+{{- if .subjectId -}}
+<section class="bg-tint labs-embed" id="labs-embed" hidden
+	data-api-base="{{ .site.Params.apiBase | default "https://api.brain-regeneration.com" }}"
+	data-lab-base="{{ "/labs/" | relURL }}"
+	data-subject-id="{{ .subjectId }}"
+	data-condition="{{ .title }}"
+	aria-labelledby="labs-embed-heading">
+	<div class="container">
+		<div class="labs-embed__head">
+			<div>
+				<h2 id="labs-embed-heading">Research groups working on {{ .title }}</h2>
+				<p id="labs-embed-lede"></p>
+			</div>
+			<a class="btn-outline-teal" id="labs-embed-all" href="{{ printf "/labs/?subject_id=%v" .subjectId | relURL }}"></a>
+		</div>
+		<ol class="labs-embed__list" id="labs-embed-list"></ol>
+	</div>
+</section>
+<link rel="stylesheet" href="{{ "css/labs.css" | relURL }}">
+<script src="{{ "js/labs-common.js" | relURL }}" defer></script>
+<script src="{{ "js/labs-embed.js" | relURL }}" defer></script>
+{{- end -}}

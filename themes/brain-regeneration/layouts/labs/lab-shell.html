@@ -1,0 +1,73 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/labs.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
+{{- $data := partial "labs-data.html" . -}}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/labs/" | relURL }}">Research groups</a>
+		<span>/</span>
+		<strong id="lab-crumb">Research group</strong>
+	</div>
+</div>
+
+<div id="lab-shell"
+	data-api-base="{{ $apiBase }}"
+	data-site-title="{{ .Site.Title }}"
+	data-lab-base="{{ "/labs/" | relURL }}"
+	data-author-base="{{ "/authors/" | relURL }}"
+	data-categories="{{ $data.categories | jsonify }}"
+	data-subjects="{{ $data.subjects | jsonify }}">
+
+	<p id="lab-status" class="visually-hidden" role="status" aria-live="polite">Loading research group…</p>
+
+	<section id="lab-loading" class="bg-tint labs-header" aria-hidden="true">
+		<div class="container">
+			<div class="labs-sk labs-sk--eyebrow"></div>
+			<div class="labs-sk labs-sk--title"></div>
+			<div class="labs-sk labs-sk--line"></div>
+			<div class="labs-sk labs-sk--stats"></div>
+		</div>
+	</section>
+
+	<section id="lab-notfound" class="section bg-sand labs-notfound" hidden>
+		<div class="container">
+			<div class="narrow-col labs-notfound__col">
+				<span class="labs-notfound__icon" aria-hidden="true">
+					<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+				</span>
+				<h1>This research group is no longer listed</h1>
+				<p class="labs-notfound__lede">Groups change as new papers come in. A group can be merged with another one, or drop off the list when its lead author publishes less often. When that happens, its old link stops working.</p>
+				<p>The people in it are still on the site. Search for them by name, or browse the groups working on a condition.</p>
+				<div class="labs-actions">
+					<a class="btn-amber" href="{{ "/labs/" | relURL }}">Browse research groups</a>
+					<a class="btn-outline-teal" href="{{ "/search/" | relURL }}">Search for a researcher</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section id="lab-error" class="section bg-sand labs-notfound" hidden>
+		<div class="container">
+			<div class="narrow-col labs-notfound__col">
+				<p>We could not load this research group.</p>
+				<div class="labs-actions"><button type="button" class="btn-outline-teal" id="lab-retry">Try again</button></div>
+			</div>
+		</div>
+	</section>
+
+	<div id="lab-content" hidden></div>
+</div>
+{{ end }}
+
+{{ define "page-scripts" }}
+<script>window.__SUBJECT_LINKS__ = {{ partial "subject-links" . | jsonify | safeJS }};</script>
+<script src="{{ "js/labs-common.js" | relURL }}"></script>
+<script src="{{ "js/lab-page.js" | relURL }}"></script>
+{{ end }}

@@ -20,3 +20,9 @@
 # The old Gregory MS media room now lives at /press/
 /media/  /press/  301
 /media/*  /press/  301
+
+# Serve the research group shell for any /labs/{id}/ path so that the client-side JS
+# can read the id and fetch from the API. (The directory at /labs/ is its own page,
+# so this uses a placeholder rather than a splat, which would also match /labs/.)
+/labs/:id/  /labs/lab/  200
+/labs/:id   /labs/lab/  200

@@ -150,6 +150,10 @@
 	</div>
 </section>
 
+<!-- ── RESEARCH GROUPS ── -->
+{{- $labsSubject := "" }}{{ with .Params.api }}{{ $labsSubject = .subject_id | string }}{{ end -}}
+{{ partial "labs-embed.html" (dict "subjectId" $labsSubject "title" .Title "site" .Site) }}
+
 <!-- ── NEWSLETTER ── -->
 {{ if and .Params.subscribe .Params.list_id }}
 {{ partial "forms/newsletter-inline" (dict

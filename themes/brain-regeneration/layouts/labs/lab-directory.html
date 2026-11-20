@@ -1,0 +1,97 @@
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/labs.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
+{{- $data := partial "labs-data.html" . -}}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<strong>Research groups</strong>
+	</div>
+</div>
+
+<!-- ── HEADER ── -->
+<section class="bg-tint labs-header">
+	<div class="container">
+		<p class="labs-eyebrow">Research groups</p>
+		<h1>Who is working on brain regeneration</h1>
+		<p class="labs-lede">A research group is a senior author and the people who publish with them again and again. We build these groups from the papers we track, so you can see who leads the work on each condition and where they are.</p>
+		<p class="labs-note labs-note--plain">
+			<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+			<span>Most groups are put together automatically from authorship data and have not been checked by an editor yet.</span>
+		</p>
+	</div>
+</section>
+
+<div id="labs-directory"
+	data-api-base="{{ $apiBase }}"
+	data-lab-base="{{ "/labs/" | relURL }}"
+	data-author-base="{{ "/authors/" | relURL }}"
+	data-categories="{{ $data.categories | jsonify }}"
+	data-subjects="{{ $data.subjects | jsonify }}">
+
+	<!-- ── FILTERS ── -->
+	<form class="filter-bar labs-filters" id="labs-form" role="search" aria-label="Filter research groups" action="javascript:void(0)">
+		<div class="container">
+			<div class="labs-filter-grid">
+				<div class="labs-filter-search">
+					<label for="labs-search">Search</label>
+					<input type="search" class="form-control" id="labs-search" placeholder="Group, person or institution" autocomplete="off">
+				</div>
+				<div>
+					<label for="labs-subject">Condition</label>
+					<select class="form-select" id="labs-subject"><option value="">Any condition</option></select>
+				</div>
+				<div>
+					<label for="labs-category">Research topic</label>
+					<select class="form-select" id="labs-category"><option value="">Any topic</option></select>
+				</div>
+				<div>
+					<label for="labs-country">Country</label>
+					<select class="form-select" id="labs-country"><option value="">Any country</option></select>
+				</div>
+			</div>
+			<div class="labs-filter-foot">
+				<div class="labs-active" id="labs-active" hidden></div>
+				<div class="labs-sort">
+					<label for="labs-sort">Sort by</label>
+					<select class="form-select" id="labs-sort"></select>
+				</div>
+			</div>
+		</div>
+	</form>
+
+	<!-- ── RESULTS ── -->
+	<section class="section bg-sand labs-results">
+		<div class="container">
+			<p class="labs-result-line" id="labs-result-line" role="status" aria-live="polite">Loading research groups…</p>
+			<div class="labs-grid" id="labs-list" aria-busy="true"></div>
+			<div class="labs-empty" id="labs-empty" hidden>
+				<p>No research groups match these filters.</p>
+				<button type="button" class="btn-outline-teal" id="labs-clear">Clear filters</button>
+			</div>
+			<div class="labs-empty" id="labs-error" hidden>
+				<p>We could not load the research groups.</p>
+				<button type="button" class="btn-outline-teal" id="labs-retry">Try again</button>
+			</div>
+			<nav class="labs-pager" id="labs-pager" aria-label="Pages" hidden>
+				<span class="labs-pager__info" id="labs-pager-info"></span>
+				<div class="labs-pager__btns">
+					<button type="button" class="btn-download" id="labs-prev">&larr; Previous</button>
+					<button type="button" class="btn-outline-teal" id="labs-next">Next 10 &rarr;</button>
+				</div>
+			</nav>
+		</div>
+	</section>
+</div>
+{{ end }}
+
+{{ define "page-scripts" }}
+<script src="{{ "js/labs-common.js" | relURL }}"></script>
+<script src="{{ "js/labs-directory.js" | relURL }}"></script>
+{{ end }}
