@@ -474,3 +474,24 @@ a.author-collaborator:hover {
 	font: 400 12px/1.4 var(--font-heading);
 	color: var(--color-muted);
 }
+
+/* ── research group pill (include=lab), under the header ── */
+.author-lab {
+	display: flex;
+	padding: 16px 40px;
+	background: var(--color-text-light);
+	border-bottom: 1px solid var(--color-border);
+}
+.author-lab__pill {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	background: var(--color-tint);
+	border-radius: var(--radius);
+	padding: 8px 14px;
+	font: 400 15px/1.4 var(--font-heading);
+	color: var(--color-text);
+}
+.author-lab__pill svg { flex: none; color: var(--color-primary); }
+.author-lab__pill a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 575px) { .author-lab { padding: 14px 20px; } }

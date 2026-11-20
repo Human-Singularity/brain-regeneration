@@ -1,0 +1,37 @@
+{{- /*
+  labs-data.html — RETURNS the build-time lists the research-groups scripts need:
+    categories — the allow-list of categories shown on the Research groups pages:
+                 the union of every category configured in the front matter
+                 `category_groups` of content/conditions/{slug}/research-papers/index.md,
+                 as [{id, name}] sorted by name (the configured name is the label).
+                 The API's `categories` are filtered through this everywhere
+                 (card chips, lab-page topic bars, directory topic filter).
+    subjects   — every subject that has a page here (conditions and research areas),
+                 as [{id, name}] in the order of partials/subject-links.html.
+                 Used for the directory's Condition filter and for labels.
+
+  Param: any page (unused; the data is site-wide)
+*/ -}}
+{{- $seen := dict -}}
+{{- $cats := slice -}}
+{{- range sort (where (where site.Pages "Section" "conditions") "Params.layout" "research-papers") "Title" -}}
+	{{- range .Params.category_groups -}}
+		{{- range .categories -}}
+			{{- $key := string .id -}}
+			{{- if not (index $seen $key) -}}
+				{{- $seen = merge $seen (dict $key true) -}}
+				{{- $cats = $cats | append (dict "id" .id "name" .name) -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- $links := partial "subject-links.html" . -}}
+{{- $subjects := slice -}}
+{{- $ranked := slice -}}
+{{- range $id, $e := $links -}}
+	{{- $ranked = $ranked | append (dict "id" (int $id) "name" $e.name "rank" $e.rank) -}}
+{{- end -}}
+{{- range sort $ranked "rank" -}}
+	{{- $subjects = $subjects | append (dict "id" .id "name" .name) -}}
+{{- end -}}
+{{- return (dict "categories" (sort $cats "name") "subjects" $subjects) -}}

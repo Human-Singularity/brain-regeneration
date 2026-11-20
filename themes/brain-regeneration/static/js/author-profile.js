@@ -244,6 +244,7 @@
 		url.searchParams.set('search', orcid);
 		url.searchParams.set('format', 'json');
 		url.searchParams.set('page_size', '50');
+		url.searchParams.set('include', 'lab');
 		return fetchJson(url.toString()).then(function (data) {
 			var results = data.results || [];
 			var match = results.filter(function (a) {
@@ -498,6 +499,17 @@
 		});
 	}
 
+	// "Member of {lab}" / "Leads the {lab}" pill under the header. author.lab is null
+	// (or absent) for collaborators and people in no lab: render nothing then.
+	function renderLabPill(lab) {
+		if (!lab || lab.id == null || !lab.name) return '';
+		var isHead = lab.role === 'head';
+		return '<div class="author-lab"><p class="author-lab__pill">' +
+			'<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
+			'<span>' + (isHead ? 'Leads the ' : 'Member of ') +
+			'<a href="/labs/' + encodeURIComponent(lab.id) + '/" data-umami-event="Author Profile: Open Research Group">' + escHtml(decodeEntities(lab.name)) + '</a></span></p></div>';
+	}
+
 	function renderPage(author, agg) {
 		var articlesCount = author.articles_count || 0;
 		var relevantCount = author.relevant_articles_count || 0;
@@ -544,6 +556,7 @@
 						'Follow new papers' +
 					'</a>' +
 				'</div>' +
+				renderLabPill(author.lab) +
 				'<div class="author-stats">' + statsHtml + '</div>' +
 				'<div class="author-body">' +
 					'<div class="author-main">' +
