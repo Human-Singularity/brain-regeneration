@@ -76,3 +76,36 @@
   credit: "Photo: REGENERAR"
 # No photo found yet (not on regenerar.eu):
 #   Paulo Felix            0009-0007-7032-9599   has an author page
+
+# ── CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa (curator) ───────
+# From the lab's member pages on imed.ulisboa.pt, cropped square around the face.
+"0000-0002-2782-9519": # Adelaide Fernandes
+  image: images/authors/imed/adelaide-fernandes.jpg
+  credit: "Photo: iMed.ULisboa"
+"0000-0002-9985-5812": # Ainhoa Alberro
+  image: images/authors/imed/ainhoa-alberro.jpg
+  credit: "Photo: iMed.ULisboa"
+"0000-0003-4972-7369": # Maria Vaz Pinto
+  image: images/authors/imed/maria-vaz-pinto.jpg
+  credit: "Photo: iMed.ULisboa"
+"0000-0002-9100-5864": # Alexandre Neto (photo supplied directly, not from iMed)
+  image: images/authors/imed/alexandre-neto.jpg
+"0000-0002-0378-4854": # Andreia Barateiro
+  image: images/authors/imed/andreia-barateiro.jpg
+  credit: "Photo: iMed.ULisboa"
+"0000-0001-9778-1568": # Ana Rita Ribeiro
+  image: images/authors/imed/ana-rita-ribeiro.jpg
+  credit: "Photo: iMed.ULisboa"
+"0000-0002-5718-7246": # Catarina Barros
+  image: images/authors/imed/catarina-barros.jpg
+  credit: "Photo: iMed.ULisboa"
+# Not in GregoryAi yet. ORCIDs found in the ORCID registry (not listed by iMed): likely matches.
+"0009-0000-9135-9999": # Beatriz Fernandes (registered as Carolina Beatriz Lopes Fernandes)
+  image: images/authors/imed/beatriz-fernandes.jpg
+  credit: "Photo: iMed.ULisboa"
+"0009-0004-9165-4364": # Tomás Almeida (Tomás Pereira Concha de Almeida)
+  image: images/authors/imed/tomas-almeida.jpg
+  credit: "Photo: iMed.ULisboa"
+"0009-0005-5515-6306": # Benjamim Fidalgo
+  image: images/authors/imed/benjamim-fidalgo.jpg
+  credit: "Photo: iMed.ULisboa"
