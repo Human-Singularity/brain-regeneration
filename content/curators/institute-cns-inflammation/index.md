@@ -1,6 +1,6 @@
 ---
 title: "CNS, Blood and Peripheral Inflammation Lab, iMed.ULisboa"
-date: 2025-01-06
+date: 2026-04-06
 draft: false
 
 description: "The CNS, Blood and Peripheral Inflammation Lab at iMed.ULisboa, led by Adelaide Fernandes, studies inflammation's role in neurodegenerative disease."
