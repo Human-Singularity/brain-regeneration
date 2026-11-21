@@ -42,46 +42,6 @@
 	</div>
 </section>
 
-<!-- ── ROLE ── -->
-{{- with $area }}
-{{- $roles := $.Params.commitment | default slice -}}
-{{- if $roles }}
-<section class="cu-section">
-	<div class="container">
-		<div class="cu-head">
-			<div>
-				<h2>How {{ $name }} curates {{ .Title }}</h2>
-				<p>Curating since {{ $d.since }}.</p>
-			</div>
-		</div>
-		<div class="cu-roles" style="--n: {{ len $roles }}">
-			{{- range $roles }}
-			<div class="cu-role">
-				<div class="cu-role__icon">{{ partial "curators/icon.html" . }}</div>
-				{{- if eq . "searches" }}
-				<h3>Defines what we track</h3>
-				<p>{{ with $d.queries }}Wrote the {{ len . }} PubMed {{ cond (eq (len .) 1) "search" "searches" }}{{ else }}Writes the searches{{ end }} that feed {{ $area.Title }}. Every paper in this area reaches the Observatory through them.</p>
-				{{- with $d.queries }}
-				<details class="cu-role__queries">
-					<summary>{{ partial "curators/icon.html" "chev" }} See the {{ len . }} {{ cond (eq (len .) 1) "search" "searches" }}</summary>
-					<ol>{{ range $i, $q := . }}<li><b>{{ $q.source | default "PubMed" }} · search {{ add $i 1 }}</b>{{ $q.string }}</li>{{ end }}</ol>
-				</details>
-				{{- end }}
-				{{- else if eq . "categories" }}
-				<h3>Organises the findings</h3>
-				<p>Decides how {{ $area.Title }} papers are grouped into categories, so readers can follow a single mechanism or therapy.</p>
-				{{- else if eq . "legitimacy" }}
-				<h3>Vouches for the scope</h3>
-				<p>A working research group stands behind what this area covers, and reviews it as the field moves.</p>
-				{{- end }}
-			</div>
-			{{- end }}
-		</div>
-	</div>
-</section>
-{{- end }}
-{{- end }}
-
 <!-- ── ABOUT ── -->
 <section class="cu-section cu-section--alt">
 	<div class="container">
@@ -282,6 +242,46 @@
 		</div>
 	</div>
 </section>
+{{- end }}
+
+<!-- ── ROLE ── -->
+{{- with $area }}
+{{- $roles := $.Params.commitment | default slice -}}
+{{- if $roles }}
+<section class="cu-section">
+	<div class="container">
+		<div class="cu-head">
+			<div>
+				<h2>How {{ $name }} curates {{ .Title }}</h2>
+				<p>Curating since {{ $d.since }}.</p>
+			</div>
+		</div>
+		<div class="cu-roles" style="--n: {{ len $roles }}">
+			{{- range $roles }}
+			<div class="cu-role">
+				<div class="cu-role__icon">{{ partial "curators/icon.html" . }}</div>
+				{{- if eq . "searches" }}
+				<h3>Defines what we track</h3>
+				<p>{{ with $d.queries }}Wrote the {{ len . }} PubMed {{ cond (eq (len .) 1) "search" "searches" }}{{ else }}Writes the searches{{ end }} that feed {{ $area.Title }}. Every paper in this area reaches the Observatory through them.</p>
+				{{- with $d.queries }}
+				<details class="cu-role__queries">
+					<summary>{{ partial "curators/icon.html" "chev" }} See the {{ len . }} {{ cond (eq (len .) 1) "search" "searches" }}</summary>
+					<ol>{{ range $i, $q := . }}<li><b>{{ $q.source | default "PubMed" }} · search {{ add $i 1 }}</b>{{ $q.string }}</li>{{ end }}</ol>
+				</details>
+				{{- end }}
+				{{- else if eq . "categories" }}
+				<h3>Organises the findings</h3>
+				<p>Decides how {{ $area.Title }} papers are grouped into categories, so readers can follow a single mechanism or therapy.</p>
+				{{- else if eq . "legitimacy" }}
+				<h3>Vouches for the scope</h3>
+				<p>A working research group stands behind what this area covers, and reviews it as the field moves.</p>
+				{{- end }}
+			</div>
+			{{- end }}
+		</div>
+	</div>
+</section>
+{{- end }}
 {{- end }}
 
 </div>
