@@ -35,7 +35,7 @@
 				'<div class="labs-embed__who"><a href="' + escHtml(L.labHref(cfg, lab)) + '">' + t(lab.name) + '</a>' + L.curatorBadge(cfg, lab) +
 				(place ? '<span>' + t(place) + '</span>' : '') + '</div>' +
 				'<div class="labs-embed__nums"><span><strong>' + L.num(s.articles) + '</strong> papers</span>' +
-				'<span><strong>' + L.num(s.recent_articles) + '</strong> since 2022</span></div></li>';
+				'<span><strong>' + L.num(s.recent_articles) + '</strong> since ' + L.recentSince + '</span></div></li>';
 		}).join('');
 		mount.hidden = false;
 	}).catch(function () { /* keep the block hidden */ });

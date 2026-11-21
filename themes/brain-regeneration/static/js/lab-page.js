@@ -70,7 +70,7 @@
 		var name = url ? '<a href="' + escHtml(url) + '">' + t(s.name) + '</a>' : '<span>' + t(s.name) + '</span>';
 		return '<div class="lab-row">' +
 			'<div class="lab-row__top"><span class="lab-row__name">' + name + '</span>' +
-			'<span class="lab-row__num">' + L.num(s.articles) + ' papers · ' + L.num(s.recent_articles) + ' since 2022</span></div>' +
+			'<span class="lab-row__num">' + L.num(s.articles) + ' papers · ' + L.num(s.recent_articles) + ' since ' + L.recentSince + '</span></div>' +
 			bar(s.articles, s.recent_articles, max) + '</div>';
 	}
 
@@ -119,7 +119,7 @@
 		var stats = stat(L.num(lab.member_count), 'Members');
 		if (top) {
 			stats += stat(L.num(top.articles), 'Papers on ' + decodeEntitiesSafe(top.name));
-			stats += stat(L.num(top.recent_articles), 'Since 2022');
+			stats += stat(L.num(top.recent_articles), 'Since ' + L.recentSince);
 		}
 		if (latestYear) stats += stat(String(latestYear), 'Latest paper');
 
@@ -153,7 +153,7 @@
 			html += '<section class="section labs-focus"><div class="container">' +
 				'<div class="lab-focus__head"><div><h2>Research focus</h2>' +
 				'<p>Papers by ' + (headName ? t(headName) + ' or a member' : 'the lead author or a member') + ', by the conditions and topics we track.</p></div>' +
-				'<div class="lab-legend" aria-hidden="true"><span><i class="lab-legend__recent"></i>Since 2022</span><span><i class="lab-legend__older"></i>Before 2022</span></div></div>' +
+				'<div class="lab-legend" aria-hidden="true"><span><i class="lab-legend__recent"></i>Since ' + L.recentSince + '</span><span><i class="lab-legend__older"></i>Before ' + L.recentSince + '</span></div></div>' +
 				'<div class="lab-focus__cols">' +
 				(subjects.length ? '<div class="lab-focus__col"><h3>Conditions</h3>' + subjects.map(function (s) { return subjectRow(s, smax); }).join('') + '</div>' : '') +
 				(cats.length ? '<div class="lab-focus__col lab-focus__col--wide"><h3>Research topics</h3>' +

@@ -30,7 +30,7 @@
 		'name': 'Name, A to Z',
 		'-member_count': 'Most members',
 		'-articles': 'Most papers on this {topic}',
-		'-recent_articles': 'Most active since 2022'
+		'-recent_articles': 'Most active since ' + L.recentSince
 	};
 	var PAGE_SIZE = 10;
 
@@ -182,7 +182,7 @@
 	function sortPhrase() {
 		switch (effectiveSort()) {
 			case '-articles': return ', most papers first';
-			case '-recent_articles': return ', most active since 2022 first';
+			case '-recent_articles': return ', most active since ' + L.recentSince + ' first';
 			case '-member_count': return ', largest groups first';
 			default: return ', A to Z';
 		}
@@ -240,7 +240,7 @@
 			'<dl class="lab-card__stats">' +
 				'<div><dt>Members</dt><dd>' + L.num(lab.member_count) + '</dd></div>' +
 				'<div><dt>' + escHtml(st.label) + '</dt><dd>' + st.articles + '</dd></div>' +
-				'<div><dt>Since 2022</dt><dd>' + st.recent + '</dd></div>' +
+				'<div><dt>Since ' + L.recentSince + '</dt><dd>' + st.recent + '</dd></div>' +
 			'</dl>' + catsHtml + note +
 		'</article>';
 	}
