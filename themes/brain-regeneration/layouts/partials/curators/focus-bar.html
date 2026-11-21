@@ -3,6 +3,6 @@
 {{- $all := int ($r.articles | default 0) -}}
 {{- $recent := int ($r.recent_articles | default 0) -}}
 <li>
-	<div class="cu-focus__row">{{ $r.name }}<span>{{ lang.FormatNumber 0 $all }} {{ cond (eq $all 1) "paper" "papers" }} · {{ lang.FormatNumber 0 $recent }} since 2022</span></div>
+	<div class="cu-focus__row">{{ $r.name }}<span>{{ lang.FormatNumber 0 $all }} {{ cond (eq $all 1) "paper" "papers" }} · {{ lang.FormatNumber 0 $recent }} since {{ sub now.Year 4 }}</span></div>
 	<div class="cu-focus__bar" aria-hidden="true"><i style="width: {{ math.Round (mul (div (float $all) .max) 100) }}%"></i><b style="width: {{ math.Round (mul (div (float $recent) .max) 100) }}%"></b></div>
 </li>

@@ -20,6 +20,10 @@
 
 	function plural(n, one, many) { return n === 1 ? one : many; }
 
+	// First year GregoryAi counts in a lab's recent_articles: the start of the calendar year
+	// four years ago (2022 in 2026). Labels say "since {year}" with this, never a fixed year.
+	var RECENT_SINCE = new Date().getFullYear() - 4;
+
 	function parseJsonAttr(el, name, fallback) {
 		try { return JSON.parse(el.getAttribute(name) || ''); } catch (e) { return fallback; }
 	}
@@ -136,7 +140,7 @@
 	}
 
 	BR.labs = {
-		cache: cache, ORCID_RE: ORCID_RE, t: t, num: num, plural: plural, readConfig: readConfig,
+		cache: cache, ORCID_RE: ORCID_RE, t: t, num: num, plural: plural, readConfig: readConfig, recentSince: RECENT_SINCE,
 		allowedCategories: allowedCategories, countryName: countryName, placeText: placeText,
 		hasOrcid: hasOrcid, authorHref: authorHref, personHtml: personHtml, topSubject: topSubject,
 		infoIcon: infoIcon, pinIcon: pinIcon, userIcon: userIcon, getJson: getJson,

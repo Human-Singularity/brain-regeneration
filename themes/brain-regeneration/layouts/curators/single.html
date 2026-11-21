@@ -188,7 +188,7 @@
 			{{- range $d.categories }}{{ if gt .articles $max }}{{ $max = .articles }}{{ end }}{{ end -}}
 			<div>
 				<h3>Research focus</h3>
-				<div class="cu-legend" aria-hidden="true"><span><i class="cu-legend__recent"></i>Since 2022</span><span><i class="cu-legend__all"></i>All years</span></div>
+				<div class="cu-legend" aria-hidden="true"><span><i class="cu-legend__recent"></i>Since {{ sub now.Year 4 }}</span><span><i class="cu-legend__all"></i>All years</span></div>
 				{{- with $subjects }}
 				<p class="cu-focus__kind">Conditions &amp; subjects</p>
 				<ul class="cu-focus">{{ range . }}{{ partial "curators/focus-bar.html" (dict "row" . "max" $max) }}{{ end }}</ul>
