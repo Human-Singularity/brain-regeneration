@@ -22,7 +22,7 @@ bio: "The REGENERAR research project aims to use epigenetic tools that allow cer
 
 research_areas:
   - "cell-reprogramming"
-
+lab_id: 2694
 commitment:
   - "searches"
   - "legitimacy"
