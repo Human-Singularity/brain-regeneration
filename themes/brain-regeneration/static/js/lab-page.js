@@ -124,7 +124,7 @@
 		if (latestYear) stats += stat(String(latestYear), 'Latest paper');
 
 		var buttons = '';
-		if (head && L.hasOrcid(head)) {
+		if (head && L.hasAuthorLink(head)) {
 			buttons += '<a class="btn-outline-teal" href="' + escHtml(L.authorHref(cfg, head)) + '">Papers by ' + t(head.full_name) + ' &rarr;</a>';
 		}
 		if (inst.ror) {
@@ -168,7 +168,7 @@
 		if (members.length) {
 			var mc = lab.member_count || members.length;
 			html += '<p class="labs-members__lede">' + L.num(mc) + ' ' + L.plural(mc, 'person who has', 'people who have') +
-				' published with ' + (headName ? t(headName) : 'the lead author') + ' more than once, most shared papers first. Names without a link have no ORCID iD on record, so they have no author page yet.</p>' +
+				' published with ' + (headName ? t(headName) : 'the lead author') + ' more than once, most shared papers first. Names without an ORCID iD link to their papers in search instead of an author page.</p>' +
 				'<ul class="lab-members">' + members.map(function (m, i) { return memberItem(m, i >= MEMBERS_COLLAPSED); }).join('') + '</ul>' +
 				(members.length > MEMBERS_COLLAPSED ? '<button type="button" class="btn-outline-teal lab-toggle" id="lab-members-toggle" aria-expanded="false" data-label="Show all ' + members.length + ' members">Show all ' + members.length + ' members</button>' : '');
 		} else {

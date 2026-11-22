@@ -83,12 +83,18 @@
 
 	function hasOrcid(p) { return !!(p && p.orcid && ORCID_RE.test(String(p.orcid).toUpperCase())); }
 
-	function authorHref(cfg, p) { return cfg.authorBase + encodeURIComponent(String(p.orcid).toUpperCase()) + '/'; }
+	// Without an ORCID iD there is no author page; the advanced search lists their papers by author_id.
+	function hasAuthorLink(p) { return hasOrcid(p) || !!(p && p.author_id); }
 
-	// A person's name, as a link to their author page when they have an ORCID iD.
+	function authorHref(cfg, p) {
+		if (hasOrcid(p)) return cfg.authorBase + encodeURIComponent(String(p.orcid).toUpperCase()) + '/';
+		return '/search/?sort=date&relevant=false&author_id=' + encodeURIComponent(p.author_id);
+	}
+
+	// A person's name, as a link to their author page (or, without an ORCID iD, their papers in search).
 	function personHtml(cfg, p, linkAttrs) {
 		var name = t(p.full_name);
-		if (hasOrcid(p)) return '<a href="' + escHtml(authorHref(cfg, p)) + '"' + (linkAttrs || '') + '>' + name + '</a>';
+		if (hasAuthorLink(p)) return '<a href="' + escHtml(authorHref(cfg, p)) + '"' + (linkAttrs || '') + '>' + name + '</a>';
 		return name;
 	}
 
@@ -142,7 +148,7 @@
 	BR.labs = {
 		cache: cache, ORCID_RE: ORCID_RE, t: t, num: num, plural: plural, readConfig: readConfig, recentSince: RECENT_SINCE,
 		allowedCategories: allowedCategories, countryName: countryName, placeText: placeText,
-		hasOrcid: hasOrcid, authorHref: authorHref, personHtml: personHtml, topSubject: topSubject,
+		hasOrcid: hasOrcid, hasAuthorLink: hasAuthorLink, authorHref: authorHref, personHtml: personHtml, topSubject: topSubject,
 		infoIcon: infoIcon, pinIcon: pinIcon, userIcon: userIcon, getJson: getJson,
 		countryOptions: countryOptions, curatorOf: curatorOf, labHref: labHref, curatorBadge: curatorBadge
 	};
