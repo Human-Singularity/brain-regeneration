@@ -141,7 +141,7 @@
 			'<section class="bg-tint labs-header labs-header--lab"><div class="container lab-header">' +
 				'<div><p class="labs-eyebrow">Research group</p><h1>' + t(lab.name) + '</h1>' +
 				'<p class="lab-header__meta">' +
-					(headName ? '<span>' + L.userIcon(18) + 'Led by ' + '<strong>' + L.personHtml(cfg, head) + '</strong></span>' : '') +
+					(headName ? '<span>' + L.userIcon(18) + 'Led by ' + '<a href="' + escHtml(L.authorHref(cfg, head)) + '"><strong>' + L.personHtml(cfg, head) + '</strong></a></span>' : '') +
 					(place ? '<span>' + L.pinIcon(18) + t(place) + '</span>' : '') +
 				'</p></div>' +
 				'<div class="lab-stats">' + stats + '</div>' +
