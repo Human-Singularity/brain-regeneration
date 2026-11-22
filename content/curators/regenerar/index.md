@@ -9,9 +9,9 @@ name: "REGENERAR"
 type_of: "organisation"
 lead_researcher: "Lino Ferreira"
 institution: "Faculty of Medicine, University of Coimbra / CNC-UC / CIBB"
-website: "https://REGENERAR.eu"
+website: ""
 website_label: "REGENERAR project website"
-lab_website: "https://cibb.uc.pt/en/research-group/terapias-avan%C3%A7adas"
+lab_website: "https://REGENERAR.eu"
 logo: "regenerar.svg"
 # Curator-page design: the logo is wide, so it gets a wide tile. No lab in GregoryAi yet,
 # so no lab_id: the team, research-focus and "From the lab" sections stay hidden.
