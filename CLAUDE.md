@@ -93,7 +93,7 @@ layouts/
     forms/    newsletter-inline, country-datalist, multi-check (pick one or more trial statuses/phases)
     data/     trial-filter-options (the trials API's status/phase values and labels)
   shortcodes/ figure
-  conditions/ list, single, research-papers, patents   (tabs come from partials/condition-tabs; a missing sibling page shows "Coming soon")
+  conditions/ list, single, research-papers, patents, medicines, research-groups   (tabs come from partials/condition-tabs; a missing sibling page shows "Coming soon"; the tabs share ?category=)
   research-areas/ list, single
   search/ research-papers, single   (advanced search: papers landing + clinical-trials view)
   news/ list, single      supporters/ list, single
@@ -117,6 +117,7 @@ static/
         subscribe.js            (all subscribe forms — full page #subscribe-form, inline [data-inline-subscribe] widgets, homepage digest — one POST→redirect flow + profile persistence)
         donor-transparency.js   (donate page → Stripe transparency Cloudflare Worker)
         curator-page.js         (the Research tabs on /curators/{slug}/; the rest of that page is built by Hugo)
+        labs-table.js           (conditions Research Groups tab: the /labs/ directory for one subject as a table; needs labs-common.js)
 ```
 
 Each script is self-invoking and **no-ops unless its mount element exists** (e.g. `#paper-list`, `#papers-list`, `#trials-list`, `#patents-list`, `#article-shell`, `#spotlight-papers`), so they're safe to load site-wide. Config comes from `data-*` attributes on those mounts.

@@ -1,0 +1,227 @@
+{{- /*
+  conditions/research-groups.html — "Research Groups" tab of a condition: the /labs/
+  directory scoped to this condition's subject, as a table. Rendered client-side by
+  js/labs-table.js from GregoryAi's /labs/?subject_id=… (see labs-directory.js for the
+  API's sort rules). The condition is fixed by the page; the other /labs/ filters
+  (search, research topic, country, sort) are here.
+
+  The topic filter shares ?category= with the other tabs (condition-tabs.html carries
+  it across), so its options are the research-papers sibling's category_groups; a
+  condition without them falls back to the /labs/ directory's topic list.
+*/ -}}
+{{ define "extra-head" }}
+<link rel="stylesheet" href="{{ "css/labs.css" | relURL }}">
+{{ end }}
+
+{{ define "main" }}
+
+{{ $conditionPage := .Parent }}
+{{- $apiBase := .Site.Params.apiBase | default "https://api.brain-regeneration.com" -}}
+{{- $subjectId := "" -}}
+{{- with .Params.api }}{{ $subjectId = .subject_id | string }}{{ end -}}
+{{- $data := partial "labs-data.html" . -}}
+
+{{/* Topic filter: the papers tab's curated groups, so a category picked here means the same there */}}
+{{- $categoryGroups := .Params.category_groups -}}
+{{- if not $categoryGroups -}}
+	{{- with where $conditionPage.Pages "Params.layout" "research-papers" -}}{{- $categoryGroups = (index . 0).Params.category_groups -}}{{- end -}}
+{{- end -}}
+
+{{- $sorts := slice
+	(dict "value" "-articles"        "label" "Most papers")
+	(dict "value" "-recent_articles" "label" "Most active recently")
+	(dict "value" "-member_count"    "label" "Most members")
+	(dict "value" "name"             "label" "Name, A to Z") -}}
+
+<!-- ── BREADCRUMB ── -->
+<div class="breadcrumb-nav-dark">
+	<div class="container">
+		<a href="{{ "/" | relURL }}">Home</a>
+		<span>/</span>
+		<a href="{{ "/conditions/" | relURL }}">Conditions</a>
+		<span>/</span>
+		<a href="{{ $conditionPage.RelPermalink }}">{{ $conditionPage.Title }}</a>
+		<span>/</span>
+		<strong>Research Groups</strong>
+	</div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding: 56px 0 64px;">
+	<div class="container">
+		<h1>{{ .Title }} — Research Groups</h1>
+		<p>{{ .Params.hero_description | default .Description }}</p>
+	</div>
+</section>
+
+<!-- ── SECTION TABS ── -->
+{{ partial "condition-tabs" (dict "condition" $conditionPage "active" "groups") }}
+
+<div id="labs-table"
+	data-api-base="{{ $apiBase }}"
+	data-lab-base="{{ "/labs/" | relURL }}"
+	data-author-base="{{ "/authors/" | relURL }}"
+	data-curators="{{ partialCached "curators/lab-map.html" . | jsonify }}"
+	data-categories="{{ $data.categories | jsonify }}"
+	{{ with $categoryGroups }}data-category-groups="{{ . | jsonify }}"{{ end }}
+	data-subject-id="{{ $subjectId }}"
+	data-condition="{{ $conditionPage.Title }}">
+
+<!-- ── FILTER BAR (desktop only, hidden on mobile) ── -->
+<div class="d-none d-lg-block">
+<div class="filter-bar" id="groups-filters">
+	<div class="container">
+		<form id="groups-filter-form" role="search" aria-label="Filter research groups" action="javascript:void(0)">
+			<div class="row g-2 align-items-end">
+				<div class="col-12 col-md-3">
+					<label for="groups-search-input">Search groups</label>
+					<input type="search" class="form-control" id="groups-search-input" placeholder="Group, person or institution" autocomplete="off">
+				</div>
+				<div class="col-12 col-md-3">
+					<label for="groups-category-select">Research topic</label>
+					<select class="form-select" id="groups-category-select">
+						<option value="">All topics</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="groups-country-select">Country</label>
+					<select class="form-select" id="groups-country-select">
+						<option value="">Any country</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<label for="groups-sort-select">Sort by</label>
+					<select class="form-select" id="groups-sort-select">
+						{{- range $sorts }}
+						<option value="{{ .value }}">{{ .label }}</option>
+						{{- end }}
+					</select>
+				</div>
+				<div class="col-6 col-md-auto d-flex align-items-end">
+					<button type="button" class="btn-outline-teal w-100" id="groups-reset-btn" style="padding: 8px 12px; font-size: 13px;">Reset</button>
+				</div>
+			</div>
+		</form>
+		<div class="mt-2">
+			<span class="results-count" id="groups-result-count" role="status" aria-live="polite"></span>
+		</div>
+	</div>
+</div>
+</div>{{/* end d-none d-lg-block */}}
+
+<!-- ── MOBILE SEARCH + TOKENS (< lg) ── -->
+<div class="mobile-feeds-bar d-lg-none" id="groups-mobile-bar">
+	<div class="container">
+		<div class="mobile-search-wrap">
+			<label for="groups-mobile-search" class="visually-hidden">Search research groups</label>
+			<input type="text" class="form-control" id="groups-mobile-search" placeholder="Search groups…" autocomplete="off">
+			<button type="button" class="mobile-search-clear" id="groups-mobile-clear" hidden aria-label="Clear search">
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="filter-tokens" id="groups-filter-tokens" hidden>
+			<button type="button" class="token-add-filters"
+				data-bs-toggle="offcanvas"
+				data-bs-target="#groups-filter-sheet"
+				aria-controls="groups-filter-sheet">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+				+ Filters
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── MOBILE FILTER BOTTOM SHEET ── -->
+<div class="offcanvas offcanvas-bottom filter-sheet d-lg-none"
+	tabindex="-1"
+	id="groups-filter-sheet"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Filter research groups">
+	<div class="offcanvas-header">
+		<div class="title-row">
+			<h5 class="offcanvas-title">Filters</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+	</div>
+	<div class="offcanvas-body">
+		<div class="sheet-group">
+			<label for="groups-sheet-category" class="sheet-group-label">Research topic</label>
+			<select class="form-select" id="groups-sheet-category">
+				<option value="">All topics</option>
+			</select>
+		</div>
+		<div class="sheet-group">
+			<label for="groups-sheet-country" class="sheet-group-label">Country</label>
+			<select class="form-select" id="groups-sheet-country">
+				<option value="">Any country</option>
+			</select>
+		</div>
+		<div class="sheet-group">
+			<div class="sheet-group-label">Sort by</div>
+			<div class="sheet-chips" id="groups-sheet-sort">
+				{{- range $i, $s := $sorts }}
+				<button type="button" class="sheet-chip{{ if eq $i 0 }} active{{ end }}" data-value="{{ $s.value }}">{{ $s.label }}</button>
+				{{- end }}
+			</div>
+		</div>
+	</div>
+	<div class="sheet-footer">
+		<button type="button" class="btn-outline-teal" id="groups-sheet-reset">Reset</button>
+		<button type="button" class="btn-amber" id="groups-sheet-apply">Show results</button>
+	</div>
+</div>
+
+<!-- ── MOBILE FAB ── -->
+<button type="button" class="filter-fab d-lg-none" id="groups-filter-fab"
+	data-bs-toggle="offcanvas"
+	data-bs-target="#groups-filter-sheet"
+	aria-controls="groups-filter-sheet"
+	aria-label="Open filters">
+	<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+	Filters
+	<span class="fab-count" id="groups-fab-count" hidden>0</span>
+</button>
+
+<!-- ── GROUPS TABLE ── -->
+<section class="section bg-sand" style="padding-top: 24px;">
+	<div class="container">
+		<noscript>
+			<p>JavaScript is required to load the research groups.</p>
+		</noscript>
+
+		<p class="mobile-result-count d-lg-none" id="groups-mobile-result-count" aria-live="polite"></p>
+
+		<div class="groups-table-wrap" id="groups-list" aria-busy="true"></div>
+
+		<div class="pagination-controls" id="groups-pagination" hidden>
+			<button class="pagination-btn" id="groups-first-btn" title="First page" aria-label="First page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+			</button>
+			<button class="pagination-btn" id="groups-prev-btn" disabled title="Previous page" aria-label="Previous page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+			</button>
+			<span id="groups-pagination-numbers"></span>
+			<button class="pagination-btn" id="groups-next-btn" title="Next page" aria-label="Next page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+			</button>
+			<button class="pagination-btn" id="groups-last-btn" title="Last page" aria-label="Last page">
+				<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+			</button>
+		</div>
+
+		<p class="labs-note labs-note--plain groups-note">
+			<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+			<span>A research group is a senior author and the people who publish with them again and again. Most groups are put together automatically from authorship data and have not been checked by an editor yet. <a href="{{ "/labs/" | relURL }}">Browse all research groups</a>.</span>
+		</p>
+	</div>
+</section>
+
+</div>{{/* end #labs-table */}}
+
+{{ end }}
+
+{{ define "page-scripts" }}
+<script src="{{ "js/labs-common.js" | relURL }}"></script>
+<script src="{{ "js/labs-table.js" | relURL }}"></script>
+{{ end }}
