@@ -47,6 +47,20 @@
 	var dateToInput        = document.getElementById('papers-date-to');
 	var doiInput           = document.getElementById('papers-doi-input');
 
+	// People paste DOIs as links (https://doi.org/10.…, dx.doi.org/…) or with a
+	// "doi:" label; the API matches the bare identifier, so strip those off each
+	// comma-separated entry.
+	function normalizeDoi(value) {
+		return String(value || '').split(',').map(function (d) {
+			d = d.trim();
+			try { d = decodeURIComponent(d); } catch (e) { /* keep as typed */ }
+			return d
+				.replace(/^(?:https?:\/\/)?(?:dx\.)?doi\.org\//i, '')
+				.replace(/^doi:\s*/i, '')
+				.trim();
+		}).filter(Boolean).join(',');
+	}
+
 	var firstBtn         = document.getElementById('papers-first-btn');
 	var prevBtn          = document.getElementById('papers-prev-btn');
 	var nextBtn          = document.getElementById('papers-next-btn');
@@ -179,7 +193,7 @@
 		state.openAccess         = params.get('open_access') === 'true';
 		state.dateFrom           = params.get('date_from')   || '';
 		state.dateTo             = params.get('date_to')     || '';
-		state.doi                = params.get('doi')         || '';
+		state.doi                = normalizeDoi(params.get('doi'));
 		state.page               = parseInt(params.get('page') || '1', 10) || 1;
 	}
 
@@ -1266,7 +1280,7 @@
 		if (openAccessCheck) state.openAccess = openAccessCheck.checked;
 		if (dateFromInput) state.dateFrom = dateFromInput.value;
 		if (dateToInput)   state.dateTo   = dateToInput.value;
-		if (doiInput)      state.doi      = doiInput.value.trim();
+		if (doiInput)      state.doi      = doiInput.value = normalizeDoi(doiInput.value);
 		state.page      = 1;
 		renderCategoryPanel();
 		if (!state.category) hideCategoryPanel();
@@ -1374,8 +1388,10 @@
 			if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 		});
 		doiInput.addEventListener('change', function () {
-			if (this.value.trim() === state.doi) return; // already applied by Enter / Search
-			state.doi  = this.value.trim();
+			var doi = normalizeDoi(this.value);
+			this.value = doi;
+			if (doi === state.doi) return; // already applied by Enter / Search
+			state.doi  = doi;
 			state.page = 1;
 			fetchPage(1, false);
 		});
@@ -2219,7 +2235,7 @@
 
 	if (sheetDoiInput) {
 		sheetDoiInput.addEventListener('input', function () {
-			draft.doi = this.value.trim();
+			draft.doi = normalizeDoi(this.value);
 		});
 	}
 
