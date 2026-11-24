@@ -1,11 +1,11 @@
 {{- /*
-  condition-tabs.html — Research Papers / Clinical Trials / Patents / Medicines tab strip
+  condition-tabs.html — Research Groups / Research Papers / Clinical Trials / Patents / Medicines tab strip
   for a condition section. A tab whose sibling page doesn't exist renders as a
   disabled "Coming soon" tab.
 
   Params (dict):
     condition — the condition section page (e.g. /conditions/multiple-sclerosis/)
-    active    — "trials" | "papers" | "patents" | "medicines"
+    active    — "trials" | "papers" | "patents" | "medicines" | "groups"
 */ -}}
 {{- $condition := .condition -}}
 {{- $active := .active -}}
@@ -15,7 +15,11 @@
 {{- with where $condition.Pages "Params.layout" "patents" -}}{{- $patentsPage = index . 0 -}}{{- end -}}
 {{- $medicinesPage := "" -}}
 {{- with where $condition.Pages "Params.layout" "medicines" -}}{{- $medicinesPage = index . 0 -}}{{- end -}}
+{{- $groupsPage := "" -}}
+{{- with where $condition.Pages "Params.layout" "research-groups" -}}{{- $groupsPage = index . 0 -}}{{- end -}}
+{{- /* Research Groups comes first in the strip; the condition's own URL still opens Clinical Trials. */ -}}
 {{- $tabs := slice
+	(dict "key" "groups"  "label" "Research Groups" "page" $groupsPage)
 	(dict "key" "papers"  "label" "Research Papers" "page" $rpPage)
 	(dict "key" "trials"  "label" "Clinical Trials" "page" $condition)
 	(dict "key" "patents" "label" "Patents"         "page" $patentsPage)

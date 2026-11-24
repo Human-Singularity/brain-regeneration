@@ -275,3 +275,123 @@
 	color: #8A4B0F; background: #FDF0E2; border-radius: 100px; padding: 6px 10px;
 }
 .labs-embed__who .cu-labbadge { margin-top: 4px; }
+
+/* ── "Research Groups" tab of a condition: the directory as a table (labs-table.js).
+ *    Desktop: a white table on the sand listing like the papers and trials feeds.
+ *    Below 992px (where the feeds switch to the mobile bar + bottom sheet) each row
+ *    stacks into a card, with the column name before each number. ── */
+.groups-table-wrap { transition: opacity var(--dur-base, 200ms) ease; }
+.groups-table-wrap.is-loading { opacity: .55; pointer-events: none; }
+
+.groups-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	font: 400 14px/1.45 var(--font-heading);
+	color: var(--color-text);
+	margin-bottom: 8px;
+}
+.groups-table thead th {
+
+	background: var(--color-secondary, #F5F0E8);
+	border-bottom: 1px solid var(--color-border);
+	padding: 12px 16px;
+	font: 600 12px/1.3 var(--font-heading);
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	color: #57534D;
+	text-align: left;
+	vertical-align: bottom;
+	white-space: nowrap;
+}
+.groups-table thead th:first-child { border-top-left-radius: var(--radius); }
+.groups-table thead th:last-child { border-top-right-radius: var(--radius); }
+.groups-table th.num, .groups-table td.num { text-align: right; }
+.groups-table tbody th, .groups-table tbody td {
+	padding: 16px;
+	border-bottom: 1px solid var(--color-border);
+	vertical-align: top;
+	text-align: left;
+	font-weight: 400;
+}
+.groups-table tbody tr:last-child > * { border-bottom: 0; }
+.groups-table tbody tr:hover > * { background: #FBF9F5; }
+.groups-table td.num { font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--color-primary); white-space: nowrap; }
+
+.groups-sort {
+	all: unset;
+	cursor: pointer;
+	display: inline-flex; align-items: center; gap: 4px;
+	border-radius: 4px;
+	text-transform: inherit; letter-spacing: inherit; font: inherit; color: inherit;
+}
+.groups-sort:hover { color: var(--color-primary); }
+.groups-sort:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.groups-sort__arrow { opacity: 0; transition: opacity var(--dur-fast, 150ms) ease; }
+.groups-sort:hover .groups-sort__arrow { opacity: .5; }
+.groups-sort.is-active { color: var(--color-primary); }
+.groups-sort.is-active .groups-sort__arrow { opacity: 1; }
+
+.groups-name { min-width: 240px; }
+.groups-name .cu-labbadge { display: inline-flex; margin-bottom: 6px; }
+.groups-name__link { display: block; font: 600 16px/1.35 var(--font-heading); color: var(--color-primary); text-decoration: none; }
+.groups-name__link:hover { color: var(--color-accent); text-decoration: underline; }
+.groups-led { display: block; margin-top: 2px; color: #57534D; }
+.groups-led a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--color-border); }
+.groups-led a:hover { color: var(--color-primary); text-decoration-color: currentColor; }
+.groups-auto { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 12px; color: #57534D; }
+.groups-auto svg { color: var(--color-primary); }
+.groups-place { color: #57534D; min-width: 160px; }
+.groups-none { color: #57534D; }
+
+.groups-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; max-width: 260px; }
+.groups-topic { border: 1px solid transparent; cursor: pointer; text-align: left; line-height: 1.4; }
+.groups-topic:hover { border-color: var(--color-primary); }
+.groups-topic:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.groups-topic.is-active { background: var(--color-primary); color: #fff; }
+
+.groups-note { margin-top: 24px; max-width: none; }
+
+@media (max-width: 991.98px) {
+	.groups-table, .groups-table tbody, .groups-table tr, .groups-table th, .groups-table td { display: block; }
+	.groups-table { background: transparent; border: 0; box-shadow: none; }
+	.groups-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+	.groups-table tbody tr {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0 12px;
+		background: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
+		padding: 16px;
+		margin-bottom: 12px;
+	}
+	.groups-table tbody tr:hover > * { background: transparent; }
+	.groups-table tbody th, .groups-table tbody td { padding: 0; border: 0; }
+	.groups-table tbody .groups-name, .groups-table tbody .groups-place, .groups-table tbody .groups-works { grid-column: 1 / -1; min-width: 0; }
+	.groups-table tbody .groups-place { margin: 6px 0 12px; }
+	.groups-table td.num {
+		display: flex; flex-direction: column; justify-content: space-between;
+		text-align: left;
+		padding: 10px 0 0;
+		border-top: 1px solid var(--color-border);
+		font-size: 17px;
+	}
+	.groups-table td.num::before, .groups-table .groups-works::before {
+		content: attr(data-label);
+		display: block;
+		margin-bottom: 2px;
+		font: 500 12px/1.3 var(--font-heading);
+		color: #57534D;
+		white-space: normal;
+	}
+	.groups-table .groups-works { margin-top: 12px; }
+	.groups-table .groups-works::before { margin-bottom: 6px; }
+	.groups-table .groups-works:has(.groups-none) { display: none; }
+	.groups-topics { max-width: none; }
+}
